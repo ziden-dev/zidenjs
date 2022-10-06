@@ -1,3 +1,4 @@
+# Rules from: /media/oem/DATA/Lab/ZK/zk-identity-mvp/zkID.js/.gitignore
 # Logs
 logs
 *.log
@@ -103,5 +104,11 @@ dist
 # TernJS port file
 .tern-port
 
-# Level DB files
+.npmignore
 **/db_test/*
+
+# npmignore - content above this line is automatically generated and modifications may be omitted
+# see npmjs.com/npmignore for more details.
+**/*.test.js
+**/circom_test/*
+circuits/*
