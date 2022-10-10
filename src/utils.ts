@@ -1,4 +1,4 @@
-import { toBigIntBE, toBufferBE } from "bigint-buffer";
+import { toBigIntBE, toBufferBE } from 'bigint-buffer';
 /**
  * Allocates a new Buffer from a bigInt number in little-endian format
  * @param {bigInt} number - bigInt number
@@ -54,8 +54,8 @@ export function bufferToHex(buff: Buffer): string {
  */
 export function bufferArrayToHex(buffs: Array<Buffer>): string {
   let result = buffs.reduce((result, buff) => {
-    return result + bitsToNum(buff).toString(16) + "-";
-  }, "");
+    return result + bitsToNum(buff).toString(16) + '-';
+  }, '');
   return result.slice(0, result.length - 1);
 }
 
@@ -66,8 +66,8 @@ export function bufferArrayToHex(buffs: Array<Buffer>): string {
  * @returns {Buffer}
  */
 export function hexToBuffer(hex: string, width: number): Buffer {
-  if (!hex.startsWith("0x")) {
-    hex = "0x" + hex;
+  if (!hex.startsWith('0x')) {
+    hex = '0x' + hex;
   }
   return numToBits(BigInt(hex), width);
 }
@@ -79,7 +79,7 @@ export function hexToBuffer(hex: string, width: number): Buffer {
  * @returns {Array<Buffer>}
  */
 export function hexToBufferArray(hex: string, width: number): Array<Buffer> {
-  const hexs = hex.split("-");
+  const hexs = hex.split('-');
   return hexs.map((h) => hexToBuffer(h, width));
 }
 
@@ -89,11 +89,11 @@ export function hexToBufferArray(hex: string, width: number): Array<Buffer> {
  * @returns {string} hex
  */
 export function stringToHex(str: string): string {
-  var hex = "";
+  var hex = '';
   for (var i = 0; i < str.length; i++) {
-    hex += "" + str.charCodeAt(i).toString(16);
+    hex += '' + str.charCodeAt(i).toString(16);
   }
-  hex = "0x" + hex;
+  hex = '0x' + hex;
   return hex;
 }
 
@@ -103,10 +103,10 @@ export function stringToHex(str: string): string {
  * @returns {string} str
  */
 export function hexToString(hex: string): string {
-  if (hex.startsWith("0x")) {
+  if (hex.startsWith('0x')) {
     hex = hex.slice(2);
   }
-  var str = "";
+  var str = '';
   for (var i = 0; i < hex.length; i += 2) {
     str += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16));
   }
@@ -123,3 +123,59 @@ export function privateKeyFromPassword(password: string): Buffer {
   return hexToBuffer(privateKeyHex, 32);
 }
 
+/**
+ * Compress timestamp (64 bits), claimSchema (128 bits), slotIndex (3 bits), operator (3 bits) into 1 input
+ * @param {BigInt} value value to mask
+ * @param {number} bitsToShift
+ * @returns {BigInt} masked attessting value
+ */
+export function shiftValue(value: BigInt, bitsToShift: number): BigInt {
+  return value.valueOf() << BigInt(bitsToShift);
+}
+
+/**
+ * Create bit mask for fragment query
+ * @param {number} from
+ * @param {number} to
+ * @returns {BigInt} masked attessting value
+ */
+export function createMask(from: number, to: number): BigInt {
+  let mask = ''.padStart(256, '0').split('');
+  for (let i = from; i < to; i++) {
+    mask[i] = '1';
+  }
+  mask.reverse();
+  return BigInt('0b' + mask.join(''));
+}
+
+  /**
+   * set bits of target bigint in range start from offset
+   * @param {BigInt} target target bigint we want to set bits
+   * @param {number} offset offset to set bits
+   * @param {BigInt} value value we want to set
+   * @returns {BigInt} target value after setting bits
+   */
+  export function setBits(target: BigInt, offset: number, value: BigInt): BigInt {
+    const valueBits = value.toString(2).split('').reverse();
+    if (valueBits.length + offset > 256) {
+      throw new Error('Invalid value bits');
+    }
+    const targetBits = target.toString(2).padStart(256, '0').split('').reverse();
+    for (let i = offset; i < valueBits.length + offset; i++) {
+      targetBits[i] = valueBits[i - offset];
+    }
+    return BigInt('0b' + targetBits.reverse().join(''));
+  }
+
+  /**
+   * get partial value of source bigint in range start from offset
+   * @param {BigInt} source position of slot we want to get bits
+   * @param {number} from start offset to get bits
+   * @param {number} to end offset to get bits
+   * @returns {BigInt} value lie in range
+   */
+  export function getPartialValue(source: BigInt, from: number, to: number): BigInt {
+    const sourceBits = source.toString(2).padStart(256, '0').split('').reverse();
+    const partialBits = sourceBits.slice(from, to).reverse();
+    return BigInt('0b' + partialBits.join(''));
+  }

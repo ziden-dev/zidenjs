@@ -3,6 +3,7 @@ import bigInt from 'big-integer';
 import { Scalar, getCurveFromName } from 'ffjavascript';
 // @ts-ignore
 import { buildPoseidon, buildEddsa } from 'circomlibjs';
+import { HashFunction } from './witnesses/fixed-merkle-tree/index.js';
 
 export const SNARK_SIZE: bigInt.BigNumber = bigInt(
   Scalar.fromString('21888242871839275222246405745257275088548364400416034343698204186575808495617')
@@ -13,9 +14,12 @@ export type Hash0 = (left: BigInt | ArrayLike<number>, right: BigInt | ArrayLike
 export type Hash1 = (key: BigInt | ArrayLike<number>, value: BigInt | ArrayLike<number>) => ArrayLike<number>;
 export interface SnarkField {
   toObject: (arr: ArrayLike<number>) => BigInt;
-  e: (num: BigInt | ArrayLike<number> | number) => ArrayLike<number>;
+  e: (num: BigInt | ArrayLike<number> | number | string) => ArrayLike<number>;
   one: ArrayLike<number>;
   zero: ArrayLike<number>;
+  eq: (value1: ArrayLike<number>, value2: ArrayLike<number>) => boolean;
+  isZero: (value: ArrayLike<number>) => boolean;
+  toString: (value: ArrayLike<number>) => string;
 }
 export interface EDDSASignature {
   R8: Array<ArrayLike<number>>;
@@ -46,5 +50,12 @@ export function buildHash0Hash1(hasher: Hasher, F: SnarkField): { hash0: Hash0; 
     hash1: function (key, value) {
       return hasher([key, value, F.one]);
     },
+  };
+}
+
+export function buildFMTHashFunction(hash0: Hash0, F: SnarkField): HashFunction {
+  return function (left, right) {
+    const temp = hash0(left, right);
+    return F.toObject(temp);
   };
 }

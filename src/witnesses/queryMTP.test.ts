@@ -4,6 +4,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { SMTMemDb } from 'circomlibjs';
 import path from 'path';
 import {
+  buildFMTHashFunction,
   buildHash0Hash1,
   buildHasher,
   buildSigner,
@@ -37,6 +38,8 @@ import {
   KYCNonRevQueryMTPInput,
   QueryMTPWitness,
 } from './queryMTP.js';
+import { HashFunction } from './fixed-merkle-tree/index.js';
+import { OPERATOR } from './query.js';
 
 describe('test query atomic MTP', async () => {
   let F: SnarkField;
@@ -52,6 +55,7 @@ describe('test query atomic MTP', async () => {
   let hash1: Hash1;
   let hasher: Hasher;
   let eddsa: EDDSA;
+  let hashFunction: HashFunction;
 
   it('setup params', async () => {
     F = await buildSnarkField();
@@ -63,7 +67,8 @@ describe('test query atomic MTP', async () => {
     hash0 = hs.hash0;
     hash1 = hs.hash1;
     eddsa = await buildSigner();
-  });
+    hashFunction = buildFMTHashFunction(hash0, F);
+  }).timeout(10000);
   it('setup kyc auth claim', async () => {
     issuerPrivateKey = Buffer.alloc(32, 1);
     const issuerAuthClaim = await newAuthClaimFromPrivateKey(eddsa, F, issuerPrivateKey);
@@ -109,7 +114,7 @@ describe('test query atomic MTP', async () => {
     const valueSlotA = BigInt(120);
     const valueSlotB = BigInt(300);
     const schemaHash = schemaHashFromBigInt(BigInt('12345'));
-    issuerClaim = await newClaim(
+    issuerClaim = newClaim(
       schemaHash,
       withIndexData(numToBits(indexSlotA, 32), numToBits(indexSlotB, 32)),
       withValueData(numToBits(valueSlotA, 32), numToBits(valueSlotB, 32)),
@@ -123,13 +128,10 @@ describe('test query atomic MTP', async () => {
   }).timeout(10000);
 
   let witness: QueryMTPWitness;
-  let value: Array<BigInt>;
+  let values: Array<BigInt>;
   let challenge: BigInt;
   it('setup for gen query MTP witness', async () => {
-    value = [BigInt(20010210)];
-    for (let i = 1; i < 64; i++) {
-      value.push(BigInt(0));
-    }
+    values = [BigInt(20010210)];
     challenge = BigInt('12345');
   });
   it('Benchmark sign signature', async () => {
@@ -141,7 +143,7 @@ describe('test query atomic MTP', async () => {
       holderAuthClaim.getRevocationNonce()
     );
   });
-  it('holder query slot index A', async () => {
+  it('holder query slot index A with OPERATOR LESS THAN', async () => {
     witness = await holderGenerateQueryMTPWitness(
       issuerClaim,
       eddsa,
@@ -152,8 +154,13 @@ describe('test query atomic MTP', async () => {
       kycQueryMTPInput,
       kycQueryNonRevMTPInput,
       2,
-      2,
-      value
+      OPERATOR.LESS_THAN,
+      values,
+      10,
+      0,
+      100,
+      hashFunction,
+      F
     );
     console.log(witness);
   });

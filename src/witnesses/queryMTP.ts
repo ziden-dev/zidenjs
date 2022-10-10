@@ -1,8 +1,10 @@
-import { EDDSA } from 'src/global.js';
+import { EDDSA, SnarkField } from 'src/global.js';
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
 import { Trees } from '../trees/trees.js';
-import { bitsToNum } from '../utils.js';
+import { bitsToNum, createMask, shiftValue } from '../utils.js';
+import { HashFunction } from './fixed-merkle-tree/index.js';
+import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
 
 export interface KYCQueryMTPInput {
   issuerClaimMtp: Array<BigInt>;
@@ -67,7 +69,7 @@ export async function kycGenerateNonRevQueryMTPInput(
   };
 }
 
-export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInput, SignedChallenge {
+export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInput, SignedChallenge, MerkleQueryInput {
   readonly userID: BigInt;
   readonly userState: BigInt;
   readonly userClaimsTreeRoot: BigInt;
@@ -79,11 +81,8 @@ export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInpu
   readonly userAuthClaimNonRevMtpAuxHv: number | BigInt;
   readonly userAuthClaimNonRevMtpAuxHi: number | BigInt;
   readonly userRootsTreeRoot: BigInt;
-  readonly timestamp: number;
-  readonly slotIndex: number;
-  readonly operator: number;
-  readonly value: Array<BigInt>;
-  readonly claimSchema: BigInt;
+  readonly compactInput: BigInt;
+  readonly mask: BigInt;
   readonly issuerClaim: Array<BigInt>;
 }
 /**
@@ -97,8 +96,13 @@ export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInpu
  * @param {KYCQueryMTPInput} kycQueryMTPInput
  * @param {KYCNonRevQueryMTPInput} kycQueryNonRevMTPInput
  * @param {number} slotIndex
- * @param {number} operator
- * @param {Array<BigInt>} value
+ * @param {OPERATOR} operator
+ * @param {Array<BigInt>} values
+ * @param {number} valueTreeDepth
+ * @param {number} from
+ * @param {number} to
+ * @param {HashFunction} hashFunction
+ * @param {SnarkField} F
  * @returns {Promise<QueryMTPWitness>} queryMTP witness
  */
 export async function holderGenerateQueryMTPWitness(
@@ -111,8 +115,13 @@ export async function holderGenerateQueryMTPWitness(
   kycQueryMTPInput: KYCQueryMTPInput,
   kycQueryNonRevMTPInput: KYCNonRevQueryMTPInput,
   slotIndex: number,
-  operator: number,
-  value: Array<BigInt>
+  operator: OPERATOR,
+  values: Array<BigInt>,
+  valueTreeDepth: number,
+  from: number,
+  to: number,
+  hashFunction: HashFunction,
+  F: SnarkField
 ): Promise<QueryMTPWitness> {
   const signature = await signChallenge(eddsa, userAuthTrees.F, privateKey, challenge);
   const authClaimProof = await userAuthTrees.generateProofForClaim(
@@ -121,6 +130,17 @@ export async function holderGenerateQueryMTPWitness(
   );
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
   const timestamp = Date.now();
+  const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
+  const mask = createMask(from, to);
+  const merkleQueryInput = createMerkleQueryInput(
+    values.map((value) => shiftValue(value, from)),
+    valueTreeDepth,
+    hashFunction,
+    F,
+    bitsToNum(issuerClaim.getSlotData(slotIndex)),
+    operator
+  );
+
   return {
     userID: authClaimProof.id,
     userState: authClaimProof.state,
@@ -135,11 +155,9 @@ export async function holderGenerateQueryMTPWitness(
     userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
     userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
     userRootsTreeRoot: authClaimProof.rootsTreeRoot,
-    timestamp,
-    slotIndex,
-    operator,
-    value,
-    claimSchema,
+    compactInput,
+    mask,
+    ...merkleQueryInput,
     ...kycQueryMTPInput,
     ...kycQueryNonRevMTPInput,
   };

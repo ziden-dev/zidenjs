@@ -4,6 +4,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { SMTMemDb } from 'circomlibjs';
 import path from 'path';
 import {
+  buildFMTHashFunction,
   buildHash0Hash1,
   buildHasher,
   buildSigner,
@@ -36,6 +37,8 @@ import {
   KYCQuerySigInput,
   KYCQuerySigNonRevInput,
 } from './querySig.js';
+import { HashFunction } from './fixed-merkle-tree/index.js';
+import { OPERATOR } from './query.js';
 
 describe('test query sig', async () => {
   let F: SnarkField;
@@ -52,6 +55,7 @@ describe('test query sig', async () => {
   let holderPrivateKey: Buffer;
   let holderTrees: Trees;
   let holderAuthClaim: Entry;
+  let hashFunction: HashFunction;
   it('create trees for kyc service and holder', async () => {
     F = await buildSnarkField();
     claimsDb = new SMTLevelDb('src/witnesses/db_test/query_sig/claims', F);
@@ -61,6 +65,7 @@ describe('test query sig', async () => {
     const hs = buildHash0Hash1(hasher, F);
     hash0 = hs.hash0;
     hash1 = hs.hash1;
+    hashFunction = buildFMTHashFunction(hash0, F);
     eddsa = await buildSigner();
     issuerPrivateKey = Buffer.alloc(32, 1);
     issuerAuthClaim = await newAuthClaimFromPrivateKey(eddsa, F, issuerPrivateKey);
@@ -125,7 +130,7 @@ describe('test query sig', async () => {
     console.log('KYC Query Sig NonRev Input: ', kycQuerySigNonRevInput);
   }).timeout(10000);
 
-  it('holder query slot index A', async () => {
+  it('holder query slot index A with operator LESS THAN', async () => {
     const challenge = BigInt('12345');
     const witness = await holderGenerateQuerySigWitness(
       issuerClaim,
@@ -137,8 +142,13 @@ describe('test query sig', async () => {
       kycQuerySigInput,
       kycQuerySigNonRevInput,
       2,
-      2,
-      [BigInt(20010210)]
+      OPERATOR.LESS_THAN,
+      [BigInt(20010210)],
+      10,
+      0,
+      100,
+      hashFunction,
+      F
     );
     console.log(witness);
     const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'credentialAtomicQuerySig.circom'));

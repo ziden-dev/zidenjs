@@ -1,8 +1,10 @@
-import { EDDSA, Hasher } from '../global.js';
+import { EDDSA, Hasher, SnarkField } from '../global.js';
 import { Trees } from '../trees/trees.js';
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
-import { bitsToNum } from '../utils.js';
+import { bitsToNum, createMask, shiftValue } from '../utils.js';
+import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
+import { HashFunction } from './fixed-merkle-tree/index.js';
 
 export interface KYCQuerySigInput {
   readonly issuerClaimSignatureR8x: BigInt;
@@ -95,26 +97,23 @@ export async function kycGenerateQuerySigNonRevInput(
   };
 }
 
-export interface QuerySigWitness extends KYCQuerySigInput, KYCQuerySigNonRevInput, SignedChallenge {
-  userID: BigInt;
-  userState: BigInt;
-  userClaimsTreeRoot: BigInt;
-  userAuthClaimMtp: Array<BigInt>;
-  userAuthClaim: Array<BigInt>;
+export interface QuerySigWitness extends KYCQuerySigInput, KYCQuerySigNonRevInput, SignedChallenge, MerkleQueryInput {
+  readonly userID: BigInt;
+  readonly userState: BigInt;
+  readonly userClaimsTreeRoot: BigInt;
+  readonly userAuthClaimMtp: Array<BigInt>;
+  readonly userAuthClaim: Array<BigInt>;
 
-  userRevTreeRoot: BigInt;
-  userAuthClaimNonRevMtp: Array<BigInt>;
-  userAuthClaimNonRevMtpNoAux: BigInt | number;
-  userAuthClaimNonRevMtpAuxHv: BigInt | number;
-  userAuthClaimNonRevMtpAuxHi: BigInt | number;
+  readonly userRevTreeRoot: BigInt;
+  readonly userAuthClaimNonRevMtp: Array<BigInt>;
+  readonly userAuthClaimNonRevMtpNoAux: BigInt | number;
+  readonly userAuthClaimNonRevMtpAuxHv: BigInt | number;
+  readonly userAuthClaimNonRevMtpAuxHi: BigInt | number;
 
-  userRootsTreeRoot: BigInt;
+  readonly userRootsTreeRoot: BigInt;
 
-  timestamp: number;
-  slotIndex: number;
-  operator: number;
-  value: Array<BigInt>;
-  claimSchema: BigInt;
+  readonly compactInput: BigInt;
+  readonly mask: BigInt;
 
   issuerClaim: Array<BigInt>;
 }
@@ -129,8 +128,13 @@ export interface QuerySigWitness extends KYCQuerySigInput, KYCQuerySigNonRevInpu
  * @param {KYCQuerySigInput} kycQuerySigInput
  * @param {KYCQuerySigNonRevInput} kycQuerySigNonRevInput
  * @param {number} slotIndex
- * @param {number} operator
- * @param {Array<BigInt>} value
+ * @param {OPERATOR} operator
+ * @param {Array<BigInt>} values
+ * @param {number} valueTreeDepth
+ * @param {number} from
+ * @param {number} to
+ * @param {HashFunction} hashFunction
+ * @param {SnarkField} F
  * @returns {Promise<QuerySigWitness>} querySig witness
  */
 export async function holderGenerateQuerySigWitness(
@@ -143,8 +147,13 @@ export async function holderGenerateQuerySigWitness(
   kycQuerySigInput: KYCQuerySigInput,
   kycQuerySigNonRevInput: KYCQuerySigNonRevInput,
   slotIndex: number,
-  operator: number,
-  value: Array<BigInt>
+  operator: OPERATOR,
+  values: Array<BigInt>,
+  valueTreeDepth: number,
+  from: number,
+  to: number,
+  hashFunction: HashFunction,
+  F: SnarkField
 ): Promise<QuerySigWitness> {
   const signature = await signChallenge(eddsa, userAuthTrees.F, privateKey, challenge);
   const authClaimProof = await userAuthTrees.generateProofForClaim(
@@ -153,6 +162,16 @@ export async function holderGenerateQuerySigWitness(
   );
   const timestamp = Date.now();
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
+  const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
+  const mask = createMask(from, to);
+  const merkleQueryInput = createMerkleQueryInput(
+    values.map((value) => shiftValue(value, from)),
+    valueTreeDepth,
+    hashFunction,
+    F,
+    bitsToNum(issuerClaim.getSlotData(slotIndex)),
+    operator
+  );
   return {
     userID: authClaimProof.id,
     userState: authClaimProof.state,
@@ -166,11 +185,9 @@ export async function holderGenerateQuerySigWitness(
     userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
     userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
     userRootsTreeRoot: authClaimProof.rootsTreeRoot,
-    timestamp,
-    slotIndex,
-    operator,
-    value,
-    claimSchema,
+    compactInput,
+    mask,
+    ...merkleQueryInput,
     ...kycQuerySigInput,
     ...kycQuerySigNonRevInput,
     issuerClaim: issuerClaim.getDataForCircuit(),

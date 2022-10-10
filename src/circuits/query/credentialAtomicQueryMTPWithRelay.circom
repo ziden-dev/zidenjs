@@ -1,10 +1,10 @@
 pragma circom 2.0.0;
-include "../../../../node_modules/circomlib/circuits/mux1.circom";
-include "../../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../../node_modules/circomlib/circuits/comparators.circom";
-include "comparators.circom";
-include "../idOwnershipBySignatureWithRelay.circom";
+include "../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../idOwnershipBySignature.circom";
 include "query.circom";
+include "decompressors.circom";
 
 
 /**
@@ -25,7 +25,7 @@ valueLevels - Number of elements in comparison array for in/notin operation if l
 comparison ["1", "2", "3"]
 
 */
-template CredentialAtomicQueryMTPWithRelay(IdOwnershipLevels, IssuerLevels, RelayLevels, valueArraySize) {
+template CredentialAtomicQueryMTPWithRelay(IdOwnershipLevels, IssuerLevels, RelayLevels, valueTreeDepth) {
 
     /*
     >>>>>>>>>>>>>>>>>>>>>>>>>>> Inputs <<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -76,18 +76,23 @@ template CredentialAtomicQueryMTPWithRelay(IdOwnershipLevels, IssuerLevels, Rela
     signal input issuerClaimNonRevRootsTreeRoot;
     signal input issuerClaimNonRevState;
 
-    /* current time */
-    signal input timestamp;
-
     /** Query */
-    signal input claimSchema;
-    signal input slotIndex;
-    signal input operator;
-    signal input value[valueArraySize];
+    signal input compactInput;
+    signal input determinisiticValue;
+    signal input mask;
+    signal input leaf0;
+    signal input leaf1;
+    signal input elemsPath0[valueTreeDepth];
+    signal input pos0;
+    signal input elemsPath1[valueTreeDepth];
+    signal input pos1;
 
     /*
     >>>>>>>>>>>>>>>>>>>>>>>>>>> End Inputs <<<<<<<<<<<<<<<<<<<<<<<<<<<<
     */
+    // derive compact input
+    component inputs = deriveInput();
+    inputs.in <== compactInput;
 
     /* Id ownership check*/
     component userIdOwnership = IdOwnershipBySignatureWithRelay(IdOwnershipLevels, RelayLevels);
@@ -145,23 +150,35 @@ template CredentialAtomicQueryMTPWithRelay(IdOwnershipLevels, IssuerLevels, Rela
     // Verify issuerClaim schema
     component claimSchemaCheck = verifyCredentialSchema();
     for (var i=0; i<8; i++) { claimSchemaCheck.claim[i] <== issuerClaim[i]; }
-    claimSchemaCheck.schema <== claimSchema;
+    claimSchemaCheck.schema <== inputs.out[1];
 
     // verify issuerClaim expiration time
     component claimExpirationCheck = verifyExpirationTime();
     for (var i=0; i<8; i++) { claimExpirationCheck.claim[i] <== issuerClaim[i]; }
-    claimExpirationCheck.timestamp <== timestamp;
+    claimExpirationCheck.timestamp <== inputs.out[0];
 
-    // Query
+    // get value
     component getClaimValue = getValueByIndex();
     for (var i=0; i<8; i++) { getClaimValue.claim[i] <== issuerClaim[i]; }
-    getClaimValue.index <== slotIndex;
+    getClaimValue.index <== inputs.out[2];
 
-    component q = Query(valueArraySize);
-    q.in <== getClaimValue.value;
-    q.operator <== operator;
-    for(var i = 0; i<valueArraySize; i++){q.value[i] <== value[i];}
+    // masking
+    component masking = maskingValue();
+    masking.mask <== mask;
+    masking.value <== getClaimValue.value;
 
+    // query
+    component q = Query(valueTreeDepth);
+    q.in <== masking.out;
+    q.determinisiticValue <== determinisiticValue;
+    q.operator <== inputs.out[3];
+    q.leaf0 <== leaf0;
+    q.leaf1 <== leaf1;
+    q.pos0 <== pos0;
+    q.pos1 <== pos1;
+    for(var i = 0; i<valueTreeDepth; i++){
+        q.elemsPath0[i] <== elemsPath0[i];
+        q.elemsPath1[i] <== elemsPath1[i];
+    }
     q.out === 1;
-
 }

@@ -1,14 +1,12 @@
 pragma circom 2.0.0;
 
-include "lib/query/credentialAtomicQuerySig.circom";
+include "query/credentialAtomicQuerySig.circom";
 
 component main{public [challenge,
                         userID,
                         userState,
                         issuerID,
                         issuerClaimNonRevState,
-                        claimSchema,
-                        slotIndex,
-                        operator,
-                        value,
-                        timestamp]} = CredentialAtomicQuerySig(32, 32, 64);
+                        determinisiticValue,
+                        compactInput,
+                        mask]} = CredentialAtomicQuerySig(8, 32, 10);

@@ -1,11 +1,12 @@
 pragma circom 2.0.0;
 
-include "../../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../../node_modules/circomlib/circuits/eddsaposeidon.circom";
-include "../../../../node_modules/circomlib/circuits/smt/smtverifier.circom";
-include "../../../../node_modules/circomlib/circuits/mux3.circom";
-include "../../../../node_modules/circomlib/circuits/mux1.circom";
-include "../../../../node_modules/circomlib/circuits/mux2.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/eddsaposeidon.circom";
+include "../../../node_modules/circomlib/circuits/smt/smtverifier.circom";
+include "../../../node_modules/circomlib/circuits/mux3.circom";
+include "../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../../node_modules/circomlib/circuits/mux2.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
 
 // getClaimSubjectOtherIden checks that a claim Subject is OtherIden and outputs the identity within.
 template getClaimSubjectOtherIden() {
@@ -21,7 +22,7 @@ template getClaimSubjectOtherIden() {
     for (var i = 0; i < 32; i++) { subjectLocation.claimFlags[i] <== header.claimFlags[i]; }
 
     component mux = Mux2();
-    component n2b = Num2Bits(3);
+    component n2b = Num2Bits(2);
     n2b.in <== subjectLocation.out;
 
     mux.s[0] <== n2b.out[0];
@@ -220,7 +221,7 @@ template getValueByIndex(){
   signal output value; // value from the selected slot claim[index]
 
   component mux = Mux3();
-  component n2b = Num2Bits(3);
+  component n2b = Num2Bits(8);
   n2b.in <== index;
   for(var i=0;i<8;i++){
     mux.c[i] <== claim[i];
@@ -301,3 +302,5 @@ template isUpdatable() {
 
         out <== claimFlags[4];
 }
+
+

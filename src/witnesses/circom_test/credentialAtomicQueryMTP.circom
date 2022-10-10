@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "../../circuits/lib/query/credentialAtomicQueryMTP.circom";
+include "../../circuits/query/credentialAtomicQueryMTP.circom";
 
 component main{public [challenge,
                         userID,
@@ -8,8 +8,6 @@ component main{public [challenge,
                         issuerID,
                         issuerClaimIdenState,
                         issuerClaimNonRevState,
-                        claimSchema,
-                        slotIndex,
-                        operator,
-                        value,
-                        timestamp]} = CredentialAtomicQueryMTP(8, 32, 64);
+                        determinisiticValue,
+                        compactInput,
+                        mask]} = CredentialAtomicQueryMTP(8, 32, 10);
