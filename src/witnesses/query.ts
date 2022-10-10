@@ -47,38 +47,34 @@ export function createMerkleQueryInput(
   let pos1: BigInt = BigInt(0);
   let elemsPath0: Array<BigInt> = Array(valueTreeDepth).fill(BigInt(0));
   let elemsPath1: Array<BigInt> = Array(valueTreeDepth).fill(BigInt(0));
-  if (operator === 0) {
+  if (operator === OPERATOR.NOOP) {
     // NO-OP OPERATOR, don't need to specify merkle query input (do nothing)
-  } else if (operator >= 1 && operator <= 3) {
+  } else if (operator >= OPERATOR.EQUAL && operator <= OPERATOR.GREATER_THAN) {
     // Single OPERATOR require the array of values must has only 1 element.
     if (values.length !== 1) {
       throw ErrInvalidValues;
     }
     switch (operator) {
       // EQUAL OPERATOR
-      case 1: {
+      case OPERATOR.EQUAL: {
         if (values[0] !== attestingValue) {
           throw ErrInvalidValues;
         }
         break;
       }
       // LESS THAN OPERATOR
-      case 2: {
+      case OPERATOR.LESS_THAN: {
         if (values[0] <= attestingValue) {
           throw ErrInvalidValues;
         }
         break;
       }
       // GREATOR THAN OPERATOR
-      case 3: {
+      case OPERATOR.GREATER_THAN: {
         if (values[0] >= attestingValue) {
           throw ErrInvalidValues;
         }
         break;
-      }
-
-      default: {
-        throw new Error('Operator is not supported');
       }
     }
     determinisiticValue = values[0];
@@ -97,7 +93,7 @@ export function createMerkleQueryInput(
     // find the smallest value in array which greater than the attesting value
     const greaterIndex = sortedValues.findIndex((value) => value > attestingValue);
 
-    if (operator === 6) {
+    if (operator === OPERATOR.IN_RANGE) {
       // IN RANGE Operator, we must prove values[0] < attestingValue < values[1]
       if (values.length !== 2 || values[0] >= attestingValue || values[1] <= attestingValue) {
         throw ErrInvalidValues;
@@ -108,7 +104,7 @@ export function createMerkleQueryInput(
       // check that attesting value is exist in the array of values ( for IN OPERATOR )
       const equalResult = sortedValues.find((value) => value === attestingValue);
 
-      if (operator === 4) {
+      if (operator === OPERATOR.IN) {
         if (!equalResult) {
           throw ErrInvalidValues;
         }
@@ -135,7 +131,7 @@ export function createMerkleQueryInput(
       }
     }
 
-    if (greaterIndex !== -1 || operator === 4) {
+    if (greaterIndex !== -1 || operator === OPERATOR.IN) {
       // Construct Merkle Tree Proof for leaf0
       const leaf0Proof = fmt.proof(leaf0);
       elemsPath0 = leaf0Proof.pathElements;
@@ -148,7 +144,7 @@ export function createMerkleQueryInput(
       pos0 = temp0;
       determinisiticValue = leaf0Proof.pathRoot;
     }
-    if (operator !== 4 && greaterIndex !== 0) {
+    if (operator !== OPERATOR.IN && greaterIndex !== 0) {
       // Construct Merkle Tree Proof for leaf1
       const leaf1Proof = fmt.proof(leaf1, greaterIndex === -1 ? sortedValues.length - 1 : undefined);
       elemsPath1 = leaf1Proof.pathElements;

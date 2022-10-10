@@ -1,4 +1,4 @@
-# Rules from: /media/oem/DATA/Lab/ZK/zk-identity-mvp/zkID.js/.gitignore
+# Rules from: /media/oem/DATA/Lab/ZK/Ziden-dev/zidenjs/.gitignore
 # Logs
 logs
 *.log
@@ -104,8 +104,9 @@ dist
 # TernJS port file
 .tern-port
 
-.npmignore
+# Level DB files
 **/db_test/*
+.npmignore
 
 # npmignore - content above this line is automatically generated and modifications may be omitted
 # see npmjs.com/npmignore for more details.
