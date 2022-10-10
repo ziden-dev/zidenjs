@@ -18,7 +18,8 @@ Index:
           [1] Updatable: bool
           [27] 0
       [ 32 bits ] version (optional?)
-      [ 61 bits ] 0 - reserved for future use
+      [ 32 bits ] claim seed
+      [ 29 bits ] 0 - reserved for future use
  i_1: [ 248 bits] identity (case b) (optional)
       [  5 bits ] 0
  i_2: [ 253 bits] 0
@@ -626,6 +627,23 @@ export class Entry {
     return bitsToNum(nonceBytes);
   }
 
+  /**
+   * set claim seed
+   * @param {BigInt} seed
+   */
+  setClaimSeed(seed: BigInt) {
+    const seedBits = numToBits(seed, 4);
+    seedBits.copy(this._elements[0], 24);
+  }
+
+  /**
+   * get claim seed
+   * @returns {BigInt} claim seed
+   */
+  getClaimSeed(): BigInt {
+    const seedBits = this._elements[0].subarray(24, 28);
+    return bitsToNum(seedBits);
+  }
   /**
    * SetExpirationDate set claim's expiration date
    * @param {BigInt} date 8 bytes represent in unix time

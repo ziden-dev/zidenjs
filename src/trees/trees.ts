@@ -1,10 +1,10 @@
-// @ts-ignore
-import { SMT, SMTMemDb } from 'circomlibjs';
 import { SMTDb } from '../db/index.js';
 import { Hash0, Hash1, Hasher, SnarkField } from 'src/global.js';
 import { Entry } from '../claim/entry.js';
 import { idenState, IDGenesisFromIdenState, IDType } from '../claim/id.js';
 import { numToBits, bitsToNum } from '../utils.js';
+import { SMT } from './smt.js';
+import { assert } from 'console';
 
 interface MTP {
   readonly enabled: number;
@@ -136,8 +136,8 @@ export class Trees {
    * @param {Hash1} hash1
    * @param {Hasher} hasher
    * @param {SMTDb} claimsDb database for claims tree
-   * @param {Object} revocationDb database for revocation tree
-   * @param {Object} rootsDb database for roots tree
+   * @param {SMTDb} revocationDb database for revocation tree
+   * @param {SMTDb} rootsDb database for roots tree
    * @param {Buffer} type 2 bytes of ID type
    * @returns {Promise<Trees>}
    */
@@ -148,14 +148,14 @@ export class Trees {
     hasher: Hasher,
     authClaims: Array<Entry>,
     claimsDb: SMTDb,
-    revocationDb: object,
-    rootsDb: object,
+    revocationDb: SMTDb,
+    rootsDb: SMTDb,
     type: Buffer,
     depth = 32
   ): Promise<Trees> {
-    const claimsTree = new SMT(claimsDb, F.zero, hash0, hash1, F);
-    const revocationTree = new SMT(revocationDb, F.zero, hash0, hash1, F);
-    const rootsTree = new SMT(rootsDb, F.zero, hash0, hash1, F);
+    const claimsTree = new SMT(claimsDb, F.zero, hash0, hash1, F, depth);
+    const revocationTree = new SMT(revocationDb, F.zero, hash0, hash1, F, depth);
+    const rootsTree = new SMT(rootsDb, F.zero, hash0, hash1, F, depth);
 
     for (let i = 0; i < authClaims.length; i++) {
       const claim = authClaims[i];
@@ -178,15 +178,33 @@ export class Trees {
   /**
    * Insert new claim to claim tree
    * @param {Entry} claim claim to insert
+   * @param {number} maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
+   * @returns {Promise<Entry>} inserted claim
    */
-  async insertClaim(claim: Entry) {
+  async insertClaim(claim: Entry, maxAttempTimes: number = 100): Promise<Entry> {
     claim.setRevocationNonce(BigInt(this._revocationNonce));
+    let insertingResult;
+    let triedCount = 0;
+    let seed = BigInt(0);
+    while (true) {
+      try {
+        claim.setClaimSeed(seed);
+        const hi = claim.hiRaw(this._hasher);
+        const hv = claim.hvRaw(this._hasher);
+        insertingResult = await this._claimsTree.insert(hi, hv);
+        break;
+      } catch (err) {
+        if (triedCount >= maxAttempTimes - 1) {
+          throw new Error('Failed inserting caused by collision');
+        }
+        seed += BigInt(1);
+        triedCount++;
+      }
+    }
     this._revocationNonce += 1;
-    const hi = claim.hiRaw(this._hasher);
-    const hv = claim.hvRaw(this._hasher);
-    const result = await this._claimsTree.insert(hi, hv);
-    await this._rootsTree.insert(this._F.e(this._rootsVersion), result.newRoot);
+    await this._rootsTree.insert(this._F.e(this._rootsVersion), insertingResult.newRoot);
     this._rootsVersion++;
+    return claim;
   }
 
   /**
@@ -222,9 +240,9 @@ export class Trees {
     if (!res.found) {
       throw new Error('claim is not inserted to claim tree');
     }
-    let siblings = res.siblings;
-    for (let i = 0; i < siblings.length; i++) siblings[i] = this._F.toObject(siblings[i]);
-    while (siblings.length < this._depth) siblings.push(0);
+    let siblings = [];
+    for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
+    while (siblings.length < this._depth) siblings.push(BigInt(0));
     return {
       enabled: 1,
       fnc: 0,
@@ -234,7 +252,7 @@ export class Trees {
       oldValue: 0,
       isOld0: 0,
       key: this._F.toObject(claimHi),
-      value: this._F.toObject(res.foundValue),
+      value: this._F.toObject(res.foundValue!),
     };
   }
 
@@ -250,18 +268,17 @@ export class Trees {
       throw new Error('claim is revoked');
     }
 
-    let siblings = res.siblings;
-    for (let i = 0; i < siblings.length; i++) siblings[i] = this._F.toObject(siblings[i]);
-
-    while (siblings.length < this._depth) siblings.push(0);
+    let siblings = [];
+    for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
+    while (siblings.length < this._depth) siblings.push(BigInt(0));
 
     return {
       enabled: 1,
       fnc: 1,
       root: this._F.toObject(this._revocationTree.root),
       siblings: siblings,
-      oldKey: res.isOld0 ? 0 : this._F.toObject(res.notFoundKey),
-      oldValue: res.isOld0 ? 0 : this._F.toObject(res.notFoundValue),
+      oldKey: res.isOld0 ? 0 : this._F.toObject(res.notFoundKey!),
+      oldValue: res.isOld0 ? 0 : this._F.toObject(res.notFoundValue!),
       isOld0: res.isOld0 ? 1 : 0,
       key: revocationNonce,
       value: 0,
@@ -278,9 +295,9 @@ export class Trees {
     if (!res.found) {
       throw new Error('claim is not inserted to claim tree');
     }
-    let siblings = res.siblings;
-    for (let i = 0; i < siblings.length; i++) siblings[i] = this._F.toObject(siblings[i]);
-    while (siblings.length < this._depth) siblings.push(0);
+    let siblings = [];
+    for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
+    while (siblings.length < this._depth) siblings.push(BigInt(0));
     return {
       claimMTP: siblings,
       treeRoot: this._F.toObject(this._claimsTree.root),

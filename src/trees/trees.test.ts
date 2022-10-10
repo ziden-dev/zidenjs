@@ -7,6 +7,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
 import { SMTLevelDb } from '../db/level_db.js';
 import { buildHash0Hash1, buildHasher, buildSnarkField, Hash0, Hash1, Hasher, SnarkField } from '../global.js';
+import { expect } from 'chai';
 
 describe('test trees', async () => {
   let F: SnarkField;
@@ -108,5 +109,21 @@ describe('test trees', async () => {
     const circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'checkClaimNotRevoked.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
+  }).timeout(10000);
+
+  it('test inserting a claim multiple times', async () => {
+    const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861772'));
+    const claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 9)));
+    for (let i = 0; i < 100; i++) {
+      await trees.insertClaim(claim);
+    }
+
+    try {
+      await trees.insertClaim(claim);
+    } catch (err) {
+      expect((err as Error).message).to.be.equal('Failed inserting caused by collision');
+    }
+
+    await trees.insertClaim(claim, 101);
   }).timeout(10000);
 });

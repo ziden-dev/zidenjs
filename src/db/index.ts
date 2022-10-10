@@ -1,10 +1,12 @@
+import { Primitive } from 'src/trees/smt.js';
+
 export interface SMTDb{
-    getRoot: () => Promise<any>;
-    get: (key: any) => Promise<any>;
-    multiGet: (keys: Array<any>) => Promise<any>;
-    setRoot: (rt: any) => Promise<void>;
-    multiIns: (inserts: any) => Promise<void>; 
-    multiDel: (dels: any) => Promise<void>;
+    getRoot(): Promise<ArrayLike<number>>;
+    get(key: ArrayLike<number>): Promise<ArrayLike<number>[] | undefined>;
+    multiGet(keys: Array<ArrayLike<number>>): Promise<(ArrayLike<number>[] | undefined)[]>;
+    setRoot: (rt: ArrayLike<number>) => Promise<void>;
+    multiIns: (inserts: ([ArrayLike<number>, Primitive[]])[]) => Promise<void>; 
+    multiDel: (dels: ArrayLike<number>[]) => Promise<void>;
 }
 
 export {SMTLevelDb} from './level_db.js';
