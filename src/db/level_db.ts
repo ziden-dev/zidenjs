@@ -1,5 +1,5 @@
 import { Level } from 'level';
-import { Primitive } from 'src/trees/smt.js';
+import { Primitive } from '../trees/smt.js';
 import { SnarkField } from '../global.js';
 import { SMTDb } from './index.js';
 
@@ -20,14 +20,12 @@ export class SMTLevelDb implements SMTDb {
   }
 
   _key2str(k: ArrayLike<number>) {
-    const F = this._F;
     const keyS = this._F.toString(k);
     return keyS;
   }
 
   _normalize(n: Primitive[]): Array<ArrayLike<number>> {
     const result: Array<ArrayLike<number>> = [];
-    const F = this._F;
     for (let i = 0; i < n.length; i++) {
       result.push(this._F.e(n[i]));
     }

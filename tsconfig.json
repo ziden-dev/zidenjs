@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "rootDir": "src/",
-    "outDir": "build/",
+    "rootDir": "./src",
+    "outDir": "./lib",
     "paths": {
       "src/*": ["./src/*"]
     },
     "typeRoots": ["./node_modules/@types", "src/global.ts"],
     "target": "es5",
-    "lib": ["ES6"],
+    "lib": ["ES2020", "ESNext", "ESNext.AsyncIterable"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -20,8 +20,13 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "declarationDir": "./lib"
   },
   "include": ["src"],
-  "exclude": ["build", "node_modules"]
+  "exclude": [
+    "lib",
+    "node_modules"
+  ]
 }

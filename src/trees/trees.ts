@@ -1,10 +1,9 @@
 import { SMTDb } from '../db/index.js';
 import { Hash0, Hash1, Hasher, SnarkField } from 'src/global.js';
 import { Entry } from '../claim/entry.js';
-import { idenState, IDGenesisFromIdenState, IDType } from '../claim/id.js';
+import { idenState, IDGenesisFromIdenState } from '../claim/id.js';
 import { numToBits, bitsToNum } from '../utils.js';
 import { SMT } from './smt.js';
-import { assert } from 'console';
 
 interface MTP {
   readonly enabled: number;

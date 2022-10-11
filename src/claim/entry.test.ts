@@ -28,18 +28,6 @@ describe('test entries', async () => {
   let claim: Entry;
   let schemaHash: Buffer;
 
-  it('create claim from bigints', () => {
-    const claim = Entry.newEntryFromBigints([
-      BigInt(1),
-      BigInt(10000),
-      BigInt(12347329),
-      BigInt(74983274927),
-      BigInt(7439749),
-      BigInt(194387479),
-      BigInt(44444),
-      BigInt(444444),
-    ]);
-  });
   it('create claim', async () => {
     F = await buildSnarkField();
     poseidon = await buildHasher();
@@ -103,14 +91,14 @@ describe('test entries', async () => {
   it('test getClaimSchema circuit', async () => {
     const claimCircuit = claim.getDataForCircuit();
     const circuit = await wasm_tester(path.join('src', 'claim', 'circom_test', 'getClaimSchema.circom'));
-    // const w = await circuit.calculateWitness(
-    //   {
-    //     claim: claimCircuit,
-    //   },
-    //   true
-    // );
-    // console.log(w);
-    // await circuit.assertOut(w, { schema: bitsToNum(schemaHash) });
+    const w = await circuit.calculateWitness(
+      {
+        claim: claimCircuit,
+      },
+      true
+    );
+    console.log(w);
+    await circuit.assertOut(w, { schema: bitsToNum(schemaHash) });
   });
 
   it('test getClaimHiHv circuit', async () => {

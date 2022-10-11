@@ -1,4 +1,4 @@
-import { Primitive } from 'src/trees/smt.js';
+import { Primitive } from '../trees/smt.js';
 
 export interface SMTDb{
     getRoot(): Promise<ArrayLike<number>>;

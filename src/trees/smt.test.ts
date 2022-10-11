@@ -12,7 +12,7 @@ async function testInclusion(tree: SMT, _key: Primitive, circuit: any) {
 
   expect(res.found).to.be.true;
 
-  let siblings = [];
+  let siblings: (BigInt | number)[] = [];
   for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
   while (siblings.length < 10) siblings.push(0);
 
@@ -40,7 +40,7 @@ async function testExclusion(tree: SMT, _key: Primitive, circuit: any) {
 
   expect(res.found).to.be.false;
 
-  let siblings = [];
+  let siblings: (BigInt | number)[] = [];
   for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
   while (siblings.length < 10) siblings.push(0);
 
@@ -99,7 +99,7 @@ describe('SMT Verifier test', function () {
   });
 
   it('Check not enabled accepts any thing', async () => {
-    let siblings = [];
+    let siblings: (BigInt | number)[] = [];
     for (let i = 0; i < 10; i++) siblings.push(i);
 
     const w = await circuit.calculateWitness({

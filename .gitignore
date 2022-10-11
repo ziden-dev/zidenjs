@@ -106,3 +106,5 @@ dist
 # Level DB files
 **/db_test/*
 .npmignore
+
+lib
