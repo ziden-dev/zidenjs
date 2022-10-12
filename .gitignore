@@ -107,4 +107,4 @@ dist
 **/db_test/*
 .npmignore
 
-lib
+build

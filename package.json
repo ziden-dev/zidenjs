@@ -3,8 +3,8 @@
   "type": "module",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "prepack": "npmignore --auto .npmignore",
     "test-all": "ts-mocha -p tsconfig.json src/**/*.test.ts",
@@ -16,9 +16,14 @@
   "publishConfig": {
     "access": "public",
     "ignore": [
-      "**/*.test.js",
-      "**/circom_test/*",
-      "circuits/*"
+      "src",
+      ".eslintrc.cjs",
+      ".husky",
+      ".mocharc.cjs",
+      ".prettierrc",
+      ".vscode/settings.json",
+      "tsconfig.build.json",
+      "tsconfig.json"
     ]
   },
   "author": "",

@@ -108,10 +108,15 @@ dist
 **/db_test/*
 .npmignore
 
-lib
+build
 
 # npmignore - content above this line is automatically generated and modifications may be omitted
 # see npmjs.com/npmignore for more details.
-**/*.test.js
-**/circom_test/*
-circuits/*
+src
+.eslintrc.cjs
+.husky
+.mocharc.cjs
+.prettierrc
+.vscode/settings.json
+tsconfig.build.json
+tsconfig.json

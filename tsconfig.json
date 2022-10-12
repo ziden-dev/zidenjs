@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./lib",
+    "outDir": "./build",
     "paths": {
       "src/*": ["./src/*"]
     },
@@ -22,11 +22,11 @@
     "isolatedModules": true,
     "noUnusedLocals": true,
     "declaration": true,
-    "declarationDir": "./lib"
+    "declarationDir": "./build"
   },
   "include": ["src"],
   "exclude": [
-    "lib",
+    "build",
     "node_modules"
   ]
 }
