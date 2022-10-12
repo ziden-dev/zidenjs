@@ -63,15 +63,15 @@ interface ProofForClaim {
 }
 
 export class Trees {
-  _userID: Buffer;
-  _claimsTree: SMT;
-  _revocationTree: SMT;
-  _rootsTree: SMT;
-  _rootsVersion: number;
-  _revocationNonce: number;
-  _depth: number;
-  _hasher: Hasher;
-  _F: SnarkField;
+  private _userID: Buffer;
+  private _claimsTree: SMT;
+  private _revocationTree: SMT;
+  private _rootsTree: SMT;
+  private _rootsVersion: number;
+  private _revocationNonce: number;
+  private _depth: number;
+  private _hasher: Hasher;
+  private _F: SnarkField;
 
   constructor(
     claimsTree: SMT,

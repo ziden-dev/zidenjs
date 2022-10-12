@@ -4,11 +4,19 @@ import { SnarkField } from '../global.js';
 import { SMTDb } from './index.js';
 
 export class SMTLevelDb implements SMTDb {
-  _nodes: Level<string, string>;
-  _F: SnarkField;
+  private _nodes: Level<string, string>;
+  private _F: SnarkField;
   constructor(pathDb: string, F: SnarkField) {
     this._nodes = new Level(pathDb);
     this._F = F;
+  }
+
+  get nodes(){
+    return this._nodes;
+  }
+
+  get F(){
+    return this._F;
   }
 
   async getRoot() {

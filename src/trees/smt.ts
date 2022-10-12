@@ -41,12 +41,12 @@ interface UpdatingResult {
 }
 
 export class SMT {
-  _db: SMTDb;
-  _root: ArrayLike<number>;
-  _hash0: Hash0;
-  _hash1: Hash1;
-  _F: SnarkField;
-  _maxLevels: number;
+  private _db: SMTDb;
+  private _root: ArrayLike<number>;
+  private _hash0: Hash0;
+  private _hash1: Hash1;
+  private _F: SnarkField;
+  private _maxLevels: number;
   constructor(db: SMTDb, root: ArrayLike<number>, hash0: Hash0, hash1: Hash1, F: SnarkField, maxLevels: number) {
     this._db = db;
     this._root = root;
@@ -72,7 +72,7 @@ export class SMT {
     return this._F;
   }
 
-  _splitBits(_key: ArrayLike<number>): Array<number> {
+  private _splitBits(_key: ArrayLike<number>): Array<number> {
     const F = this._F;
     const res = Scalar.bits(F.toObject(_key));
 
@@ -338,7 +338,7 @@ export class SMT {
     return await this._find(key, keyBits, this._root, 0);
   }
 
-  async _find(
+  private async _find(
     key: ArrayLike<number>,
     keyBits: Array<number>,
     root: ArrayLike<number>,

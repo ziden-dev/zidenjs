@@ -271,8 +271,7 @@ export function checkElemFitsClaim(elem: Buffer) {
  * Each element contains 253 useful bits enclosed on a 256 bits Buffer
  */
 export class Entry {
-  //elements: Array<Buffer>;
-  _elements;
+  private _elements: Array<Buffer>;
   /**
    * construct new entry from elements
    * @param {Array<Buffer>} elements
