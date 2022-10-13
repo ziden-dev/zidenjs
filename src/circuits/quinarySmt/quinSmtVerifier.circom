@@ -17,7 +17,7 @@ include "quinSmtVerifierLevel.circom";
 include "quinSmtVerifierSm.circom";
 include "quinHashers.circom";
 
-template SMTVerifier(nLevels) {
+template QuinSMTVerifier(nLevels) {
     signal input root;
     signal input siblings[4 * nLevels];
     signal input oldKey;

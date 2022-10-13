@@ -108,7 +108,8 @@ describe('test authentication', async () => {
     );
   });
   it('1st state transition', async () => {
-    await stateTransitionWitness(eddsa, privateKey, authClaim, trees, [claim1, claim2, claim3], [], hasher);
+    const w1 = await stateTransitionWitness(eddsa, privateKey, authClaim, trees, [claim1, claim2, claim3], [], hasher);
+    console.log(w1.isOldStateGenesis)
   });
 
   it('2nd state transition', async () => {
@@ -133,6 +134,7 @@ describe('test authentication', async () => {
       [claim3.getRevocationNonce()],
       hasher
     );
+    console.log(witness.isOldStateGenesis)
   });
 
   it('test circuit constraint', async () => {

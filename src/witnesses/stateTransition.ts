@@ -47,7 +47,7 @@ export async function stateTransitionWitness(
 ): Promise<StateTransitionWitness> {
   const userID = trees.userID;
   const oldUserState = trees.getIdenState();
-  const isOldStateGenesis = userID.subarray(2, 29).equals(numToBits(oldUserState, 32).subarray(-27)) ? 1 : 0;
+  const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
   const authClaimProof = await trees.generateProofForClaim(
     authClaim.hiRaw(trees.hasher),
     authClaim.getRevocationNonce()
