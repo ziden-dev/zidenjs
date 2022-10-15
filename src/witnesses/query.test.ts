@@ -1,16 +1,14 @@
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { bitsToNum, numToBits, createMask, shiftValue, setBits } from '../utils.js';
+import { createMask, shiftValue, setBits } from '../utils.js';
 import { buildFMTHashFunction, buildHash0Hash1, buildHasher, buildSnarkField, SnarkField } from '../global.js';
-import MerkleTree, { HashFunction } from './fixed-merkle-tree/index.js';
+import { HashFunction } from './fixed-merkle-tree/index.js';
 import { createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
 import { expect } from 'chai';
 
 describe('Test and benchmark query circuit', () => {
-  let fmt: MerkleTree;
   let hashFunction: HashFunction;
-  let elements: BigInt[];
   let F: SnarkField;
   it('setup params', async () => {
     F = await buildSnarkField();

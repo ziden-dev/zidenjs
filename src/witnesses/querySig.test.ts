@@ -92,8 +92,7 @@ describe('test query sig', async () => {
       new SMTMemDb(F),
       new SMTMemDb(F),
       new SMTMemDb(F),
-      IDType.Default,
-      8
+      IDType.Default
     );
   }).timeout(10000);
 

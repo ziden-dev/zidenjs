@@ -10,4 +10,4 @@ component main{public [challenge,
                         issuerClaimNonRevState,
                         determinisiticValue,
                         compactInput,
-                        mask]} = CredentialAtomicQueryMTP(8, 32, 10);
+                        mask]} = CredentialAtomicQueryMTP(32, 32, 10);

@@ -9,4 +9,4 @@ component main{public [challenge,
                         issuerClaimNonRevState,
                         determinisiticValue,
                         compactInput,
-                        mask]} = CredentialAtomicQuerySig(8, 32, 10);
+                        mask]} = CredentialAtomicQuerySig(32, 32, 10);
