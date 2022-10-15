@@ -16,6 +16,7 @@ include "quinSmtLevins.circom";
 include "quinSmtVerifierLevel.circom";
 include "quinSmtVerifierSm.circom";
 include "quinHashers.circom";
+include "quinify.circom";
 
 template QuinSMTVerifier(nLevels) {
     signal input root;
@@ -36,12 +37,6 @@ template QuinSMTVerifier(nLevels) {
     component hash1New = QuinSMTHash1();
     hash1New.key <== key;
     hash1New.value <== value;
-
-    component n2bOld = Num2Bits_strict();
-    component n2bNew = Num2Bits_strict();
-
-    n2bOld.in <== oldKey;
-    n2bNew.in <== key;
 
     component smtLevIns = QuinSMTLevIns(nLevels);
     for (i=0; i < 4 * nLevels; i++) smtLevIns.siblings[i] <== siblings[i];
@@ -68,8 +63,8 @@ template QuinSMTVerifier(nLevels) {
     }
     sm[nLevels-1].st_na + sm[nLevels-1].st_iold + sm[nLevels-1].st_inew + sm[nLevels-1].st_i0 === 1;
 
-    component keyBits = Num2Bits(256);
-    keyBits.in <== key;
+    component keyQuins = Dec2Quin(111);
+    keyQuins.in <== key;
     component levels[nLevels];
     for (i=nLevels-1; i != -1; i--) {
         levels[i] = QuinSMTVerifierLevel();
@@ -80,19 +75,10 @@ template QuinSMTVerifier(nLevels) {
         levels[i].st_iold <== sm[i].st_iold;
         levels[i].st_na <== sm[i].st_na;
 
-        /*
-            signal input siblings[4];
-            signal input indexBits[3];
-            signal input old1leaf;
-            signal input new1leaf;
-            signal input child;
-        */
         for(var j = 0; j < 4; j++){
-            levels[i].siblings[j] <== siblings[j];
+            levels[i].siblings[j] <== siblings[4 * i + j];
         }
-        for(var j = 0; j < 3; j++){
-            levels[i].indexBits[j] <== keyBits.out[4 * i + j];
-        }
+        levels[i].index <== keyQuins.out[i];
 
         levels[i].old1leaf <== hash1Old.out;
         levels[i].new1leaf <== hash1New.out;

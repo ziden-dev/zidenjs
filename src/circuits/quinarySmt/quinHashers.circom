@@ -4,6 +4,7 @@ include "../../../node_modules/circomlib/circuits/mux3.circom";
 include "../../../node_modules/circomlib/circuits/mux1.circom";
 include "../../../node_modules/circomlib/circuits/bitify.circom";
 include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "calculateTotal.circom";
 
 /*
     Hash1 = H(1 | key | value)
@@ -31,16 +32,14 @@ template QuinSMTHash1() {
 template QuinSMTHash5() {
     signal input siblings[4];
     signal input child;
-    signal input indexBits[3];
+    signal input index;
     signal output out;
 
-    component splicer = Splicer();
+    component splicer = Splicer(4);
     for(var i = 0; i< 4; i++){
         splicer.in[i] <== siblings[i];
     }
-    for(var i = 0; i< 3; i++){
-        splicer.indexBits[i] <== indexBits[i];
-    }
+    splicer.index <== index;
     splicer.leaf <== child;
     
     component hasher = Poseidon(5);   // Constant
@@ -50,38 +49,40 @@ template QuinSMTHash5() {
 
     out <== hasher.out;
 }
+
+
 /*
- * Given a list of 5 items and an index, output the item at the position denoted
- * by the index. 
- * Assert that index < 5
+ * Given a list of items and an index, output the item at the position denoted
+ * by the index. The number of items must be less than 8, and the index must
+ * be less than the number of items.
  */
-template QuinSelector() {
-    signal input in[5];
+template QuinSelector(choices) {
+    signal input in[choices];
     signal input index;
     signal output out;
-
-    component mux = Mux3();
-    for(var i = 0; i< 5; i++){
-        mux.c[i] <== in[i];
-    }
-    mux.c[5] <== 0;
-    mux.c[6] <== 0;
-    mux.c[7] <== 0;
-
-    // assert index < 5
-    component lt = LessThan(3);
-    lt.in[0] <== index;
-    lt.in[1] <== 5;
-    lt.out === 1;
     
-    component indexBits = Num2Bits(3);
-    indexBits.in <== index;
+    // Ensure that index < choices
+    component lessThan = LessThan(3);
+    lessThan.in[0] <== index;
+    lessThan.in[1] <== choices;
+    lessThan.out === 1;
 
-    for(var i = 0; i< 3; i++){
-        mux.s[i] <== indexBits.out[i];
+    component calcTotal = CalculateTotal(choices);
+    component eqs[choices];
+
+    // For each item, check whether its index equals the input index.
+    for (var i = 0; i < choices; i ++) {
+        eqs[i] = IsEqual();
+        eqs[i].in[0] <== i;
+        eqs[i].in[1] <== index;
+
+        // eqs[i].out is 1 if the index matches. As such, at most one input to
+        // calcTotal is not 0.
+        calcTotal.nums[i] <== eqs[i].out * in[i];
     }
 
-    out <== mux.out;
+    // Returns 0 + 0 + 0 + item
+    out <== calcTotal.sum;
 }
 
 /*
@@ -89,15 +90,14 @@ template QuinSelector() {
  * specified index. For example, if input = [0, 20, 30, 40], index = 3, and
  * leaf = 10, the output will be [0, 20, 30, 10, 40].
  */
-template Splicer(){
-    var numItems = 4;
-        // Since we only insert one item, the number of output items is 1 +
+template Splicer(numItems) {
+    // Since we only insert one item, the number of output items is 1 +
     // numItems
     var NUM_OUTPUT_ITEMS = numItems + 1;
 
     signal input in[numItems];
     signal input leaf;
-    signal input indexBits[3];
+    signal input index;
     signal output out[NUM_OUTPUT_ITEMS];
 
     component greaterThan[NUM_OUTPUT_ITEMS];
@@ -107,15 +107,6 @@ template Splicer(){
 
     var i;
     var j;
-
-
-    component bits2Num = Bits2Num(3);
-    for(var i = 0; i < 3; i++){
-        bits2Num.in[i] <== indexBits[i];
-    }
-
-    signal index <== bits2Num.out;
-
     /*
         There is a loop where the goal is to assign values to the output
         signal.
@@ -153,7 +144,7 @@ template Splicer(){
         greaterThan[i].in[0] <== i;
         greaterThan[i].in[1] <== index;
 
-        quinSelectors[i] = QuinSelector();
+        quinSelectors[i] = QuinSelector(numItems + 1);
 
         // Select the value from `in` at index i - greaterThan[i].out.
         // e.g. if index = 2 and i = 1, greaterThan[i].out = 0, so 1 - 0 = 0

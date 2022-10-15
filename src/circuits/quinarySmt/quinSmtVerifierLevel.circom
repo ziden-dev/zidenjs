@@ -29,7 +29,7 @@ template QuinSMTVerifierLevel() {
 
     signal output root;
     signal input siblings[4];
-    signal input indexBits[3];
+    signal input index;
     signal input old1leaf;
     signal input new1leaf;
     signal input child;
@@ -40,9 +40,7 @@ template QuinSMTVerifierLevel() {
     for(var i = 0; i< 4; i++){
         proofHash.siblings[i] <== siblings[i];
     }
-    for(var i = 0; i< 3; i++){
-        proofHash.indexBits[i] <== indexBits[i];
-    }
+    proofHash.index <== index;
     proofHash.child <== child;
 
 

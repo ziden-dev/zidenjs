@@ -1,10 +1,11 @@
 import path from 'path';
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
-import { Primitive, QuinSMT } from './quin-smt.js';
+import { QuinSMT } from './quin-smt.js';
 import { expect } from 'chai';
-import { buildHash0Hash1, buildHasher, buildSnarkField, Hash1, Hasher, SnarkField } from '../global.js';
-import { SMTLevelDb } from '../db/index.js';
+import { buildHash0Hash1, buildHasher, buildSnarkField, Hash1, Hasher, SnarkField } from '../../global.js';
+import { SMTLevelDb } from '../../db/index.js';
+import { Primitive } from './index.js';
 
 async function testInclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
   const key = tree.F.e(_key);
@@ -14,11 +15,10 @@ async function testInclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
 
   let siblings: (BigInt | number)[] = [];
   for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
-  while (siblings.length < 14) siblings.push(0);
+  while (siblings.length < 14 * 4) siblings.push(0);
 
   const w = await circuit.calculateWitness(
     {
-      enabled: 1,
       fnc: 0,
       root: tree.F.toObject(tree.root),
       siblings: siblings,
@@ -42,7 +42,7 @@ async function testExclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
 
   let siblings: (BigInt | number)[] = [];
   for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
-  while (siblings.length < 14) siblings.push(0);
+  while (siblings.length < 14 * 4) siblings.push(0);
 
   const w = await circuit.calculateWitness({
     fnc: 1,
@@ -65,7 +65,7 @@ describe('SMT Verifier test', function () {
   let hasher: Hasher;
   let hash1: Hash1;
 
-  it("setup params", async () => {
+  it('setup params', async () => {
     circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'quin_smt.circom'));
 
     F = await buildSnarkField();
@@ -74,20 +74,64 @@ describe('SMT Verifier test', function () {
     hash1 = hs.hash1;
     const db = new SMTLevelDb('src/trees/db_test/quin_smt_test', F);
     tree = new QuinSMT(db, F.zero, hasher, hash1, F, 14);
-    
   }).timeout(10000);
 
   it('Benchmark insert into quin merkle tree', async () => {
     await tree.insert(7, 77);
-    //await tree.insert(8, 88);
-  })
-  it.skip('Check inclussion in a tree of 3', async () => {
+    await tree.insert(8, 88);
+    await tree.insert(32, 111);
+  });
+
+  it('Test find an existing leaf', async () => {
+    const f1 = await tree.find(F.e(7));
+    expect(f1.found).to.be.true;
+
+    const f2 = await tree.find(F.e(8));
+    expect(f2.found).to.be.true;
+    expect(F.toObject(f2.foundValue!) === BigInt(88)).to.be.true;
+
+    const f3 = await tree.find(F.e(32));
+    expect(f3.found).to.be.true;
+
+    await tree.update(8, 99);
+    const f4 = await tree.find(F.e(8));
+    expect(f4.found).to.be.true;
+    expect(F.toObject(f4.foundValue!) === BigInt(99)).to.be.true;
+  });
+
+  it('Test find a leaf which does not exist', async () => {
+    const f1 = await tree.find(F.e(9));
+    expect(f1.found).to.be.false;
+
+    const f2 = await tree.find(F.e(10));
+    expect(f2.found).to.be.false;
+
+    const f3 = await tree.find(F.e(11));
+    expect(f3.found).to.be.false;
+
+    await tree.delete(7);
+    const f4 = await tree.find(F.e(7));
+    expect(f4.found).to.be.false;
+  });
+  it('Check inclussions in a tree', async () => {
+    await tree.insert(7, 100);
+    await tree.insert(100, 191);
+    await tree.insert(1000, 101);
+
     await testInclusion(tree, 7, circuit);
     await testInclusion(tree, 8, circuit);
     await testInclusion(tree, 32, circuit);
+    await testInclusion(tree, 100, circuit);
+    await testInclusion(tree, 1000, circuit);
   });
 
-  it.skip('Check exclussion in a tree of 3', async () => {
+  it('Check inclussions of a oversize leaf', async () => {
+    const leaf = (BigInt(1) << BigInt(252)) + BigInt(139);
+    await tree.insert(leaf, 1010);
+    await testInclusion(tree, leaf, circuit);
+  });
+
+  it('Check exclussions in a tree', async () => {
     await testExclusion(tree, 0, circuit);
     await testExclusion(tree, 6, circuit);
     await testExclusion(tree, 9, circuit);

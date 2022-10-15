@@ -5,11 +5,11 @@ include "idOwnershipBySignatureWithRelay.circom";
 template VerifyAuthenticationWithRelay(IdOwnershipLevels, RelayLevels) {
 
 	signal input userClaimsTreeRoot;
-	signal input userAuthClaimMtp[IdOwnershipLevels];
+	signal input userAuthClaimMtp[IdOwnershipLevels * 4];
 	signal input userAuthClaim[8];
 
 	signal input userRevTreeRoot;
-    signal input userAuthClaimNonRevMtp[IdOwnershipLevels];
+    signal input userAuthClaimNonRevMtp[IdOwnershipLevels * 4];
     signal input userAuthClaimNonRevMtpNoAux;
     signal input userAuthClaimNonRevMtpAuxHv;
     signal input userAuthClaimNonRevMtpAuxHi;
@@ -28,7 +28,7 @@ template VerifyAuthenticationWithRelay(IdOwnershipLevels, RelayLevels) {
     signal input userID;
 
     signal input relayState;
-    signal input userStateInRelayClaimMtp[RelayLevels];
+    signal input userStateInRelayClaimMtp[RelayLevels * 4];
     signal input userStateInRelayClaim[8];
     signal input relayProofValidClaimsTreeRoot;
     signal input relayProofValidRevTreeRoot;
@@ -37,11 +37,11 @@ template VerifyAuthenticationWithRelay(IdOwnershipLevels, RelayLevels) {
     component checkIdOwnership = IdOwnershipBySignatureWithRelay(IdOwnershipLevels, RelayLevels);
 
 	checkIdOwnership.userClaimsTreeRoot <== userClaimsTreeRoot;
-	for (var i=0; i<IdOwnershipLevels; i++) { checkIdOwnership.userAuthClaimMtp[i] <== userAuthClaimMtp[i]; }
+	for (var i=0; i<IdOwnershipLevels * 4; i++) { checkIdOwnership.userAuthClaimMtp[i] <== userAuthClaimMtp[i]; }
     for (var i=0; i<8; i++) { checkIdOwnership.userAuthClaim[i] <== userAuthClaim[i]; }
 
 	checkIdOwnership.userRevTreeRoot <== userRevTreeRoot;
-	for (var i=0; i<IdOwnershipLevels; i++) { checkIdOwnership.userAuthClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
+	for (var i=0; i<IdOwnershipLevels * 4; i++) { checkIdOwnership.userAuthClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
 	checkIdOwnership.userAuthClaimNonRevMtpNoAux <== userAuthClaimNonRevMtpNoAux;
 	checkIdOwnership.userAuthClaimNonRevMtpAuxHv <== userAuthClaimNonRevMtpAuxHv;
 	checkIdOwnership.userAuthClaimNonRevMtpAuxHi <== userAuthClaimNonRevMtpAuxHi;
@@ -56,7 +56,7 @@ template VerifyAuthenticationWithRelay(IdOwnershipLevels, RelayLevels) {
     checkIdOwnership.userID <== userID;
 
     checkIdOwnership.relayState <== relayState;
-    for (var i=0; i<RelayLevels; i++) { checkIdOwnership.userStateInRelayClaimMtp[i] <== userStateInRelayClaimMtp[i]; }
+    for (var i=0; i<RelayLevels * 4; i++) { checkIdOwnership.userStateInRelayClaimMtp[i] <== userStateInRelayClaimMtp[i]; }
     for (var i=0; i<8; i++) { checkIdOwnership.userStateInRelayClaim[i] <== userStateInRelayClaim[i]; }
     checkIdOwnership.relayProofValidClaimsTreeRoot <== relayProofValidClaimsTreeRoot;
     checkIdOwnership.relayProofValidRevTreeRoot <== relayProofValidRevTreeRoot;

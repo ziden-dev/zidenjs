@@ -1,4 +1,4 @@
-import { Primitive } from '../trees/smt.js';
+import { Primitive } from '../trees/sparse-merkle-tree/index.js';
 
 export interface SMTDb{
     getRoot(): Promise<ArrayLike<number>>;

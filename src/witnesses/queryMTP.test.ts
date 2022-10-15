@@ -2,6 +2,10 @@
 import { wasm as wasm_tester } from 'circom_tester';
 // @ts-ignore
 import { SMTMemDb } from 'circomlibjs';
+
+// @ts-ignore
+import { groth16 } from 'snarkjs';
+
 import path from 'path';
 import {
   buildFMTHashFunction,
@@ -100,8 +104,7 @@ describe('test query atomic MTP', async () => {
       claimsDb,
       revocationDb,
       rootsDb,
-      IDType.Default,
-      8
+      IDType.Default
     );
   }).timeout(10000);
 
@@ -170,4 +173,37 @@ describe('test query atomic MTP', async () => {
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
+
+  it('holder query slot value B with OPERATOR EQUAL', async () => {
+    values = [BigInt(300)];
+    witness = await holderGenerateQueryMTPWitness(
+      issuerClaim,
+      eddsa,
+      holderPrivateKey,
+      holderAuthClaim,
+      challenge,
+      holderTrees,
+      kycQueryMTPInput,
+      kycQueryNonRevMTPInput,
+      7,
+      OPERATOR.EQUAL,
+      values,
+      10,
+      0,
+      100,
+      hashFunction,
+      F
+    );
+    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'credentialAtomicQueryMTP.circom'));
+    const w = await circuit.calculateWitness(witness, true);
+    await circuit.checkConstraints(w);
+  }).timeout(100000);
+
+  it('benchmark proving time', async () => {
+    await groth16.fullProve(
+      witness,
+      'src/witnesses/circom_test/credentialAtomicQueryMTP.wasm',
+      'src/witnesses/circom_test/credentialAtomicQueryMTP.zkey'
+    );
+  }).timeout(100000);
 });

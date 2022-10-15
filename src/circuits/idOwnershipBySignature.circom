@@ -15,11 +15,11 @@ template IdOwnershipBySignature(nLevels) {
     signal input userState;
 
 	signal input userClaimsTreeRoot;
-	signal input userAuthClaimMtp[nLevels];
+	signal input userAuthClaimMtp[nLevels * 4];
 	signal input userAuthClaim[8];
 
 	signal input userRevTreeRoot;
-    signal input userAuthClaimNonRevMtp[nLevels];
+    signal input userAuthClaimNonRevMtp[nLevels * 4];
     signal input userAuthClaimNonRevMtpNoAux;
     signal input userAuthClaimNonRevMtpAuxHi;
     signal input userAuthClaimNonRevMtpAuxHv;
@@ -34,10 +34,10 @@ template IdOwnershipBySignature(nLevels) {
 
     component verifyAuthClaim = VerifyAuthClaimAndSignature(nLevels);
     for (var i=0; i<8; i++) { verifyAuthClaim.authClaim[i] <== userAuthClaim[i]; }
-	for (var i=0; i<nLevels; i++) { verifyAuthClaim.authClaimMtp[i] <== userAuthClaimMtp[i]; }
+	for (var i=0; i<nLevels * 4; i++) { verifyAuthClaim.authClaimMtp[i] <== userAuthClaimMtp[i]; }
 	verifyAuthClaim.claimsTreeRoot <== userClaimsTreeRoot;
 	verifyAuthClaim.revTreeRoot <== userRevTreeRoot;
-	for (var i=0; i<nLevels; i++) { verifyAuthClaim.authClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
+	for (var i=0; i<nLevels * 4; i++) { verifyAuthClaim.authClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
 	verifyAuthClaim.authClaimNonRevMtpNoAux <== userAuthClaimNonRevMtpNoAux;
 	verifyAuthClaim.authClaimNonRevMtpAuxHv <== userAuthClaimNonRevMtpAuxHv;
 	verifyAuthClaim.authClaimNonRevMtpAuxHi <== userAuthClaimNonRevMtpAuxHi;

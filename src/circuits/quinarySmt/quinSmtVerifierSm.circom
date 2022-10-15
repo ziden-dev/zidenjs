@@ -5,6 +5,7 @@ This is the state machine.
 
 The signals are
 
+top: is node internal ?
 levIns: 1 if we are in the level where the insertion should happen
 xor: 1 if the bitKey of the old and new keys are different in this level
 is0: Input that indicates that the oldKey is 0

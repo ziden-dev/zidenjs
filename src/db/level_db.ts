@@ -1,5 +1,5 @@
 import { Level } from 'level';
-import { Primitive } from '../trees/smt.js';
+import { Primitive } from '../trees/sparse-merkle-tree/index.js';
 import { SnarkField } from '../global.js';
 import { SMTDb } from './index.js';
 

@@ -3,10 +3,13 @@ import { Hash0, Hash1, Hasher, SnarkField } from 'src/global.js';
 import { Entry } from '../claim/entry.js';
 import { idenState, IDGenesisFromIdenState } from '../claim/id.js';
 import { numToBits, bitsToNum } from '../utils.js';
-import { SMT } from './smt.js';
+import SMT, { BinSMT, QuinSMT } from './sparse-merkle-tree/index.js';
 
+export enum SMTType {
+  BinSMT = 0,
+  QuinSMT = 1,
+}
 interface MTP {
-  readonly enabled: number;
   readonly fnc: number;
   readonly root: BigInt;
   readonly siblings: Array<BigInt>;
@@ -63,15 +66,15 @@ interface ProofForClaim {
 }
 
 export class Trees {
-  _userID: Buffer;
-  _claimsTree: SMT;
-  _revocationTree: SMT;
-  _rootsTree: SMT;
-  _rootsVersion: number;
-  _revocationNonce: number;
-  _depth: number;
-  _hasher: Hasher;
-  _F: SnarkField;
+  private _userID: Buffer;
+  private _claimsTree: SMT;
+  private _revocationTree: SMT;
+  private _rootsTree: SMT;
+  private _rootsVersion: number;
+  private _revocationNonce: number;
+  private _depth: number;
+  private _hasher: Hasher;
+  private _F: SnarkField;
 
   constructor(
     claimsTree: SMT,
@@ -127,6 +130,9 @@ export class Trees {
     return this._F;
   }
 
+  get depth() {
+    return this._depth;
+  }
   /**
    * Generate iden state from auth claims
    * @param {Array<Entry>} authClaims list of auth claims to add to claim tree
@@ -138,6 +144,8 @@ export class Trees {
    * @param {SMTDb} revocationDb database for revocation tree
    * @param {SMTDb} rootsDb database for roots tree
    * @param {Buffer} type 2 bytes of ID type
+   * @param {number} depth the depth of 3 sparse merkle trees
+   * @param {SMTType} smtType type of sparse merkle trees (currently supports binSMT and quinSMT)
    * @returns {Promise<Trees>}
    */
   static async generateID(
@@ -150,12 +158,21 @@ export class Trees {
     revocationDb: SMTDb,
     rootsDb: SMTDb,
     type: Buffer,
-    depth = 32
+    depth: number = 14,
+    smtType: SMTType = SMTType.QuinSMT
   ): Promise<Trees> {
-    const claimsTree = new SMT(claimsDb, F.zero, hash0, hash1, F, depth);
-    const revocationTree = new SMT(revocationDb, F.zero, hash0, hash1, F, depth);
-    const rootsTree = new SMT(rootsDb, F.zero, hash0, hash1, F, depth);
-
+    let claimsTree: SMT, revocationTree: SMT, rootsTree: SMT;
+    if (smtType === SMTType.QuinSMT) {
+      claimsTree = new QuinSMT(claimsDb, F.zero, hasher, hash1, F, depth);
+      revocationTree = new QuinSMT(revocationDb, F.zero, hasher, hash1, F, depth);
+      rootsTree = new QuinSMT(rootsDb, F.zero, hasher, hash1, F, depth);
+    } else if (smtType === SMTType.BinSMT) {
+      claimsTree = new BinSMT(claimsDb, F.zero, hash0, hash1, F, depth);
+      revocationTree = new BinSMT(revocationDb, F.zero, hash0, hash1, F, depth);
+      rootsTree = new BinSMT(rootsDb, F.zero, hash0, hash1, F, depth);
+    } else {
+      throw new Error('Not supported SMT type');
+    }
     for (let i = 0; i < authClaims.length; i++) {
       const claim = authClaims[i];
       claim.setRevocationNonce(BigInt(i));
@@ -241,9 +258,9 @@ export class Trees {
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
-    while (siblings.length < this._depth) siblings.push(BigInt(0));
+    if (this._claimsTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
+    else if (this._claimsTree instanceof QuinSMT) while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
     return {
-      enabled: 1,
       fnc: 0,
       root: this._F.toObject(this._claimsTree.root),
       siblings: siblings,
@@ -269,10 +286,11 @@ export class Trees {
 
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
-    while (siblings.length < this._depth) siblings.push(BigInt(0));
+    if (this._revocationTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
+    else if (this._revocationTree instanceof QuinSMT)
+      while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
 
     return {
-      enabled: 1,
       fnc: 1,
       root: this._F.toObject(this._revocationTree.root),
       siblings: siblings,
@@ -292,11 +310,12 @@ export class Trees {
   async generateClaimExistsProof(claimHi: ArrayLike<number>): Promise<ClaimExistsProof> {
     const res = await this._claimsTree.find(claimHi);
     if (!res.found) {
-      throw new Error('claim is not inserted to claim tree');
+      throw new Error('claim is not inserted to the claim tree');
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
-    while (siblings.length < this._depth) siblings.push(BigInt(0));
+    if (this._claimsTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
+    else if (this._claimsTree instanceof QuinSMT) while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
     return {
       claimMTP: siblings,
       treeRoot: this._F.toObject(this._claimsTree.root),

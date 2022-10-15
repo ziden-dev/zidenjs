@@ -1,12 +1,13 @@
 import path from 'path';
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
-import { Primitive, SMT } from './smt.js';
+import { BinSMT } from './bin-smt.js';
 import { expect } from 'chai';
-import { buildHash0Hash1, buildHasher, buildSnarkField, Hash0, Hash1, SnarkField } from '../global.js';
-import { SMTLevelDb } from '../db/index.js';
+import { buildHash0Hash1, buildHasher, buildSnarkField, Hash0, Hash1, SnarkField } from '../../global.js';
+import { SMTLevelDb } from '../../db/index.js';
+import { Primitive } from './index.js';
 
-async function testInclusion(tree: SMT, _key: Primitive, circuit: any) {
+async function testInclusion(tree: BinSMT, _key: Primitive, circuit: any) {
   const key = tree.F.e(_key);
   const res = await tree.find(key);
 
@@ -34,7 +35,7 @@ async function testInclusion(tree: SMT, _key: Primitive, circuit: any) {
   await circuit.checkConstraints(w);
 }
 
-async function testExclusion(tree: SMT, _key: Primitive, circuit: any) {
+async function testExclusion(tree: BinSMT, _key: Primitive, circuit: any) {
   const key = tree.F.e(_key);
   const res = await tree.find(key);
 
@@ -62,7 +63,7 @@ async function testExclusion(tree: SMT, _key: Primitive, circuit: any) {
 describe('SMT Verifier test', function () {
   let F: SnarkField;
   let circuit: any;
-  let tree: SMT;
+  let tree: BinSMT;
   let hash0: Hash0;
   let hash1: Hash1;
   this.timeout(100000);
@@ -76,11 +77,11 @@ describe('SMT Verifier test', function () {
     hash0 = hs.hash0;
     hash1 = hs.hash1;
     const db = new SMTLevelDb('src/trees/db_test/smt_test', F);
-    tree = new SMT(db, F.zero, hash0, hash1, F, 10);
-    await tree.insert(8, 88);
-    await tree.insert(32, 3232);
+    tree = new BinSMT(db, F.zero, hash0, hash1, F, 10);
   });
   it('Benchmark insert into smt', async () => {
+    await tree.insert(8, 88);
+    await tree.insert(32, 3232);
     await tree.insert(7, 77);
   });
   it('Check inclussion in a tree of 3', async () => {
@@ -97,6 +98,18 @@ describe('SMT Verifier test', function () {
     await testExclusion(tree, 31, circuit);
     await testExclusion(tree, 16, circuit);
     await testExclusion(tree, 64, circuit);
+  });
+
+  it('Test delete a leaf', async () => {
+    await tree.delete(7);
+    await testExclusion(tree, 7, circuit);
+  });
+
+  it('Test update a leaf', async () => {
+    await tree.update(8, 11);
+    const f = await tree.find(F.e(8));
+    expect(F.toObject(f.foundValue!)).to.be.equal(BigInt(11));
+    await testInclusion(tree, 8, circuit);
   });
 
   it('Check not enabled accepts any thing', async () => {
@@ -120,7 +133,7 @@ describe('SMT Verifier test', function () {
 
   it('check collision resistant', async () => {
     const db = new SMTLevelDb('src/trees/db_test/smt_test_1', F);
-    const tree = new SMT(db, F.zero, hash0, hash1, F, 10);
+    const tree = new BinSMT(db, F.zero, hash0, hash1, F, 10);
     await tree.insert(1, 1);
     await tree.insert(2, 1);
     try {

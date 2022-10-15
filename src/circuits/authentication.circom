@@ -5,11 +5,11 @@ include "idOwnershipBySignature.circom";
 template VerifyAuthentication(IdOwnershipLevels) {
 
 	signal input userClaimsTreeRoot;
-	signal input userAuthClaimMtp[IdOwnershipLevels];
+	signal input userAuthClaimMtp[IdOwnershipLevels *4];
 	signal input userAuthClaim[8];
 
 	signal input userRevTreeRoot;
-    signal input userAuthClaimNonRevMtp[IdOwnershipLevels];
+    signal input userAuthClaimNonRevMtp[IdOwnershipLevels * 4];
     signal input userAuthClaimNonRevMtpNoAux;
     signal input userAuthClaimNonRevMtpAuxHv;
     signal input userAuthClaimNonRevMtpAuxHi;
@@ -29,11 +29,11 @@ template VerifyAuthentication(IdOwnershipLevels) {
     component checkIdOwnership = IdOwnershipBySignature(IdOwnershipLevels);
 
 	checkIdOwnership.userClaimsTreeRoot <== userClaimsTreeRoot;
-	for (var i=0; i<IdOwnershipLevels; i++) { checkIdOwnership.userAuthClaimMtp[i] <== userAuthClaimMtp[i]; }
+	for (var i=0; i<IdOwnershipLevels * 4; i++) { checkIdOwnership.userAuthClaimMtp[i] <== userAuthClaimMtp[i]; }
     for (var i=0; i<8; i++) { checkIdOwnership.userAuthClaim[i] <== userAuthClaim[i]; }
 
 	checkIdOwnership.userRevTreeRoot <== userRevTreeRoot;
-	for (var i=0; i<IdOwnershipLevels; i++) { checkIdOwnership.userAuthClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
+	for (var i=0; i<IdOwnershipLevels * 4; i++) { checkIdOwnership.userAuthClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
 	checkIdOwnership.userAuthClaimNonRevMtpNoAux <== userAuthClaimNonRevMtpNoAux;
 	checkIdOwnership.userAuthClaimNonRevMtpAuxHv <== userAuthClaimNonRevMtpAuxHv;
 	checkIdOwnership.userAuthClaimNonRevMtpAuxHi <== userAuthClaimNonRevMtpAuxHi;
@@ -47,3 +47,5 @@ template VerifyAuthentication(IdOwnershipLevels) {
     
     checkIdOwnership.userState <== userState;
 }
+
+component main {public [userID,challenge,userState]} = VerifyAuthentication(14);
