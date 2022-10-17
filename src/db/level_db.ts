@@ -1,5 +1,5 @@
 import { Level } from 'level';
-import { Primitive } from '../trees/smt.js';
+import { Primitive } from '../trees/sparse-merkle-tree/index.js';
 import { SnarkField } from '../global.js';
 import { SMTDb } from './index.js';
 
@@ -12,13 +12,12 @@ export class SMTLevelDb implements SMTDb {
   }
 
   get nodes(){
-    return this._nodes;
+    return this._nodes
   }
-
-  get F(){
+  get F() {
     return this._F;
   }
-
+  
   async getRoot() {
     try {
       const rootS = await this._nodes.get('root');

@@ -1,5 +1,5 @@
 pragma circom 2.0.0;
 
-include "../../circuits/idOwnershipBySignature.circom";
+include "../../circuits/quin/idOwnershipBySignature.circom";
 
-component main = IdOwnershipBySignature(32);
+component main = IdOwnershipBySignature(14);

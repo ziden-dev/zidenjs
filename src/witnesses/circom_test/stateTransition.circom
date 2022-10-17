@@ -1,5 +1,5 @@
 pragma circom 2.0.0;
 
-include "../../circuits/stateTransition.circom";
+include "../../circuits/quin/stateTransition.circom";
 
-component main {public [userID,oldUserState,newUserState,isOldStateGenesis]} = StateTransition(32);
+component main {public [userID,oldUserState,newUserState,isOldStateGenesis]} = StateTransition(14);

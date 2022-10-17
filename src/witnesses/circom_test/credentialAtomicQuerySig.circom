@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "../../circuits/query/credentialAtomicQuerySig.circom";
+include "../../circuits/quin/query/credentialAtomicQuerySig.circom";
 
 component main{public [challenge,
                         userID,
@@ -9,4 +9,4 @@ component main{public [challenge,
                         issuerClaimNonRevState,
                         determinisiticValue,
                         compactInput,
-                        mask]} = CredentialAtomicQuerySig(32, 32, 10);
+                        mask]} = CredentialAtomicQuerySig(14, 14, 10);

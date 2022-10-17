@@ -1,52 +1,16 @@
 // @ts-ignore
 import { Scalar } from 'ffjavascript';
-import { Hash0, Hash1, SnarkField } from '../global.js';
-import { SMTDb } from '../db/index.js';
+import { Hash0, Hash1, SnarkField } from '../../global.js';
+import { SMTDb } from '../../db/index.js';
+import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
 
-export type Primitive = string | number | ArrayLike<number> | BigInt;
-interface FindingResult {
-  found: boolean;
-  siblings: ArrayLike<number>[];
-  foundValue?: ArrayLike<number>;
-  notFoundKey?: ArrayLike<number>;
-  notFoundValue?: ArrayLike<number>;
-  isOld0: boolean;
-}
-interface InsertingResult {
-  oldRoot: ArrayLike<number>;
-  newRoot: ArrayLike<number>;
-  siblings: ArrayLike<number>[];
-  oldKey?: ArrayLike<number>;
-  oldValue?: ArrayLike<number>;
-  isOld0: boolean;
-}
-interface DeletingResult {
-  oldRoot: ArrayLike<number>;
-  newRoot: ArrayLike<number>;
-  siblings: ArrayLike<number>[];
-  oldKey?: ArrayLike<number>;
-  oldValue?: ArrayLike<number>;
-  delKey: ArrayLike<number>;
-  delValue: ArrayLike<number>;
-  isOld0: boolean;
-}
-interface UpdatingResult {
-  oldRoot: ArrayLike<number>;
-  newRoot: ArrayLike<number>;
-  siblings: ArrayLike<number>[];
-  oldKey: ArrayLike<number>;
-  oldValue?: ArrayLike<number>;
-  newKey: ArrayLike<number>;
-  newValue: ArrayLike<number>;
-}
-
-export class SMT {
-  private _db: SMTDb;
-  private _root: ArrayLike<number>;
-  private _hash0: Hash0;
-  private _hash1: Hash1;
-  private _F: SnarkField;
-  private _maxLevels: number;
+export class BinSMT implements SMT {
+  _db: SMTDb;
+  _root: ArrayLike<number>;
+  _hash0: Hash0;
+  _hash1: Hash1;
+  _F: SnarkField;
+  _maxLevels: number;
   constructor(db: SMTDb, root: ArrayLike<number>, hash0: Hash0, hash1: Hash1, F: SnarkField, maxLevels: number) {
     this._db = db;
     this._root = root;

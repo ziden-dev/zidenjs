@@ -1,7 +1,7 @@
 pragma circom 2.0.0;
-include "../../../node_modules/circomlib/circuits/mux1.circom";
-include "../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../../node_modules/circomlib/circuits/comparators.circom";
 include "../idOwnershipBySignature.circom";
 include "query.circom";
 include "decompressors.circom";
@@ -35,11 +35,11 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     signal input userState;
 
     signal input userClaimsTreeRoot;
-    signal input userAuthClaimMtp[IdOwnershipLevels];
+    signal input userAuthClaimMtp[IdOwnershipLevels * 4];
     signal input userAuthClaim[8];
 
     signal input userRevTreeRoot;
-    signal input userAuthClaimNonRevMtp[IdOwnershipLevels];
+    signal input userAuthClaimNonRevMtp[IdOwnershipLevels * 4];
     signal input userAuthClaimNonRevMtpNoAux;
     signal input userAuthClaimNonRevMtpAuxHi;
     signal input userAuthClaimNonRevMtpAuxHv;
@@ -54,7 +54,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
 
     /* issuerClaim signals */
     signal input issuerClaim[8];
-    signal input issuerClaimMtp[IssuerLevels];
+    signal input issuerClaimMtp[IssuerLevels * 4];
     signal input issuerClaimClaimsTreeRoot;
     signal input issuerClaimRevTreeRoot;
     signal input issuerClaimRootsTreeRoot;
@@ -62,7 +62,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     signal input issuerID;
 
     // issuerClaim non rev inputs
-    signal input issuerClaimNonRevMtp[IssuerLevels];
+    signal input issuerClaimNonRevMtp[IssuerLevels * 4];
     signal input issuerClaimNonRevMtpNoAux;
     signal input issuerClaimNonRevMtpAuxHi;
     signal input issuerClaimNonRevMtpAuxHv;
@@ -102,11 +102,11 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     component userIdOwnership = IdOwnershipBySignature(IdOwnershipLevels);
 
     userIdOwnership.userClaimsTreeRoot <== userClaimsTreeRoot; // currentHolderStateClaimsTreeRoot
-    for (var i=0; i<IdOwnershipLevels; i++) { userIdOwnership.userAuthClaimMtp[i] <== userAuthClaimMtp[i]; }
+    for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthClaimMtp[i] <== userAuthClaimMtp[i]; }
     for (var i=0; i<8; i++) { userIdOwnership.userAuthClaim[i] <==userAuthClaim[i]; }
 
     userIdOwnership.userRevTreeRoot <== userRevTreeRoot;  // currentHolderStateClaimsRevTreeRoot
-    for (var i=0; i<IdOwnershipLevels; i++) { userIdOwnership.userAuthClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
+    for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
     userIdOwnership.userAuthClaimNonRevMtpNoAux <== userAuthClaimNonRevMtpNoAux;
     userIdOwnership.userAuthClaimNonRevMtpAuxHv <== userAuthClaimNonRevMtpAuxHv;
     userIdOwnership.userAuthClaimNonRevMtpAuxHi <== userAuthClaimNonRevMtpAuxHi;
@@ -123,14 +123,14 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     // verify issuerClaim issued and not revoked
     component vci = verifyClaimIssuanceNonRev(IssuerLevels);
     for (var i=0; i<8; i++) { vci.claim[i] <== issuerClaim[i]; }
-    for (var i=0; i<IssuerLevels; i++) { vci.claimIssuanceMtp[i] <== issuerClaimMtp[i]; }
+    for (var i=0; i<IssuerLevels * 4; i++) { vci.claimIssuanceMtp[i] <== issuerClaimMtp[i]; }
     vci.claimIssuanceClaimsTreeRoot <== issuerClaimClaimsTreeRoot;
     vci.claimIssuanceRevTreeRoot <== issuerClaimRevTreeRoot;
     vci.claimIssuanceRootsTreeRoot <== issuerClaimRootsTreeRoot;
     vci.claimIssuanceIdenState <== issuerClaimIdenState;
 
     // non revocation status
-    for (var i=0; i<IssuerLevels; i++) { vci.claimNonRevMtp[i] <== issuerClaimNonRevMtp[i]; }
+    for (var i=0; i<IssuerLevels * 4; i++) { vci.claimNonRevMtp[i] <== issuerClaimNonRevMtp[i]; }
     vci.claimNonRevMtpNoAux <== issuerClaimNonRevMtpNoAux;
     vci.claimNonRevMtpAuxHi <== issuerClaimNonRevMtpAuxHi;
     vci.claimNonRevMtpAuxHv <== issuerClaimNonRevMtpAuxHv;

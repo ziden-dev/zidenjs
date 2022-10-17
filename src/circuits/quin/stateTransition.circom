@@ -1,12 +1,12 @@
 
 pragma circom 2.0.0;
 
-include "../../node_modules/circomlib/circuits/babyjub.circom";
-include "../../node_modules/circomlib/circuits/comparators.circom";
-include "../../node_modules/circomlib/circuits/poseidon.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/smt/smtverifier.circom";
-include "../../node_modules/circomlib/circuits/smt/smtprocessor.circom";
+include "../../../node_modules/circomlib/circuits/babyjub.circom";
+include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/smt/smtverifier.circom";
+include "../../../node_modules/circomlib/circuits/smt/smtprocessor.circom";
 include "idOwnershipBySignature.circom";
 
 template StateTransition(nLevels) {
@@ -18,11 +18,11 @@ template StateTransition(nLevels) {
     signal input isOldStateGenesis;
 
     signal input claimsTreeRoot;
-    signal input authClaimMtp[nLevels];
+    signal input authClaimMtp[nLevels * 4];
     signal input authClaim[8];
 
     signal input revTreeRoot;
-    signal input authClaimNonRevMtp[nLevels];
+    signal input authClaimNonRevMtp[nLevels * 4];
     signal input authClaimNonRevMtpNoAux;
     signal input authClaimNonRevMtpAuxHv;
     signal input authClaimNonRevMtpAuxHi;
@@ -66,11 +66,11 @@ template StateTransition(nLevels) {
     component checkIdOwnership = IdOwnershipBySignature(nLevels);
 
     checkIdOwnership.userClaimsTreeRoot <== claimsTreeRoot;
-    for (var i=0; i<nLevels; i++) { checkIdOwnership.userAuthClaimMtp[i] <== authClaimMtp[i]; }
+    for (var i=0; i<nLevels * 4; i++) { checkIdOwnership.userAuthClaimMtp[i] <== authClaimMtp[i]; }
     for (var i=0; i<8; i++) { checkIdOwnership.userAuthClaim[i] <== authClaim[i]; }
 
     checkIdOwnership.userRevTreeRoot <== revTreeRoot;
-    for (var i=0; i<nLevels; i++) { checkIdOwnership.userAuthClaimNonRevMtp[i] <== authClaimNonRevMtp[i]; }
+    for (var i=0; i<nLevels * 4; i++) { checkIdOwnership.userAuthClaimNonRevMtp[i] <== authClaimNonRevMtp[i]; }
     checkIdOwnership.userAuthClaimNonRevMtpNoAux <== authClaimNonRevMtpNoAux;
     checkIdOwnership.userAuthClaimNonRevMtpAuxHv <== authClaimNonRevMtpAuxHv;
     checkIdOwnership.userAuthClaimNonRevMtpAuxHi <== authClaimNonRevMtpAuxHi;

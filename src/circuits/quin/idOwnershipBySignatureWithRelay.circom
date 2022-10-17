@@ -17,11 +17,11 @@ template IdOwnershipBySignatureWithRelay(nLevelsUser, nLevelsRelay) {
     */
 
 	signal input userClaimsTreeRoot;
-	signal input userAuthClaimMtp[nLevelsUser];
+	signal input userAuthClaimMtp[nLevelsUser * 4];
 	signal input userAuthClaim[8];
 
 	signal input userRevTreeRoot;
-    signal input userAuthClaimNonRevMtp[nLevelsUser];
+    signal input userAuthClaimNonRevMtp[nLevelsUser * 4];
     signal input userAuthClaimNonRevMtpNoAux;
     signal input userAuthClaimNonRevMtpAuxHi;
     signal input userAuthClaimNonRevMtpAuxHv;
@@ -36,7 +36,7 @@ template IdOwnershipBySignatureWithRelay(nLevelsUser, nLevelsRelay) {
     signal input userID;
 
     signal input relayState;
-    signal input userStateInRelayClaimMtp[nLevelsRelay];
+    signal input userStateInRelayClaimMtp[nLevelsRelay * 4];
     signal input userStateInRelayClaim[8];
 	signal input relayProofValidClaimsTreeRoot;
 	signal input relayProofValidRevTreeRoot;
@@ -48,10 +48,10 @@ template IdOwnershipBySignatureWithRelay(nLevelsUser, nLevelsRelay) {
 
     component verifyAuthClaim = VerifyAuthClaimAndSignature(nLevelsUser);
     for (var i=0; i<8; i++) { verifyAuthClaim.authClaim[i] <== userAuthClaim[i]; }
-	for (var i=0; i<nLevelsUser; i++) { verifyAuthClaim.authClaimMtp[i] <== userAuthClaimMtp[i]; }
+	for (var i=0; i<nLevelsUser * 4; i++) { verifyAuthClaim.authClaimMtp[i] <== userAuthClaimMtp[i]; }
 	verifyAuthClaim.claimsTreeRoot <== userClaimsTreeRoot;
 	verifyAuthClaim.revTreeRoot <== userRevTreeRoot;
-	for (var i=0; i<nLevelsUser; i++) { verifyAuthClaim.authClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
+	for (var i=0; i<nLevelsUser * 4; i++) { verifyAuthClaim.authClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
 	verifyAuthClaim.authClaimNonRevMtpNoAux <== userAuthClaimNonRevMtpNoAux;
 	verifyAuthClaim.authClaimNonRevMtpAuxHv <== userAuthClaimNonRevMtpAuxHv;
 	verifyAuthClaim.authClaimNonRevMtpAuxHi <== userAuthClaimNonRevMtpAuxHi;
@@ -86,7 +86,7 @@ template IdOwnershipBySignatureWithRelay(nLevelsUser, nLevelsRelay) {
     userID === subjectOtherIden.id;
     component checkUserStateInRelay = checkClaimExists(nLevelsRelay);
     for (var i=0; i<8; i++) { checkUserStateInRelay.claim[i] <== userStateInRelayClaim[i]; }
-	for (var i=0; i<nLevelsRelay; i++) { checkUserStateInRelay.claimMTP[i] <== userStateInRelayClaimMtp[i]; }
+	for (var i=0; i<nLevelsRelay * 4; i++) { checkUserStateInRelay.claimMTP[i] <== userStateInRelayClaimMtp[i]; }
     checkUserStateInRelay.treeRoot <== relayProofValidClaimsTreeRoot;
 
     component checkRelayState = checkIdenStateMatchesRoots();
