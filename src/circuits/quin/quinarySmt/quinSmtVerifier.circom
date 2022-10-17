@@ -9,9 +9,9 @@ fnc:  0 -> VERIFY INCLUSION
  */
 pragma circom 2.0.0;
 
-include "../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../node_modules/circomlib/circuits/gates.circom";
-include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../../node_modules/circomlib/circuits/gates.circom";
+include "../../../../node_modules/circomlib/circuits/comparators.circom";
 include "quinSmtLevins.circom";
 include "quinSmtVerifierLevel.circom";
 include "quinSmtVerifierSm.circom";

@@ -1,5 +1,7 @@
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
+// @ts-ignore
+import { groth16 } from 'snarkjs';
 import path from 'path';
 import {
   buildHash0Hash1,
@@ -109,7 +111,7 @@ describe('test authentication', async () => {
   });
   it('1st state transition', async () => {
     const w1 = await stateTransitionWitness(eddsa, privateKey, authClaim, trees, [claim1, claim2, claim3], [], hasher);
-    console.log(w1.isOldStateGenesis)
+    console.log(w1.isOldStateGenesis);
   });
 
   it('2nd state transition', async () => {
@@ -134,7 +136,7 @@ describe('test authentication', async () => {
       [claim3.getRevocationNonce()],
       hasher
     );
-    console.log(witness.isOldStateGenesis)
+    console.log(witness.isOldStateGenesis);
   });
 
   it('test circuit constraint', async () => {
@@ -142,4 +144,12 @@ describe('test authentication', async () => {
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
+
+  it('benchmark proving time', async () => {
+    await groth16.fullProve(
+      witness,
+      'src/witnesses/circom_test/stateTransition.wasm',
+      'src/witnesses/circom_test/stateTransition.zkey'
+    );
+  }).timeout(100000);;
 });

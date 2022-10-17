@@ -47,5 +47,3 @@ template VerifyAuthentication(IdOwnershipLevels) {
     
     checkIdOwnership.userState <== userState;
 }
-
-component main {public [userID,challenge,userState]} = VerifyAuthentication(14);

@@ -54,8 +54,8 @@ a parent with at least one sibling != 0.
 
  */
 pragma circom 2.0.0;
-include "../../../node_modules/circomlib/circuits/gates.circom";
-include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../../node_modules/circomlib/circuits/gates.circom";
+include "../../../../node_modules/circomlib/circuits/comparators.circom";
 
 template AreAllSiblingsZero() {
     signal input siblings[4];

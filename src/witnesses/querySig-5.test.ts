@@ -2,6 +2,8 @@
 import { wasm as wasm_tester } from 'circom_tester';
 // @ts-ignore
 import { SMTMemDb } from 'circomlibjs';
+// @ts-ignore
+import { groth16 } from 'snarkjs';
 import path from 'path';
 import {
   buildFMTHashFunction,
@@ -36,6 +38,7 @@ import {
   holderGenerateQuerySigWitness,
   KYCQuerySigInput,
   KYCQuerySigNonRevInput,
+  QuerySigWitness,
 } from './querySig.js';
 import { HashFunction } from './fixed-merkle-tree/index.js';
 import { OPERATOR } from './query.js';
@@ -92,7 +95,7 @@ describe('test query sig', async () => {
       new SMTMemDb(F),
       new SMTMemDb(F),
       new SMTMemDb(F),
-      IDType.Default,
+      IDType.Default
     );
   }).timeout(10000);
 
@@ -129,9 +132,10 @@ describe('test query sig', async () => {
     console.log('KYC Query Sig NonRev Input: ', kycQuerySigNonRevInput);
   }).timeout(10000);
 
+  let witness: QuerySigWitness;
   it('holder query slot index A with operator LESS THAN', async () => {
     const challenge = BigInt('12345');
-    const witness = await holderGenerateQuerySigWitness(
+    witness = await holderGenerateQuerySigWitness(
       issuerClaim,
       eddsa,
       holderPrivateKey,
@@ -150,8 +154,17 @@ describe('test query sig', async () => {
       F
     );
     console.log(witness);
+  });
+  it('test circuit constranit', async () => {
     const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'credentialAtomicQuerySig.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
+  it('benchmark proving time', async () => {
+    await groth16.fullProve(
+      witness,
+      'src/witnesses/circom_test/credentialAtomicQuerySig.wasm',
+      'src/witnesses/circom_test/credentialAtomicQuerySig.zkey'
+    );
+  }).timeout(100000);
 });
