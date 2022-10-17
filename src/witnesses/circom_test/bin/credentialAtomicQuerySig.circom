@@ -1,13 +1,12 @@
 pragma circom 2.0.0;
 
-include "../../circuits/quin/query/credentialAtomicQueryMTP.circom";
+include "../../../circuits/bin/query/credentialAtomicQuerySig.circom";
 
 component main{public [challenge,
                         userID,
                         userState,
                         issuerID,
-                        issuerClaimIdenState,
                         issuerClaimNonRevState,
                         determinisiticValue,
                         compactInput,
-                        mask]} = CredentialAtomicQueryMTP(14, 14, 10);
+                        mask]} = CredentialAtomicQuerySig(32, 32, 10);

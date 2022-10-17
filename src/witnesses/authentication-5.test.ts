@@ -46,9 +46,9 @@ describe('test authentication', async () => {
     privateKey = Buffer.alloc(32, 1);
     authClaim = await newAuthClaimFromPrivateKey(eddsa, F, privateKey);
 
-    const claimsDb = new SMTLevelDb('src/witnesses/db_test/auth/claims', F);
-    const revocationDb = new SMTLevelDb('src/witnesses/db_test/auth/revocation', F);
-    const rootsDb = new SMTLevelDb('src/witnesses/db_test/auth/roots', F);
+    const claimsDb = new SMTLevelDb('src/witnesses/db_test/auth5/claims', F);
+    const revocationDb = new SMTLevelDb('src/witnesses/db_test/auth5/revocation', F);
+    const rootsDb = new SMTLevelDb('src/witnesses/db_test/auth5/roots', F);
     authTrees = await Trees.generateID(
       F,
       hash0,
@@ -66,7 +66,7 @@ describe('test authentication', async () => {
   it('authenticate with custom challenge', async () => {
     const challenge = BigInt('123456');
     authWitness = await authenticationWitness(eddsa, privateKey, authClaim, challenge, authTrees);
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'authentication.circom'));
+    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'quin', 'authentication.circom'));
     const w = await circuit.calculateWitness(authWitness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
@@ -91,7 +91,7 @@ describe('test authentication', async () => {
     await authTrees.insertClaim(authClaim1);
 
     idOwnershipWitness = await idOwnershipBySignatureWitness(eddsa, privateKey, authClaim, challenge, authTrees);
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'idOwnershipBySignature.circom'));
+    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'quin', 'idOwnershipBySignature.circom'));
     const w = await circuit.calculateWitness(idOwnershipWitness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
@@ -99,8 +99,8 @@ describe('test authentication', async () => {
   it('benchmark proving time for id ownership by signature', async () => {
     await groth16.fullProve(
       idOwnershipWitness,
-      'src/witnesses/circom_test/idOwnershipBySignature.wasm',
-      'src/witnesses/circom_test/idOwnershipBySignature.zkey'
+      'src/witnesses/circom_test/quin/idOwnershipBySignature.wasm',
+      'src/witnesses/circom_test/quin/idOwnershipBySignature.zkey'
     );
   }).timeout(100000);;
 }).timeout(10000);

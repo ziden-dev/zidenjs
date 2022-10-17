@@ -61,9 +61,9 @@ describe('test query sig', async () => {
   let hashFunction: HashFunction;
   it('create trees for kyc service and holder', async () => {
     F = await buildSnarkField();
-    claimsDb = new SMTLevelDb('src/witnesses/db_test/query_sig/claims', F);
-    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_sig/revocation', F);
-    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_sig/roots', F);
+    claimsDb = new SMTLevelDb('src/witnesses/db_test/query_sig5/claims', F);
+    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_sig5/revocation', F);
+    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_sig5/roots', F);
     hasher = await buildHasher();
     const hs = buildHash0Hash1(hasher, F);
     hash0 = hs.hash0;
@@ -156,15 +156,17 @@ describe('test query sig', async () => {
     console.log(witness);
   });
   it('test circuit constranit', async () => {
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'credentialAtomicQuerySig.circom'));
+    const circuit = await wasm_tester(
+      path.join('src', 'witnesses', 'circom_test', 'quin', 'credentialAtomicQuerySig.circom')
+    );
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
   it('benchmark proving time', async () => {
     await groth16.fullProve(
       witness,
-      'src/witnesses/circom_test/credentialAtomicQuerySig.wasm',
-      'src/witnesses/circom_test/credentialAtomicQuerySig.zkey'
+      'src/witnesses/circom_test/quin/credentialAtomicQuerySig.wasm',
+      'src/witnesses/circom_test/quin/credentialAtomicQuerySig.zkey'
     );
   }).timeout(100000);
 });

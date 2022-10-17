@@ -1,5 +1,5 @@
 pragma circom 2.0.0;
 
-include "../../circuits/utils/treeUtils.circom";
+include "../../circuits/bin/utils/treeUtils.circom";
 
-component main = checkClaimNotRevoked(14);
+component main = checkClaimNotRevoked(32);

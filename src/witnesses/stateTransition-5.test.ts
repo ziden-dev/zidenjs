@@ -57,9 +57,9 @@ describe('test authentication', async () => {
     privateKey = Buffer.alloc(32, 1);
 
     authClaim = await newAuthClaimFromPrivateKey(eddsa, F, privateKey);
-    claimsDb = new SMTLevelDb('src/witnesses/db_test/state_db/claims', F);
-    revocationDb = new SMTLevelDb('src/witnesses/db_test/state_db/revocation', F);
-    rootsDb = new SMTLevelDb('src/witnesses/db_test/state_db/roots', F);
+    claimsDb = new SMTLevelDb('src/witnesses/db_test/state_db5/claims', F);
+    revocationDb = new SMTLevelDb('src/witnesses/db_test/state_db5/revocation', F);
+    rootsDb = new SMTLevelDb('src/witnesses/db_test/state_db5/roots', F);
 
     trees = await Trees.generateID(
       F,
@@ -99,8 +99,8 @@ describe('test authentication', async () => {
       withExpirationDate(BigInt(Date.now() + 100000))
     );
   }).timeout(10000);
-  it('benchmark create claim', async () => {
-    await newClaim(
+  it('benchmark create claim', () => {
+    newClaim(
       schemaHashFromBigInt(BigInt('123456')),
       withIndexData(Buffer.alloc(30, 5), Buffer.alloc(30, 6)),
       withValueData(Buffer.alloc(30, 5), Buffer.alloc(30, 6)),
@@ -140,7 +140,7 @@ describe('test authentication', async () => {
   });
 
   it('test circuit constraint', async () => {
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'stateTransition.circom'));
+    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'quin', 'stateTransition.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
@@ -148,8 +148,8 @@ describe('test authentication', async () => {
   it('benchmark proving time', async () => {
     await groth16.fullProve(
       witness,
-      'src/witnesses/circom_test/stateTransition.wasm',
-      'src/witnesses/circom_test/stateTransition.zkey'
+      'src/witnesses/circom_test/quin/stateTransition.wasm',
+      'src/witnesses/circom_test/quin/stateTransition.zkey'
     );
-  }).timeout(100000);;
+  }).timeout(100000);
 });

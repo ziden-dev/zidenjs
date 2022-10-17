@@ -1,6 +1,6 @@
 import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry.js';
 import { IDType } from '../claim/id.js';
-import { Trees } from './trees.js';
+import { SMTType, Trees } from './trees.js';
 
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
@@ -31,9 +31,9 @@ describe('test trees', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861770'));
     authClaim1 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 2)));
     authClaim2 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 2), Buffer.alloc(30, 3)));
-    claimsDb = new SMTLevelDb('trees/db_test/claims', F);
-    revocationDb = new SMTLevelDb('trees/db_test/revocation', F);
-    rootsDb = new SMTLevelDb('trees/db_test/roots', F);
+    claimsDb = new SMTLevelDb('src/trees/db_test/claims', F);
+    revocationDb = new SMTLevelDb('src/trees/db_test/revocation', F);
+    rootsDb = new SMTLevelDb('src/trees/db_test/roots', F);
   }).timeout(10000);
   it('benchmark generate trees', async () => {
     trees = await Trees.generateID(
@@ -45,7 +45,9 @@ describe('test trees', async () => {
       claimsDb,
       revocationDb,
       rootsDb,
-      IDType.Default
+      IDType.Default,
+      32,
+      SMTType.BinSMT
     );
   });
   it('test getClaimHeader circuit', async () => {

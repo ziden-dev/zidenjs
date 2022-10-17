@@ -5,12 +5,12 @@ import { SMTDb } from '../../db/index.js';
 import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
 
 export class BinSMT implements SMT {
-  _db: SMTDb;
-  _root: ArrayLike<number>;
-  _hash0: Hash0;
-  _hash1: Hash1;
-  _F: SnarkField;
-  _maxLevels: number;
+  private _db: SMTDb;
+  private _root: ArrayLike<number>;
+  private _hash0: Hash0;
+  private _hash1: Hash1;
+  private _F: SnarkField;
+  private _maxLevels: number;
   constructor(db: SMTDb, root: ArrayLike<number>, hash0: Hash0, hash1: Hash1, F: SnarkField, maxLevels: number) {
     this._db = db;
     this._root = root;

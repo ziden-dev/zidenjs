@@ -63,9 +63,9 @@ describe('test query atomic MTP', async () => {
 
   it('setup params', async () => {
     F = await buildSnarkField();
-    claimsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/claims', F);
-    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/revocation', F);
-    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/roots', F);
+    claimsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp5/claims', F);
+    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_mtp5/revocation', F);
+    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp5/roots', F);
     hasher = await buildHasher();
     const hs = buildHash0Hash1(hasher, F);
     hash0 = hs.hash0;
@@ -168,8 +168,10 @@ describe('test query atomic MTP', async () => {
     console.log(witness);
   });
 
-  it.skip('test circuit constraints', async () => {
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'credentialAtomicQueryMTP.circom'));
+  it('test circuit constraints', async () => {
+    const circuit = await wasm_tester(
+      path.join('src', 'witnesses', 'circom_test', 'quin', 'credentialAtomicQueryMTP.circom')
+    );
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
@@ -194,7 +196,9 @@ describe('test query atomic MTP', async () => {
       hashFunction,
       F
     );
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'credentialAtomicQueryMTP.circom'));
+    const circuit = await wasm_tester(
+      path.join('src', 'witnesses', 'circom_test', 'quin', 'credentialAtomicQueryMTP.circom')
+    );
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(100000);
@@ -202,8 +206,8 @@ describe('test query atomic MTP', async () => {
   it('benchmark proving time', async () => {
     await groth16.fullProve(
       witness,
-      'src/witnesses/circom_test/credentialAtomicQueryMTP.wasm',
-      'src/witnesses/circom_test/credentialAtomicQueryMTP.zkey'
+      'src/witnesses/circom_test/quin/credentialAtomicQueryMTP.wasm',
+      'src/witnesses/circom_test/quin/credentialAtomicQueryMTP.zkey'
     );
   }).timeout(100000);
 });
