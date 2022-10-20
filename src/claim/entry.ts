@@ -52,30 +52,6 @@ export function checkSchemaHashLength(schemaHash: Buffer) {
   }
 }
 
-// /**
-//  * Represent schemahash in hex
-//  * @param {Buffer} schemaHash schema hash in bytes representation
-//  * @returns {string} schema hash in hex representation
-//  */
-// function schemaHashToHex(schemaHash) {
-//   return utils.bytesToHex(schemaHash);
-// }
-
-// /**
-//  * creates new SchemaHash from hex string
-//  * @param {string} hex schema hash in hex representation
-//  * @returns {Buffer} schema hash in bytes representation
-//  */
-// function schemaHashFromHex(hex) {
-//   let result = Buffer.alloc(SchemaHashLength, 0);
-//   let hashBytes = utils.hexToBytes(hex);
-//   if (hashBytes.length > SchemaHashLength) {
-//     throw ErrInvalidSchemaHash;
-//   }
-//   hashBytes.copy(result, 0, SchemaHashLength - hashBytes.length);
-//   return result;
-// }
-
 /**
  * creates new SchemaHash from BigInt
  * @param {BigInt} num schema hash in BigInt representation
