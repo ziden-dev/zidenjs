@@ -77,7 +77,33 @@ describe('test trees', async () => {
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(10000);
-  
+
+  it('prepare and insert batch claims with hi hv', async () => {
+    const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861771'));
+    const claimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]> = [];
+    for (let i = 0; i < 10; i++) {
+      let claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 11 * i), Buffer.alloc(30, 11 * i)));
+      claim = await trees.prepareClaimForInsert(claim, 10);
+      claimHiHvs.push([claim.hiRaw(hasher), claim.hvRaw(hasher)]);
+    }
+    await trees.batchInsertClaimByHiHv(claimHiHvs);
+  }).timeout(10000);
+
+  it('should insert fail due to collision', async () => {
+    const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861771'));
+    const claimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]> = [];
+    try {
+      for (let i = 0; i < 10; i++) {
+        let claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 11 * i), Buffer.alloc(30, 11 * i)));
+        claim = await trees.prepareClaimForInsert(claim, 1);
+        claimHiHvs.push([claim.hiRaw(hasher), claim.hvRaw(hasher)]);
+      }
+    } catch (err) {
+      expect((err as Error).message).to.be.equal(
+        'Failed inserting caused by collision, please try increasing max attemp times'
+      );
+    }
+  });
   it('test claim not revoked', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861771'));
     const claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 2)));

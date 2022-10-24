@@ -84,3 +84,59 @@ export async function stateTransitionWitness(
     signatureS: signature.challengeSignatureS,
   };
 }
+
+/**
+ * Update trees state through insert claims by hi, hv into claims tree and revoke claims
+ * @param {EDDSA} eddsa
+ * @param {Buffer} privateKey
+ * @param {Entry} authClaim
+ * @param {Trees} trees
+ * @param {Array<[ArrayLike<number>, ArrayLike<number>]>} insertingClaimHiHvs claims inserted to claims tree
+ * @param {Array<BigInt>} revokingClaimsRevNonce revoked claims
+ * @param {Hasher} hasher
+ * @returns {Promise<StateTransitionWitness>} state transition witness
+ */
+export async function stateTransitionWitnessWithHiHv(
+  eddsa: EDDSA,
+  privateKey: Buffer,
+  authClaim: Entry,
+  trees: Trees,
+  insertingClaimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>,
+  revokingClaimsRevNonce: Array<BigInt>,
+  hasher: Hasher
+): Promise<StateTransitionWitness> {
+  const userID = trees.userID;
+  const oldUserState = trees.getIdenState();
+  const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
+  const authClaimProof = await trees.generateProofForClaim(
+    authClaim.hiRaw(trees.hasher),
+    authClaim.getRevocationNonce()
+  );
+  await trees.batchInsertClaimByHiHv(insertingClaimHiHvs);
+  await trees.batchRevokeClaim(revokingClaimsRevNonce);
+
+  const newUserState = trees.getIdenState();
+  const challenge = hasher([oldUserState, newUserState]);
+  const signature = await signChallenge(eddsa, trees.F, privateKey, challenge);
+  return {
+    userID: authClaimProof.id,
+    oldUserState,
+    newUserState,
+    isOldStateGenesis,
+    claimsTreeRoot: authClaimProof.claimsTreeRoot,
+    authClaimMtp: authClaimProof.claimMTP,
+    authClaim: authClaim.getDataForCircuit(),
+
+    revTreeRoot: authClaimProof.revTreeRoot,
+    authClaimNonRevMtp: authClaimProof.claimNonRevMTP,
+    authClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
+    authClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
+    authClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
+
+    rootsTreeRoot: authClaimProof.rootsTreeRoot,
+
+    signatureR8x: signature.challengeSignatureR8x,
+    signatureR8y: signature.challengeSignatureR8y,
+    signatureS: signature.challengeSignatureS,
+  };
+}

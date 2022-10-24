@@ -224,6 +224,57 @@ export class Trees {
   }
 
   /**
+   * Insert a batch of claims by their his and hvs
+   * @param {Array<[ArrayLike<number>, ArrayLike<number>]>} claimHiHvs claim to insert
+   */
+  async batchInsertClaimByHiHv(claimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>) {
+    for (let i = 0; i < claimHiHvs.length; i++) {
+      await this._claimsTree.insert(claimHiHvs[i][0], claimHiHvs[i][1]);
+    }
+    await this._rootsTree.insert(this._F.e(this._rootsVersion), this._claimsTree.root);
+    this._rootsVersion++;
+  }
+
+  /**
+   * prepare new claim for inserting
+   * @param {Entry} claim claim to insert
+   * @param {number} maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
+   * @returns {Promise<Entry>} inserted claim
+   */
+  async prepareClaimForInsert(claim: Entry, maxAttempTimes: number = 100): Promise<Entry> {
+    claim.setRevocationNonce(BigInt(this._revocationNonce));
+    let triedCount = 0;
+    let seed = BigInt(0);
+    while (true) {
+      try {
+        claim.setClaimSeed(seed);
+        const hi = claim.hiRaw(this._hasher);
+        const findingResult = await this._claimsTree.find(hi);
+        if (findingResult.found) {
+          throw new Error('Claim Hi already existed in claims tree');
+        }
+        break;
+      } catch (err) {
+        if (triedCount >= maxAttempTimes - 1) {
+          throw new Error('Failed inserting caused by collision, please try increasing max attemp times');
+        }
+        seed += BigInt(1);
+        triedCount++;
+      }
+    }
+    this._revocationNonce += 1;
+    return claim;
+  }
+
+  /**
+   * Revoke a batch of claim by their revocation nonces
+   * @param {BigInt[]} revNonces claim to revoke
+   */
+  async batchRevokeClaim(revNonces: BigInt[]) {
+    for (let i = 0; i < revNonces.length; i++) await this._revocationTree.insert(this._F.e(revNonces[i]), this._F.zero);
+  }
+
+  /**
    * Revoke a claim
    * @param {BigInt} revNonce claim to revoke
    */

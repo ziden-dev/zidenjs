@@ -28,7 +28,7 @@ import {
 import { IDType } from '../claim/id.js';
 import { SMTLevelDb } from '../db/level_db.js';
 import { Trees } from '../trees/trees.js';
-import { StateTransitionWitness, stateTransitionWitness } from './stateTransition.js';
+import { StateTransitionWitness, stateTransitionWitness, stateTransitionWitnessWithHiHv } from './stateTransition.js';
 
 describe('test authentication', async () => {
   let F: SnarkField;
@@ -125,8 +125,9 @@ describe('test authentication', async () => {
       hasher
     );
   });
+
   let witness: StateTransitionWitness;
-  it('3rd state transition', async () => {
+  it('4th state transition', async () => {
     witness = await stateTransitionWitness(
       eddsa,
       privateKey,
@@ -144,6 +145,17 @@ describe('test authentication', async () => {
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(20000);
+
+  it('5th state transition with hi hv', async () => {
+    const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861771'));
+    const claimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]> = [];
+    for (let i = 0; i < 10; i++) {
+      let claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 7 * i + 9), Buffer.alloc(30, 13 * i + 5)));
+      claim = await trees.prepareClaimForInsert(claim, 100);
+      claimHiHvs.push([claim.hiRaw(hasher), claim.hvRaw(hasher)]);
+    }
+    witness = await stateTransitionWitnessWithHiHv(eddsa, privateKey, authClaim, trees, claimHiHvs, [], hasher);
+  });
 
   it('benchmark proving time', async () => {
     await groth16.fullProve(
