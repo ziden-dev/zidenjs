@@ -118,10 +118,11 @@ An identity is constructed from some **auth claims**. There are two Sparse Merkl
 ##### Example
 
 ```typescript
-import {trees, db} from 'zidenjs';
+import {trees, db, claim} from 'zidenjs';
 
 const {SMTLevelDb} = db;
-const {Trees, SMTType}
+const {Trees, SMTType} = trees;
+const {IDType} = claim.id;
 // Specify data base to store claims, revocation and roots trees. 
 const claimsDb = new SMTLevelDb('path/to/your/claims-tree-db', F);
 const revocationDb = new SMTLevelDb('path/to/your/revocation-tree-db', F);

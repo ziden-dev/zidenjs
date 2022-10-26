@@ -1,2 +1,2 @@
-export { Trees as default } from './trees.js';
-export * from './sparse-merkle-tree/index.js';
+export * from './trees.js';
+export * as smt from './sparse-merkle-tree/index.js';
