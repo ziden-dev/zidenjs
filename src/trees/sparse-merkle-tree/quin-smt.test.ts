@@ -1,11 +1,11 @@
 import path from 'path';
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
-import { QuinSMT } from './quin-smt.js';
+import { QuinSMT } from './quin-smt';
 import { expect } from 'chai';
-import { buildHash0Hash1, buildHasher, buildSnarkField, Hash1, Hasher, SnarkField } from '../../global.js';
-import { SMTLevelDb } from '../../db/index.js';
-import { Primitive } from './index.js';
+import { buildHash0Hash1, buildHasher, buildSnarkField, Hash1, Hasher, SnarkField } from '../../global';
+import { SMTLevelDb } from '../../db/index';
+import { Primitive } from './index';
 
 async function testInclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
   const key = tree.F.e(_key);

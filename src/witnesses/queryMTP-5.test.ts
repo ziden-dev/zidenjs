@@ -18,8 +18,8 @@ import {
   Hash1,
   Hasher,
   SnarkField,
-} from '../global.js';
-import { newAuthClaimFromPrivateKey, signChallenge } from '../claim/auth-claim.js';
+} from '../global';
+import { newAuthClaimFromPrivateKey, signChallenge } from '../claim/auth-claim';
 import {
   newClaim,
   schemaHashFromBigInt,
@@ -29,11 +29,11 @@ import {
   withExpirationDate,
   withFlagExpirable,
   Entry,
-} from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
-import { SMTLevelDb } from '../db/level_db.js';
-import { Trees } from '../trees/trees.js';
-import { numToBits } from '../utils.js';
+} from '../claim/entry';
+import { IDType } from '../claim/id';
+import { SMTLevelDb } from '../db/level_db';
+import { Trees } from '../trees/trees';
+import { numToBits } from '../utils';
 import {
   kycGenerateQueryMTPInput,
   holderGenerateQueryMTPWitness,
@@ -41,9 +41,9 @@ import {
   KYCQueryMTPInput,
   KYCNonRevQueryMTPInput,
   QueryMTPWitness,
-} from './queryMTP.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
-import { OPERATOR } from './query.js';
+} from './queryMTP';
+import { HashFunction } from './fixed-merkle-tree/index';
+import { OPERATOR } from './query';
 
 describe('test query atomic MTP', async () => {
   let F: SnarkField;

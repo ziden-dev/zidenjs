@@ -1,5 +1,5 @@
-import { Hasher } from '../global.js';
-import { numToBits } from '../utils.js';
+import { Hasher } from '../global';
+import { numToBits } from '../utils';
 export const IDType = {
   Default: Buffer.from([0x00, 0x00]),
   ReadOnly: Buffer.from([0x00, 0x01]),

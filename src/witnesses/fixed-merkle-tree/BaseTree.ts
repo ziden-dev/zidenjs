@@ -1,4 +1,4 @@
-import { HashFunction, ProofPath } from './index.js';
+import { HashFunction, ProofPath } from './index';
 
 export class BaseTree {
   levels: number = 0;

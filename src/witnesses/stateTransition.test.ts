@@ -13,8 +13,8 @@ import {
   Hash1,
   Hasher,
   SnarkField,
-} from '../global.js';
-import { newAuthClaimFromPrivateKey } from '../claim/auth-claim.js';
+} from '../global';
+import { newAuthClaimFromPrivateKey } from '../claim/auth-claim';
 import {
   newClaim,
   schemaHashFromBigInt,
@@ -24,11 +24,11 @@ import {
   withRevocationNonce,
   withVersion,
   Entry,
-} from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
-import { SMTLevelDb } from '../db/level_db.js';
-import { SMTType, Trees } from '../trees/trees.js';
-import { StateTransitionWitness, stateTransitionWitness } from './stateTransition.js';
+} from '../claim/entry';
+import { IDType } from '../claim/id';
+import { SMTLevelDb } from '../db/level_db';
+import { SMTType, Trees } from '../trees/trees';
+import { StateTransitionWitness, stateTransitionWitness } from './stateTransition';
 
 describe('test authentication', async () => {
   let F: SnarkField;

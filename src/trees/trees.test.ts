@@ -1,12 +1,12 @@
-import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
-import { SMTType, Trees } from './trees.js';
+import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry';
+import { IDType } from '../claim/id';
+import { SMTType, Trees } from './trees';
 
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { SMTLevelDb } from '../db/level_db.js';
-import { buildHash0Hash1, buildHasher, buildSnarkField, Hash0, Hash1, Hasher, SnarkField } from '../global.js';
+import { SMTLevelDb } from '../db/level_db';
+import { buildHash0Hash1, buildHasher, buildSnarkField, Hash0, Hash1, Hasher, SnarkField } from '../global';
 import { expect } from 'chai';
 
 describe('test trees', async () => {

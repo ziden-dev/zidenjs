@@ -1,10 +1,10 @@
-import { EDDSA, Hasher, SnarkField } from '../global.js';
-import { Trees } from '../trees/trees.js';
-import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
-import { Entry } from '../claim/entry.js';
-import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils.js';
-import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
+import { EDDSA, Hasher, SnarkField } from '../global';
+import { Trees } from '../trees/trees';
+import { signChallenge, SignedChallenge } from '../claim/auth-claim';
+import { Entry } from '../claim/entry';
+import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils';
+import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query';
+import { HashFunction } from './fixed-merkle-tree/index';
 
 export interface KYCQuerySigInput {
   readonly issuerClaimSignatureR8x: BigInt;

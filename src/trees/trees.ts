@@ -1,9 +1,9 @@
-import { SMTDb } from '../db/index.js';
-import { Hash0, Hash1, Hasher, SnarkField } from 'src/global.js';
-import { Entry } from '../claim/entry.js';
-import { idenState, IDGenesisFromIdenState } from '../claim/id.js';
-import { numToBits, bitsToNum } from '../utils.js';
-import SMT, { BinSMT, QuinSMT } from './sparse-merkle-tree/index.js';
+import { SMTDb } from '../db/index';
+import { Hash0, Hash1, Hasher, SnarkField } from 'src/global';
+import { Entry } from '../claim/entry';
+import { idenState, IDGenesisFromIdenState } from '../claim/id';
+import { numToBits, bitsToNum } from '../utils';
+import SMT, { BinSMT, QuinSMT } from './sparse-merkle-tree/index';
 
 export enum SMTType {
   BinSMT = 0,

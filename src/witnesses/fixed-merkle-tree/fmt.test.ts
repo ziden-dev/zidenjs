@@ -1,9 +1,9 @@
-import { buildFMTHashFunction, buildHash0Hash1, buildHasher, buildSnarkField, SnarkField } from '../../global.js';
-import MerkleTree from './FixedMerkleTree.js';
+import { buildFMTHashFunction, buildHash0Hash1, buildHasher, buildSnarkField, SnarkField } from '../../global';
+import MerkleTree from './FixedMerkleTree';
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { HashFunction } from './index.js';
+import { HashFunction } from './index';
 
 describe('Test and benchmark Fixed Merkle Tree', () => {
   let fmt: MerkleTree;

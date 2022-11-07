@@ -11,7 +11,7 @@ import {
   privateKeyFromPassword,
   setBits,
   stringToHex,
-} from './utils.js';
+} from './utils';
 
 const { expect } = chai;
 

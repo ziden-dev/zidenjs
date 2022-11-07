@@ -3,7 +3,7 @@ import bigInt from 'big-integer';
 import { Scalar, getCurveFromName } from 'ffjavascript';
 // @ts-ignore
 import { buildPoseidon, buildEddsa } from 'circomlibjs';
-import { HashFunction } from './witnesses/fixed-merkle-tree/index.js';
+import { HashFunction } from './witnesses/fixed-merkle-tree/index';
 
 export const SNARK_SIZE: bigInt.BigNumber = bigInt(
   Scalar.fromString('21888242871839275222246405745257275088548364400416034343698204186575808495617')

@@ -1,6 +1,6 @@
-import { Entry, newClaim, withIndexData, schemaHashFromBigInt } from './entry.js';
-import { numToBits } from '../utils.js';
-import { EDDSA, SnarkField } from '../global.js';
+import { Entry, newClaim, withIndexData, schemaHashFromBigInt } from './entry';
+import { numToBits } from '../utils';
+import { EDDSA, SnarkField } from '../global';
 
 /**
  * Generate new auth claim from private key

@@ -1,7 +1,7 @@
 import { Level } from 'level';
-import { Primitive } from '../trees/sparse-merkle-tree/index.js';
-import { SnarkField } from '../global.js';
-import { SMTDb } from './index.js';
+import { Primitive } from '../trees/sparse-merkle-tree/index';
+import { SnarkField } from '../global';
+import { SMTDb } from './index';
 
 export class SMTLevelDb implements SMTDb {
   private _nodes: Level<string, string>;

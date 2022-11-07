@@ -13,13 +13,13 @@ import {
   withID,
   schemaHashFromBigInt,
   Entry,
-} from './entry.js';
-import { newAuthClaimFromPrivateKey, signChallenge } from './auth-claim.js';
+} from './entry';
+import { newAuthClaimFromPrivateKey, signChallenge } from './auth-claim';
 
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
-import { buildHasher, buildSigner, buildSnarkField, EDDSA, Hasher, SnarkField } from '../global.js';
-import { bitsToNum, numToBits } from '../utils.js';
+import { buildHasher, buildSigner, buildSnarkField, EDDSA, Hasher, SnarkField } from '../global';
+import { bitsToNum, numToBits } from '../utils';
 
 describe('test entries', async () => {
   let F: SnarkField;

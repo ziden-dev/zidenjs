@@ -1,4 +1,4 @@
-import { SMTDb } from 'src/db/index.js';
+import { SMTDb } from 'src/db/index';
 
 export type Primitive = string | number | ArrayLike<number> | BigInt;
 export interface FindingResult {
@@ -46,5 +46,5 @@ export default interface SMT {
   readonly db: SMTDb;
 }
 
-export { QuinSMT } from './quin-smt.js';
-export { BinSMT } from './bin-smt.js';
+export { QuinSMT } from './quin-smt';
+export { BinSMT } from './bin-smt';

@@ -1,6 +1,6 @@
 import bigInt from 'big-integer';
-import { SNARK_SIZE, Hasher, SnarkField } from '../global.js';
-import { bitsToNum, bufferArrayToHex, hexToBufferArray, numToBits } from '../utils.js';
+import { SNARK_SIZE, Hasher, SnarkField } from '../global';
+import { bitsToNum, bufferArrayToHex, hexToBufferArray, numToBits } from '../utils';
 /*
 Claim structure
 

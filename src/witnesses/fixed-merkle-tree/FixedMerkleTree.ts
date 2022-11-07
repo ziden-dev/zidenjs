@@ -1,5 +1,5 @@
-import { HashFunction, ProofPath, SerializedTreeState, TreeEdge, TreeSlice } from './index.js';
-import { BaseTree } from './BaseTree.js';
+import { HashFunction, ProofPath, SerializedTreeState, TreeEdge, TreeSlice } from './index';
+import { BaseTree } from './BaseTree';
 
 export default class MerkleTree extends BaseTree {
   constructor(levels: number, elements: BigInt[] = [], hashFunction: HashFunction, zeroElement: BigInt) {

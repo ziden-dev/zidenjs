@@ -1,2 +1,2 @@
-export * from './trees.js';
-export * as smt from './sparse-merkle-tree/index.js';
+export * from './trees';
+export * as smt from './sparse-merkle-tree/index';

@@ -1,10 +1,10 @@
-import { EDDSA, SnarkField } from 'src/global.js';
-import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
-import { Entry } from '../claim/entry.js';
-import { Trees } from '../trees/trees.js';
-import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
-import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
+import { EDDSA, SnarkField } from 'src/global';
+import { signChallenge, SignedChallenge } from '../claim/auth-claim';
+import { Entry } from '../claim/entry';
+import { Trees } from '../trees/trees';
+import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils';
+import { HashFunction } from './fixed-merkle-tree/index';
+import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query';
 
 export interface KYCQueryMTPInput {
   issuerClaimMtp: Array<BigInt>;

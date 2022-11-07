@@ -1,8 +1,8 @@
-import { EDDSA, Hasher } from '../global.js';
-import { Trees } from '../trees/trees.js';
-import { signChallenge } from '../claim/auth-claim.js';
-import { Entry } from '../claim/entry.js';
-import { numToBits } from '../utils.js';
+import { EDDSA, Hasher } from '../global';
+import { Trees } from '../trees/trees';
+import { signChallenge } from '../claim/auth-claim';
+import { Entry } from '../claim/entry';
+import { numToBits } from '../utils';
 
 export interface StateTransitionWitness {
   readonly userID: BigInt;

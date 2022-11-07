@@ -1,10 +1,10 @@
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { createMask, shiftValue, setBits } from '../utils.js';
-import { buildFMTHashFunction, buildHash0Hash1, buildHasher, buildSnarkField, SnarkField } from '../global.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
-import { createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
+import { createMask, shiftValue, setBits } from '../utils';
+import { buildFMTHashFunction, buildHash0Hash1, buildHasher, buildSnarkField, SnarkField } from '../global';
+import { HashFunction } from './fixed-merkle-tree/index';
+import { createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query';
 import { expect } from 'chai';
 
 describe('Test and benchmark query circuit', () => {

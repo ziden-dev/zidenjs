@@ -1,8 +1,8 @@
 // @ts-ignore
 import { Scalar } from 'ffjavascript';
-import { Hash1, Hasher, SnarkField } from '../../global.js';
-import { SMTDb } from '../../db/index.js';
-import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
+import { Hash1, Hasher, SnarkField } from '../../global';
+import { SMTDb } from '../../db/index';
+import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index';
 
 export class QuinSMT implements SMT {
   private _db: SMTDb;

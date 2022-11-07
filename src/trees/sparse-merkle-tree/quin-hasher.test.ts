@@ -1,7 +1,7 @@
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { buildHasher, buildSnarkField, Hasher, SnarkField } from '../../global.js';
+import { buildHasher, buildSnarkField, Hasher, SnarkField } from '../../global';
 
 describe('Test quinary hasher', () => {
   let circuit: any;

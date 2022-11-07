@@ -1,4 +1,4 @@
-import { Primitive } from '../trees/sparse-merkle-tree/index.js';
+import { Primitive } from '../trees/sparse-merkle-tree/index';
 
 export interface SMTDb{
     getRoot(): Promise<ArrayLike<number>>;
@@ -9,4 +9,4 @@ export interface SMTDb{
     multiDel: (dels: ArrayLike<number>[]) => Promise<void>;
 }
 
-export {SMTLevelDb} from './level_db.js';
+export {SMTLevelDb} from './level_db';

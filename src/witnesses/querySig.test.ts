@@ -16,8 +16,8 @@ import {
   Hash1,
   Hasher,
   SnarkField,
-} from '../global.js';
-import { newAuthClaimFromPrivateKey } from '../claim/auth-claim.js';
+} from '../global';
+import { newAuthClaimFromPrivateKey } from '../claim/auth-claim';
 import {
   newClaim,
   schemaHashFromBigInt,
@@ -27,11 +27,11 @@ import {
   withExpirationDate,
   withFlagExpirable,
   Entry,
-} from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
-import { SMTLevelDb } from '../db/level_db.js';
-import { SMTType, Trees } from '../trees/trees.js';
-import { numToBits } from '../utils.js';
+} from '../claim/entry';
+import { IDType } from '../claim/id';
+import { SMTLevelDb } from '../db/level_db';
+import { SMTType, Trees } from '../trees/trees';
+import { numToBits } from '../utils';
 import {
   kycGenerateQuerySigInput,
   kycGenerateQuerySigNonRevInput,
@@ -39,9 +39,9 @@ import {
   KYCQuerySigInput,
   KYCQuerySigNonRevInput,
   QuerySigWitness,
-} from './querySig.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
-import { OPERATOR } from './query.js';
+} from './querySig';
+import { HashFunction } from './fixed-merkle-tree/index';
+import { OPERATOR } from './query';
 
 describe('test query sig', async () => {
   let F: SnarkField;

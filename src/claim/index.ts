@@ -1,3 +1,3 @@
-export * as entry from "./entry.js";
-export * as authClaim from "./auth-claim.js";
-export * as id from "./id.js";
+export * as entry from "./entry";
+export * as authClaim from "./auth-claim";
+export * as id from "./id";

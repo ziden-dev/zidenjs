@@ -1,4 +1,4 @@
-import { default as MerkleTree } from './FixedMerkleTree.js'
+import { default as MerkleTree } from './FixedMerkleTree'
 export { MerkleTree }
 export default MerkleTree
 export type HashFunction = {

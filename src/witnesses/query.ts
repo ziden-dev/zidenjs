@@ -1,5 +1,5 @@
-import { SnarkField } from '../global.js';
-import MerkleTree, { HashFunction } from './fixed-merkle-tree/index.js';
+import { SnarkField } from '../global';
+import MerkleTree, { HashFunction } from './fixed-merkle-tree/index';
 
 export interface MerkleQueryInput {
   readonly determinisiticValue: BigInt;

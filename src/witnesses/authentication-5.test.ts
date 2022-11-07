@@ -13,18 +13,18 @@ import {
   Hash1,
   Hasher,
   SnarkField,
-} from '../global.js';
-import { newAuthClaimFromPrivateKey } from '../claim/auth-claim.js';
-import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
-import { Trees } from '../trees/trees.js';
+} from '../global';
+import { newAuthClaimFromPrivateKey } from '../claim/auth-claim';
+import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry';
+import { IDType } from '../claim/id';
+import { Trees } from '../trees/trees';
 import {
   AuthenticationWitness,
   authenticationWitness,
   IdOwnershipBySignatureWitness,
   idOwnershipBySignatureWitness,
-} from './authentication.js';
-import { SMTLevelDb } from '../db/level_db.js';
+} from './authentication';
+import { SMTLevelDb } from '../db/level_db';
 
 describe('test authentication', async () => {
   let F: SnarkField;

@@ -1,7 +1,7 @@
-import { Entry } from '../claim/entry.js';
-import { EDDSA } from '../global.js';
-import { Trees } from '../trees/trees.js';
-import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
+import { Entry } from '../claim/entry';
+import { EDDSA } from '../global';
+import { Trees } from '../trees/trees';
+import { signChallenge, SignedChallenge } from '../claim/auth-claim';
 
 export interface AuthenticationWitness extends IdOwnershipBySignatureWitness {
   readonly userID: BigInt;
