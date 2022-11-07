@@ -27,6 +27,10 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    library: {
+      name: 'ziden',
+      type: 'umd'
+    },
   },
   plugins: [
     new webpack.ProvidePlugin({
