@@ -163,3 +163,77 @@ export async function holderGenerateQueryMTPWitness(
     ...kycQueryNonRevMTPInput,
   };
 }
+
+/**
+ * Holder Generate credential atomic query MTP witness from issuer input
+ * @param {Entry} issuerClaim
+ * @param {Entry} authClaim
+ * @param {SignedChallenge} signature
+ * @param {Trees} userAuthTrees
+ * @param {KYCQueryMTPInput} kycQueryMTPInput
+ * @param {KYCNonRevQueryMTPInput} kycQueryNonRevMTPInput
+ * @param {number} slotIndex
+ * @param {OPERATOR} operator
+ * @param {Array<BigInt>} values
+ * @param {number} valueTreeDepth
+ * @param {number} from
+ * @param {number} to
+ * @param {HashFunction} hashFunction
+ * @param {SnarkField} F
+ * @returns {Promise<QueryMTPWitness>} queryMTP witness
+ */
+export async function holderGenerateQueryMTPWitnessWithSignature(
+  issuerClaim: Entry,
+  authClaim: Entry,
+  signature: SignedChallenge,
+  userAuthTrees: Trees,
+  kycQueryMTPInput: KYCQueryMTPInput,
+  kycQueryNonRevMTPInput: KYCNonRevQueryMTPInput,
+  slotIndex: number,
+  operator: OPERATOR,
+  values: Array<BigInt>,
+  valueTreeDepth: number,
+  from: number,
+  to: number,
+  hashFunction: HashFunction,
+  F: SnarkField
+): Promise<QueryMTPWitness> {
+  const authClaimProof = await userAuthTrees.generateProofForClaim(
+    authClaim.hiRaw(userAuthTrees.hasher),
+    authClaim.getRevocationNonce()
+  );
+  const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
+  const timestamp = Date.now();
+  const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
+  const mask = createMask(from, to);
+  const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
+  const merkleQueryInput = createMerkleQueryInput(
+    values.map((value) => shiftValue(value, from)),
+    valueTreeDepth,
+    hashFunction,
+    F,
+    getPartialValue(slotValue, from, to),
+    operator
+  );
+
+  return {
+    userID: authClaimProof.id,
+    userState: authClaimProof.state,
+    ...signature,
+    userClaimsTreeRoot: authClaimProof.claimsTreeRoot,
+    userAuthClaimMtp: authClaimProof.claimMTP,
+    userAuthClaim: authClaim.getDataForCircuit(),
+    issuerClaim: issuerClaim.getDataForCircuit(),
+    userRevTreeRoot: authClaimProof.revTreeRoot,
+    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
+    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
+    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
+    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
+    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    compactInput,
+    mask,
+    ...merkleQueryInput,
+    ...kycQueryMTPInput,
+    ...kycQueryNonRevMTPInput,
+  };
+}

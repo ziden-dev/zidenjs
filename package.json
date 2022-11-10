@@ -7,8 +7,8 @@
   "types": "build/index.d.ts",
   "scripts": {
     "prepack": "npmignore --auto .npmignore",
-    "test-all": "ts-mocha -p tsconfig.json src/**/*.test.ts",
-    "test": "ts-mocha -p tsconfig.json",
+    "test-all": "ts-mocha src/**/*.test.ts",
+    "test": "ts-mocha",
     "prepare": "husky install && npm run build",
     "format": "prettier '*/**/*.{ts,js,json,yml,md}' --write",
     "build": "tsc --project tsconfig.build.json",
@@ -54,6 +54,7 @@
     "@types/node": "^18.7.16",
     "@typescript-eslint/eslint-plugin": "^5.39.0",
     "@typescript-eslint/parser": "^5.39.0",
+    "c8": "^7.12.0",
     "chai": "^4.3.6",
     "circom_tester": "^0.0.18",
     "eslint": "^8.24.0",
