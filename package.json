@@ -7,8 +7,8 @@
   "types": "build/index.d.ts",
   "scripts": {
     "prepack": "npmignore --auto .npmignore",
-    "test-all": "ts-mocha src/**/*.test.ts",
-    "test": "ts-mocha",
+    "test-all": "ts-mocha -p tsconfig.mocha.json src/**/*.test.ts",
+    "test": "ts-mocha -p tsconfig.mocha.json",
     "prepare": "husky install && npm run build",
     "format": "prettier '*/**/*.{ts,js,json,yml,md}' --write",
     "build": "tsc --project tsconfig.build.json",
