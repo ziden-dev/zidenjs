@@ -36,14 +36,10 @@
     "buffer": "^6.0.3",
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
-    "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
     "ffjavascript": "^0.2.56",
     "level": "^8.0.0",
-    "os-browserify": "^0.3.0",
-    "path-browserify": "^1.0.1",
-    "process": "^0.11.10",
-    "stream-browserify": "^3.0.0"
+    "process": "^0.11.10"
   },
   "devDependencies": {
     "@babel/core": "^7.19.0",

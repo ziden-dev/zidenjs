@@ -5,7 +5,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /.ts$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
@@ -14,13 +14,12 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js'],
     fallback: {
-      assert: require.resolve('assert'),
       buffer: require.resolve('buffer'),
-      path: require.resolve('path-browserify'),
-      os: require.resolve('os-browserify/browser'),
-      constants: require.resolve('constants-browserify'),
+      path: false,
+      os: false,
+      constants: false,
       crypto: require.resolve('crypto-browserify'),
-      stream: require.resolve('stream-browserify'),
+      stream: false,
       process: false,
     },
   },
