@@ -194,3 +194,77 @@ export async function holderGenerateQuerySigWitness(
     issuerClaim: issuerClaim.getDataForCircuit(),
   };
 }
+
+
+/**
+ * Holder Generate credential atomic query sig witness from issuer input with signature
+ * @param {Entry} issuerClaim
+ * @param {SignedChallenge} signature
+ * @param {Entry} authClaim
+ * @param {Trees} userAuthTrees
+ * @param {KYCQuerySigInput} kycQuerySigInput
+ * @param {KYCQuerySigNonRevInput} kycQuerySigNonRevInput
+ * @param {number} slotIndex
+ * @param {OPERATOR} operator
+ * @param {Array<BigInt>} values
+ * @param {number} valueTreeDepth
+ * @param {number} from
+ * @param {number} to
+ * @param {HashFunction} hashFunction
+ * @param {SnarkField} F
+ * @returns {Promise<QuerySigWitness>} querySig witness
+ */
+ export async function holderGenerateQuerySigWitnessWithSignature(
+  issuerClaim: Entry,
+  signature: SignedChallenge,
+  authClaim: Entry,
+  userAuthTrees: Trees,
+  kycQuerySigInput: KYCQuerySigInput,
+  kycQuerySigNonRevInput: KYCQuerySigNonRevInput,
+  slotIndex: number,
+  operator: OPERATOR,
+  values: Array<BigInt>,
+  valueTreeDepth: number,
+  from: number,
+  to: number,
+  hashFunction: HashFunction,
+  F: SnarkField
+): Promise<QuerySigWitness> {
+  const authClaimProof = await userAuthTrees.generateProofForClaim(
+    authClaim.hiRaw(userAuthTrees.hasher),
+    authClaim.getRevocationNonce()
+  );
+  const timestamp = Date.now();
+  const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
+  const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
+  const mask = createMask(from, to);
+  const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
+  const merkleQueryInput = createMerkleQueryInput(
+    values.map((value) => shiftValue(value, from)),
+    valueTreeDepth,
+    hashFunction,
+    F,
+    getPartialValue(slotValue, from, to),
+    operator
+  );
+  return {
+    userID: authClaimProof.id,
+    userState: authClaimProof.state,
+    ...signature,
+    userClaimsTreeRoot: authClaimProof.claimsTreeRoot,
+    userAuthClaimMtp: authClaimProof.claimMTP,
+    userAuthClaim: authClaim.getDataForCircuit(),
+    userRevTreeRoot: authClaimProof.revTreeRoot,
+    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
+    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
+    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
+    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
+    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    compactInput,
+    mask,
+    ...merkleQueryInput,
+    ...kycQuerySigInput,
+    ...kycQuerySigNonRevInput,
+    issuerClaim: issuerClaim.getDataForCircuit(),
+  };
+}

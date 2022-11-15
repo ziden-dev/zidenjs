@@ -18,6 +18,18 @@ export async function newAuthClaimFromPrivateKey(eddsa: EDDSA, F: SnarkField, pr
   return authClaim;
 }
 
+/**
+ * Generate new auth claim from public key
+ * @param {BigInt} pubkeyX
+ * @param {BigInt} pubkeyY
+ * @returns {Promise<Entry>} auth claim
+ */
+ export async function newAuthClaimFromPublicKey(pubkeyX: BigInt, pubkeyY: BigInt): Promise<Entry> {
+  const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861770'));
+  const authClaim = newClaim(schemaHash, withIndexData(numToBits(pubkeyX, 32), numToBits(pubkeyY, 32)));
+  return authClaim;
+}
+
 export interface SignedChallenge {
   readonly challenge: BigInt;
   readonly challengeSignatureR8x: BigInt;
