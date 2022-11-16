@@ -2,7 +2,9 @@ import chai from 'chai';
 import {
   bitsToNum,
   bufferArrayToHex,
+  bufferToFloat,
   bufferToHex,
+  floatToBuffer,
   getPartialValue,
   hexToBuffer,
   hexToBufferArray,
@@ -58,5 +60,11 @@ describe('[util] convert', () => {
     const bi1 = setBits(bi, 5, value);
     const value1 = getPartialValue(bi1, 5, 5 + value.toString(2).length);
     expect(value).to.be.equal(value1);
+  });
+  it('test buffer - float64', () => {
+    const f = 10.05;
+    const floatToBuff = floatToBuffer(f);
+    const buffToFloat = bufferToFloat(floatToBuff);
+    expect((Math.abs(buffToFloat - f)) < 1e-6).to.be.true;
   });
 });
