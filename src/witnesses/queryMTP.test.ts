@@ -1,24 +1,10 @@
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
-// @ts-ignore
-import { SMTMemDb } from 'circomlibjs';
 
 // @ts-ignore
 import { groth16 } from 'snarkjs';
 
 import path from 'path';
-import {
-  buildFMTHashFunction,
-  buildHash0Hash1,
-  buildHasher,
-  buildSigner,
-  buildSnarkField,
-  EDDSA,
-  Hash0,
-  Hash1,
-  Hasher,
-  SnarkField,
-} from '../global.js';
 import { newAuthClaimFromPrivateKey, signChallenge } from '../claim/auth-claim.js';
 import {
   newClaim,
@@ -41,12 +27,12 @@ import {
   KYCQueryMTPInput,
   KYCNonRevQueryMTPInput,
   QueryMTPWitness,
+  holderGenerateQueryMTPWitnessWithSignature,
 } from './queryMTP.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
 import { OPERATOR } from './query.js';
+import { setupParams } from '../global.js';
 
 describe('test query atomic MTP', async () => {
-  let F: SnarkField;
   let claimsDb: SMTLevelDb;
   let revocationDb: SMTLevelDb;
   let rootsDb: SMTLevelDb;
@@ -55,32 +41,17 @@ describe('test query atomic MTP', async () => {
   let holderPrivateKey: Buffer;
   let holderTrees: Trees;
   let holderAuthClaim: Entry;
-  let hash0: Hash0;
-  let hash1: Hash1;
-  let hasher: Hasher;
-  let eddsa: EDDSA;
-  let hashFunction: HashFunction;
 
   it('setup params', async () => {
-    F = await buildSnarkField();
-    claimsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/claims', F);
-    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/revocation', F);
-    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/roots', F);
-    hasher = await buildHasher();
-    const hs = buildHash0Hash1(hasher, F);
-    hash0 = hs.hash0;
-    hash1 = hs.hash1;
-    eddsa = await buildSigner();
-    hashFunction = buildFMTHashFunction(hash0, F);
+    await setupParams();
+    claimsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/claims');
+    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/revocation');
+    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/roots');
   }).timeout(10000);
   it('setup kyc auth claim', async () => {
     issuerPrivateKey = Buffer.alloc(32, 1);
-    const issuerAuthClaim = await newAuthClaimFromPrivateKey(eddsa, F, issuerPrivateKey);
+    const issuerAuthClaim = await newAuthClaimFromPrivateKey(issuerPrivateKey);
     issuerTrees = await Trees.generateID(
-      F,
-      hash0,
-      hash1,
-      hasher,
       [issuerAuthClaim],
       claimsDb,
       revocationDb,
@@ -93,15 +64,11 @@ describe('test query atomic MTP', async () => {
 
   it('setup holder ID', async () => {
     holderPrivateKey = Buffer.alloc(32, 2);
-    holderAuthClaim = await newAuthClaimFromPrivateKey(eddsa, F, holderPrivateKey);
-    const claimsDb = new SMTMemDb(F);
-    const revocationDb = new SMTMemDb(F);
-    const rootsDb = new SMTMemDb(F);
+    holderAuthClaim = await newAuthClaimFromPrivateKey(holderPrivateKey);
+    const claimsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp_holder/claims');
+    const revocationDb = new SMTLevelDb('src/witnesses/db_test/query_mtp_holder/revocation');
+    const rootsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp_holder/roots');
     holderTrees = await Trees.generateID(
-      F,
-      hash0,
-      hash1,
-      hasher,
       [holderAuthClaim],
       claimsDb,
       revocationDb,
@@ -130,7 +97,7 @@ describe('test query atomic MTP', async () => {
       withIndexID(holderTrees.userID)
     );
     await issuerTrees.insertClaim(issuerClaim);
-    kycQueryMTPInput = await kycGenerateQueryMTPInput(issuerClaim.hiRaw(issuerTrees.hasher), issuerTrees);
+    kycQueryMTPInput = await kycGenerateQueryMTPInput(issuerClaim.hiRaw(), issuerTrees);
     kycQueryNonRevMTPInput = await kycGenerateNonRevQueryMTPInput(issuerClaim.getRevocationNonce(), issuerTrees);
   }).timeout(10000);
 
@@ -142,18 +109,17 @@ describe('test query atomic MTP', async () => {
     challenge = BigInt('12345');
   });
   it('Benchmark sign signature', async () => {
-    await signChallenge(eddsa, F, holderPrivateKey, challenge);
+    await signChallenge(holderPrivateKey, challenge);
   });
   it('Benchmark holder auth claim MTP', async () => {
     await holderTrees.generateProofForClaim(
-      holderAuthClaim.hiRaw(holderTrees.hasher),
+      holderAuthClaim.hiRaw(),
       holderAuthClaim.getRevocationNonce()
     );
   });
   it('holder query slot index A with OPERATOR LESS THAN', async () => {
     witness = await holderGenerateQueryMTPWitness(
       issuerClaim,
-      eddsa,
       holderPrivateKey,
       holderAuthClaim,
       challenge,
@@ -166,8 +132,6 @@ describe('test query atomic MTP', async () => {
       10,
       0,
       100,
-      hashFunction,
-      F
     );
     console.log(witness);
   });
@@ -184,7 +148,6 @@ describe('test query atomic MTP', async () => {
     values = [BigInt(300)];
     witness = await holderGenerateQueryMTPWitness(
       issuerClaim,
-      eddsa,
       holderPrivateKey,
       holderAuthClaim,
       challenge,
@@ -196,9 +159,7 @@ describe('test query atomic MTP', async () => {
       values,
       10,
       0,
-      100,
-      hashFunction,
-      F
+      100
     );
     const circuit = await wasm_tester(
       path.join('src', 'witnesses', 'circom_test', 'bin', 'credentialAtomicQueryMTP.circom')
@@ -207,7 +168,31 @@ describe('test query atomic MTP', async () => {
     await circuit.checkConstraints(w);
   }).timeout(100000);
 
-  it('benchmark proving time', async () => {
+  it('holder query slot value B with OPERATOR EQUAL with signature', async () => {
+    values = [BigInt(300)];
+    const signature = await signChallenge(holderPrivateKey, challenge);
+    witness = await holderGenerateQueryMTPWitnessWithSignature(
+      issuerClaim,
+      holderAuthClaim,
+      signature,
+      holderTrees,
+      kycQueryMTPInput,
+      kycQueryNonRevMTPInput,
+      7,
+      OPERATOR.EQUAL,
+      values,
+      10,
+      0,
+      100
+    );
+    const circuit = await wasm_tester(
+      path.join('src', 'witnesses', 'circom_test', 'bin', 'credentialAtomicQueryMTP.circom')
+    );
+    const w = await circuit.calculateWitness(witness, true);
+    await circuit.checkConstraints(w);
+  }).timeout(100000);
+
+  it.skip('benchmark proving time', async () => {
     await groth16.fullProve(
       witness,
       'src/witnesses/circom_test/bin/credentialAtomicQueryMTP.wasm',

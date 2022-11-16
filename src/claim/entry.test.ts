@@ -18,25 +18,19 @@ import { newAuthClaimFromPrivateKey, signChallenge } from './auth-claim.js';
 
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
-import { buildHasher, buildSigner, buildSnarkField, EDDSA, Hasher, SnarkField } from '../global.js';
 import { bitsToNum, numToBits } from '../utils.js';
+import { getZidenParams, setupParams } from '../global.js';
 
 describe('test entries', async () => {
-  let F: SnarkField;
-  let poseidon: Hasher;
-  let eddsa: EDDSA;
   let claim: Entry;
   let schemaHash: Buffer;
 
   it('create claim', async () => {
-    F = await buildSnarkField();
-    poseidon = await buildHasher();
-    eddsa = await buildSigner();
-
+    await setupParams();
     const privateKey = crypto.randomBytes(32);
-    const pubkey = eddsa.prv2pub(privateKey);
-    const pubkeyX = F.toObject(pubkey[0]);
-    const pubkeyY = F.toObject(pubkey[1]);
+    const pubkey = getZidenParams().eddsa.prv2pub(privateKey);
+    const pubkeyX = getZidenParams().F.toObject(pubkey[0]);
+    const pubkeyY = getZidenParams().F.toObject(pubkey[1]);
     schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861770'));
     const expirationDate = BigInt(123456);
     const revocationNonce = BigInt(111);
@@ -112,8 +106,8 @@ describe('test entries', async () => {
       true
     );
     await circuit.assertOut(w, {
-      hi: claim.hi(poseidon, F),
-      hv: claim.hv(poseidon, F),
+      hi: claim.hi(),
+      hv: claim.hv(),
     });
   });
 
@@ -127,9 +121,9 @@ describe('test entries', async () => {
       true
     );
     await circuit.assertOut(w, {
-      hash: claim.getClaimHash(poseidon, F),
-      hi: claim.hi(poseidon, F),
-      hv: claim.hv(poseidon, F),
+      hash: claim.getClaimHash(),
+      hi: claim.hi(),
+      hv: claim.hv(),
     });
   }).timeout(10000);
 
@@ -242,9 +236,9 @@ describe('test entries', async () => {
 
   it('test auth claim signature circuit with custom challenge', async () => {
     const privateKey = crypto.randomBytes(32);
-    const authClaim = await newAuthClaimFromPrivateKey(eddsa, F, privateKey);
-    const challenge = claim.getClaimHash(poseidon, F);
-    const signature = await signChallenge(eddsa, F, privateKey, challenge);
+    const authClaim = await newAuthClaimFromPrivateKey(privateKey);
+    const challenge = claim.getClaimHash();
+    const signature = await signChallenge(privateKey, challenge);
     expect(signature.challenge).to.be.equal(challenge);
     const circuit = await wasm_tester(
       path.join('src', 'claim', 'circom_test', 'checkDataSignatureWithPubKeyInClaim.circom')
@@ -264,9 +258,9 @@ describe('test entries', async () => {
 
   it('test auth claim signature circuit', async () => {
     const privateKey = crypto.randomBytes(32);
-    const authClaim = await newAuthClaimFromPrivateKey(eddsa, F, privateKey);
-    const challenge = authClaim.getClaimHash(poseidon, F);
-    const signature = await signChallenge(eddsa, F, privateKey, challenge);
+    const authClaim = await newAuthClaimFromPrivateKey(privateKey);
+    const challenge = authClaim.getClaimHash();
+    const signature = await signChallenge(privateKey, challenge);
     expect(signature.challenge).to.be.equal(challenge);
     const circuit = await wasm_tester(path.join('src', 'claim', 'circom_test', 'verifyClaimSignature.circom'));
     const claimCircuit = authClaim.getDataForCircuit();

@@ -3,17 +3,6 @@ import { wasm as wasm_tester } from 'circom_tester';
 // @ts-ignore
 import { groth16 } from 'snarkjs';
 import path from 'path';
-import {
-  buildHash0Hash1,
-  buildHasher,
-  buildSigner,
-  buildSnarkField,
-  EDDSA,
-  Hash0,
-  Hash1,
-  Hasher,
-  SnarkField,
-} from '../global.js';
 import { newAuthClaimFromPrivateKey } from '../claim/auth-claim.js';
 import {
   newClaim,
@@ -29,10 +18,9 @@ import { IDType } from '../claim/id.js';
 import { SMTLevelDb } from '../db/level_db.js';
 import { Trees } from '../trees/trees.js';
 import { StateTransitionWitness, stateTransitionWitness, stateTransitionWitnessWithHiHv } from './stateTransition.js';
+import { setupParams } from '../global.js';
 
-describe('test authentication', async () => {
-  let F: SnarkField;
-  let eddsa: EDDSA;
+describe('test state transition QSMT', async () => {
   let privateKey: Buffer;
   let authClaim: Entry;
   let claimsDb: SMTLevelDb;
@@ -44,28 +32,16 @@ describe('test authentication', async () => {
   let claim3: Entry;
   let claim4: Entry;
   let claim5: Entry;
-  let hasher: Hasher;
-  let hash0: Hash0;
-  let hash1: Hash1;
   it('set up trees and claims', async () => {
-    F = await buildSnarkField();
-    hasher = await buildHasher();
-    const hs = buildHash0Hash1(hasher, F);
-    hash0 = hs.hash0;
-    hash1 = hs.hash1;
-    eddsa = await buildSigner();
+    await setupParams();
     privateKey = Buffer.alloc(32, 1);
 
-    authClaim = await newAuthClaimFromPrivateKey(eddsa, F, privateKey);
-    claimsDb = new SMTLevelDb('src/witnesses/db_test/state_db5/claims', F);
-    revocationDb = new SMTLevelDb('src/witnesses/db_test/state_db5/revocation', F);
-    rootsDb = new SMTLevelDb('src/witnesses/db_test/state_db5/roots', F);
+    authClaim = await newAuthClaimFromPrivateKey(privateKey);
+    claimsDb = new SMTLevelDb('src/witnesses/db_test/state_db5/claims');
+    revocationDb = new SMTLevelDb('src/witnesses/db_test/state_db5/revocation');
+    rootsDb = new SMTLevelDb('src/witnesses/db_test/state_db5/roots');
 
     trees = await Trees.generateID(
-      F,
-      hash0,
-      hash1,
-      hasher,
       [authClaim],
       claimsDb,
       revocationDb,
@@ -110,32 +86,28 @@ describe('test authentication', async () => {
     );
   });
   it('1st state transition', async () => {
-    const w1 = await stateTransitionWitness(eddsa, privateKey, authClaim, trees, [claim1, claim2, claim3], [], hasher);
+    const w1 = await stateTransitionWitness( privateKey, authClaim, trees, [claim1, claim2, claim3], []);
     console.log(w1.isOldStateGenesis);
   });
 
   it('2nd state transition', async () => {
     await stateTransitionWitness(
-      eddsa,
       privateKey,
       authClaim,
       trees,
       [claim4],
       [claim1.getRevocationNonce(), claim2.getRevocationNonce()],
-      hasher
     );
   });
 
   let witness: StateTransitionWitness;
   it('4th state transition', async () => {
     witness = await stateTransitionWitness(
-      eddsa,
       privateKey,
       authClaim,
       trees,
       [claim5],
-      [claim3.getRevocationNonce()],
-      hasher
+      [claim3.getRevocationNonce()]
     );
     console.log(witness.isOldStateGenesis);
   });
@@ -152,12 +124,12 @@ describe('test authentication', async () => {
     for (let i = 0; i < 10; i++) {
       let claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 7 * i + 9), Buffer.alloc(30, 13 * i + 5)));
       claim = await trees.prepareClaimForInsert(claim, 100);
-      claimHiHvs.push([claim.hiRaw(hasher), claim.hvRaw(hasher)]);
+      claimHiHvs.push([claim.hiRaw(), claim.hvRaw()]);
     }
-    witness = await stateTransitionWitnessWithHiHv(eddsa, privateKey, authClaim, trees, claimHiHvs, [], hasher);
+    witness = await stateTransitionWitnessWithHiHv( privateKey, authClaim, trees, claimHiHvs, []);
   });
 
-  it('benchmark proving time', async () => {
+  it.skip('benchmark proving time', async () => {
     await groth16.fullProve(
       witness,
       'src/witnesses/circom_test/quin/stateTransition.wasm',

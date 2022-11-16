@@ -1,5 +1,4 @@
 import { Entry } from '../claim/entry.js';
-import { EDDSA } from '../global.js';
 import { Trees } from '../trees/trees.js';
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 
@@ -8,7 +7,6 @@ export interface AuthenticationWitness extends IdOwnershipBySignatureWitness {
 }
 /**
  * Generate authentication witness
- * @param {EDDSA} eddsa
  * @param {Buffer} privateKey
  * @param {Entry} authClaim
  * @param {BigInt} challenge
@@ -16,15 +14,14 @@ export interface AuthenticationWitness extends IdOwnershipBySignatureWitness {
  * @returns {Promise<AuthenticationWitness>} authentication circuit input
  */
 export async function authenticationWitness(
-  eddsa: EDDSA,
   privateKey: Buffer,
   authClaim: Entry,
   challenge: BigInt,
   trees: Trees
 ): Promise<AuthenticationWitness> {
-  const signature = await signChallenge(eddsa, trees.F, privateKey, challenge);
+  const signature = await signChallenge(privateKey, challenge);
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   return {
@@ -59,7 +56,7 @@ export async function authenticationWitness(
   trees: Trees
 ): Promise<AuthenticationWitness> {
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   return {
@@ -99,7 +96,6 @@ export interface IdOwnershipBySignatureWitness extends SignedChallenge{
 }
 /**
  * Generate authentication witness
- * @param {EDDSA} eddsa
  * @param {Buffer} privateKey
  * @param {Entry} authClaim
  * @param {BigInt} challenge
@@ -107,15 +103,14 @@ export interface IdOwnershipBySignatureWitness extends SignedChallenge{
  * @returns {Promise<IdOwnershipBySignatureWitness>} idOwnership circuit input
  */
 export async function idOwnershipBySignatureWitness(
-  eddsa: EDDSA,
   privateKey: Buffer,
   authClaim: Entry,
   challenge: BigInt,
   trees: Trees
 ): Promise<IdOwnershipBySignatureWitness> {
-  const signature = await signChallenge(eddsa, trees.F, privateKey, challenge);
+  const signature = await signChallenge(privateKey, challenge);
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   return {
@@ -149,7 +144,7 @@ export async function idOwnershipBySignatureWitness(
   trees: Trees
 ): Promise<IdOwnershipBySignatureWitness> {
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   return {

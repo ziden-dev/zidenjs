@@ -1,10 +1,8 @@
-import { EDDSA, Hasher, SnarkField } from '../global.js';
 import { Trees } from '../trees/trees.js';
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
 import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils.js';
 import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
 
 export interface KYCQuerySigInput {
   readonly issuerClaimSignatureR8x: BigInt;
@@ -23,8 +21,6 @@ export interface KYCQuerySigInput {
 }
 /**
  * KYC service Generate query sig witness for Holder
- * @param {EDDSA} eddsa
- * @param {Hasher} hasher
  * @param {Buffer} privateKey
  * @param {Entry} issuerAuthClaim
  * @param {Entry} issuerClaim
@@ -32,18 +28,16 @@ export interface KYCQuerySigInput {
  * @returns {Promise<KYCQuerySigInput>} queryMTP input
  */
 export async function kycGenerateQuerySigInput(
-  eddsa: EDDSA,
-  hasher: Hasher,
   privateKey: Buffer,
   issuerAuthClaim: Entry,
   issuerClaim: Entry,
   issuerAuthClaimTrees: Trees
 ): Promise<KYCQuerySigInput> {
-  const challenge = issuerClaim.getClaimHash(hasher, issuerAuthClaimTrees.F);
-  const claimSignature = await signChallenge(eddsa, issuerAuthClaimTrees.F, privateKey, challenge);
+  const challenge = issuerClaim.getClaimHash();
+  const claimSignature = await signChallenge( privateKey, challenge);
 
   const issuerAuthClaimProof = await issuerAuthClaimTrees.generateProofForClaim(
-    issuerAuthClaim.hiRaw(issuerAuthClaimTrees.hasher),
+    issuerAuthClaim.hiRaw(),
     issuerAuthClaim.getRevocationNonce()
   );
 
@@ -139,7 +133,6 @@ export interface QuerySigWitness extends KYCQuerySigInput, KYCQuerySigNonRevInpu
  */
 export async function holderGenerateQuerySigWitness(
   issuerClaim: Entry,
-  eddsa: EDDSA,
   privateKey: Buffer,
   authClaim: Entry,
   challenge: BigInt,
@@ -151,13 +144,11 @@ export async function holderGenerateQuerySigWitness(
   values: Array<BigInt>,
   valueTreeDepth: number,
   from: number,
-  to: number,
-  hashFunction: HashFunction,
-  F: SnarkField
+  to: number
 ): Promise<QuerySigWitness> {
-  const signature = await signChallenge(eddsa, userAuthTrees.F, privateKey, challenge);
+  const signature = await signChallenge( privateKey, challenge);
   const authClaimProof = await userAuthTrees.generateProofForClaim(
-    authClaim.hiRaw(userAuthTrees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   const timestamp = Date.now();
@@ -168,8 +159,6 @@ export async function holderGenerateQuerySigWitness(
   const merkleQueryInput = createMerkleQueryInput(
     values.map((value) => shiftValue(value, from)),
     valueTreeDepth,
-    hashFunction,
-    F,
     getPartialValue(slotValue, from, to),
     operator
   );
@@ -226,12 +215,10 @@ export async function holderGenerateQuerySigWitness(
   values: Array<BigInt>,
   valueTreeDepth: number,
   from: number,
-  to: number,
-  hashFunction: HashFunction,
-  F: SnarkField
+  to: number
 ): Promise<QuerySigWitness> {
   const authClaimProof = await userAuthTrees.generateProofForClaim(
-    authClaim.hiRaw(userAuthTrees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   const timestamp = Date.now();
@@ -242,8 +229,6 @@ export async function holderGenerateQuerySigWitness(
   const merkleQueryInput = createMerkleQueryInput(
     values.map((value) => shiftValue(value, from)),
     valueTreeDepth,
-    hashFunction,
-    F,
     getPartialValue(slotValue, from, to),
     operator
   );

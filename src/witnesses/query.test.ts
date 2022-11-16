@@ -2,19 +2,14 @@
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
 import { createMask, shiftValue, setBits } from '../utils.js';
-import { buildFMTHashFunction, buildHash0Hash1, buildHasher, buildSnarkField, SnarkField } from '../global.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
 import { createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
 import { expect } from 'chai';
+import { setupParams } from '../global.js';
 
 describe('Test and benchmark query circuit', () => {
-  let hashFunction: HashFunction;
-  let F: SnarkField;
+
   it('setup params', async () => {
-    F = await buildSnarkField();
-    const hasher = await buildHasher();
-    const hs = buildHash0Hash1(hasher, F);
-    hashFunction = buildFMTHashFunction(hs.hash0, F);
+    await setupParams();
   });
 
   let slotValue: BigInt = BigInt(0);
@@ -85,7 +80,7 @@ describe('Test and benchmark query circuit', () => {
     for (let i = 0; i < 100; i++) {
       values.push(BigInt(101 * i));
     }
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.IN);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.IN);
     inWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -119,7 +114,7 @@ describe('Test and benchmark query circuit', () => {
     for (let i = 0; i < 1000; i++) {
       values.push(BigInt(123 * i));
     }
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.NOT_IN);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.NOT_IN);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -137,7 +132,7 @@ describe('Test and benchmark query circuit', () => {
     for (let i = 0; i < 1000; i++) {
       values.push(value1.valueOf() + BigInt(123 * i + 1));
     }
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.NOT_IN);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.NOT_IN);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -155,7 +150,7 @@ describe('Test and benchmark query circuit', () => {
     for (let i = 0; i < 1000; i++) {
       values.push(value1.valueOf() + BigInt(123 * (i - 333) - 1));
     }
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.NOT_IN);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.NOT_IN);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -169,7 +164,7 @@ describe('Test and benchmark query circuit', () => {
   }).timeout(10000);
   it('should pass NOOP operation query circuit', async () => {
     let values: Array<BigInt> = [];
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.NOOP);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.NOOP);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -183,7 +178,7 @@ describe('Test and benchmark query circuit', () => {
   }).timeout(10000);
   it('should pass EQUAL operation query circuit', async () => {
     let values: Array<BigInt> = [value1];
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.EQUAL);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.EQUAL);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -197,7 +192,7 @@ describe('Test and benchmark query circuit', () => {
   }).timeout(10000);
   it('should pass LESS THAN operation query circuit', async () => {
     let values: Array<BigInt> = [value1.valueOf() + BigInt(1)];
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.LESS_THAN);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.LESS_THAN);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -211,7 +206,7 @@ describe('Test and benchmark query circuit', () => {
   }).timeout(10000);
   it('should pass GREATER THAN operation query circuit', async () => {
     let values: Array<BigInt> = [value1.valueOf() - BigInt(1)];
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.GREATER_THAN);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.GREATER_THAN);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,
@@ -225,7 +220,7 @@ describe('Test and benchmark query circuit', () => {
   }).timeout(10000);
   it('should pass IN RANGE operation query circuit', async () => {
     let values: Array<BigInt> = [value1.valueOf() - BigInt(1), value1.valueOf() + BigInt(1)];
-    let merkleQueryInput = createMerkleQueryInput(values, 10, hashFunction, F, value1, OPERATOR.IN_RANGE);
+    let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.IN_RANGE);
     notInWitness = {
       ...merkleQueryInput,
       in: value1,

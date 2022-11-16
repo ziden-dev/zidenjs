@@ -3,17 +3,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 // @ts-ignore
 import { groth16 } from 'snarkjs';
 import path from 'path';
-import {
-  buildHash0Hash1,
-  buildHasher,
-  buildSigner,
-  buildSnarkField,
-  EDDSA,
-  Hash0,
-  Hash1,
-  Hasher,
-  SnarkField,
-} from '../global.js';
+
 import { newAuthClaimFromPrivateKey } from '../claim/auth-claim.js';
 import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry.js';
 import { IDType } from '../claim/id.js';
@@ -25,35 +15,22 @@ import {
   idOwnershipBySignatureWitness,
 } from './authentication.js';
 import { SMTLevelDb } from '../db/level_db.js';
+import { setupParams } from '../global.js';
 
 describe('test authentication', async () => {
-  let F: SnarkField;
   let privateKey: Buffer;
   let authClaim: Entry;
   let authTrees: Trees;
-  let hasher: Hasher;
-  let hash0: Hash0;
-  let hash1: Hash1;
-  let eddsa: EDDSA;
 
   it('set up trees', async () => {
-    eddsa = await buildSigner();
-    F = await buildSnarkField();
-    hasher = await buildHasher();
-    const hs = buildHash0Hash1(hasher, F);
-    hash0 = hs.hash0;
-    hash1 = hs.hash1;
+    await setupParams();
     privateKey = Buffer.alloc(32, 1);
-    authClaim = await newAuthClaimFromPrivateKey(eddsa, F, privateKey);
+    authClaim = await newAuthClaimFromPrivateKey(privateKey);
 
-    const claimsDb = new SMTLevelDb('src/witnesses/db_test/auth/claims', F);
-    const revocationDb = new SMTLevelDb('src/witnesses/db_test/auth/revocation', F);
-    const rootsDb = new SMTLevelDb('src/witnesses/db_test/auth/roots', F);
+    const claimsDb = new SMTLevelDb('src/witnesses/db_test/auth/claims');
+    const revocationDb = new SMTLevelDb('src/witnesses/db_test/auth/revocation');
+    const rootsDb = new SMTLevelDb('src/witnesses/db_test/auth/roots');
     authTrees = await Trees.generateID(
-      F,
-      hash0,
-      hash1,
-      hasher,
       [authClaim],
       claimsDb,
       revocationDb,
@@ -67,7 +44,7 @@ describe('test authentication', async () => {
   let authWitness: AuthenticationWitness;
   it('authenticate with custom challenge', async () => {
     const challenge = BigInt('123456');
-    authWitness = await authenticationWitness(eddsa, privateKey, authClaim, challenge, authTrees);
+    authWitness = await authenticationWitness(privateKey, authClaim, challenge, authTrees);
     const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'bin', 'authentication.circom'));
     const w = await circuit.calculateWitness(authWitness, true);
     await circuit.checkConstraints(w);
@@ -87,11 +64,11 @@ describe('test authentication', async () => {
     await authTrees.revokeClaim(claim2.getRevocationNonce());
     await authTrees.revokeClaim(claim3.getRevocationNonce());
 
-    const authClaim1 = await newAuthClaimFromPrivateKey(eddsa, F, Buffer.alloc(32, 2));
+    const authClaim1 = await newAuthClaimFromPrivateKey(Buffer.alloc(32, 2));
 
     await authTrees.insertClaim(authClaim1);
 
-    idOwnershipWitness = await idOwnershipBySignatureWitness(eddsa, privateKey, authClaim, challenge, authTrees);
+    idOwnershipWitness = await idOwnershipBySignatureWitness(privateKey, authClaim, challenge, authTrees);
     const circuit = await wasm_tester(
       path.join('src', 'witnesses', 'circom_test', 'bin', 'idOwnershipBySignature.circom')
     );
@@ -99,7 +76,7 @@ describe('test authentication', async () => {
     await circuit.checkConstraints(w);
   }).timeout(20000);
 
-  it('benchmark proving time for id ownership by signature', async () => {
+  it.skip('benchmark proving time for id ownership by signature', async () => {
     await groth16.fullProve(
       idOwnershipWitness,
       'src/witnesses/circom_test/bin/idOwnershipBySignature.wasm',

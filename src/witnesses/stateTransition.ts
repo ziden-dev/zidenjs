@@ -1,8 +1,8 @@
-import { EDDSA, Hasher } from '../global.js';
 import { Trees } from '../trees/trees.js';
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
 import { numToBits } from '../utils.js';
+import { getZidenParams } from '../global.js';
 
 export interface StateTransitionWitness {
   readonly userID: BigInt;
@@ -27,29 +27,25 @@ export interface StateTransitionWitness {
 
 /**
  * Update trees state through insert claims into claims tree and revoke claims
- * @param {EDDSA} eddsa
  * @param {Buffer} privateKey
  * @param {Entry} authClaim
  * @param {Trees} trees
  * @param {Array<Entry>} insertingClaims claims inserted to claims tree
  * @param {Array<BigInt>} revokingClaimsRevNonce revoked claims
- * @param {Hasher} hasher
  * @returns {Promise<StateTransitionWitness>} state transition witness
  */
 export async function stateTransitionWitness(
-  eddsa: EDDSA,
   privateKey: Buffer,
   authClaim: Entry,
   trees: Trees,
   insertingClaims: Array<Entry>,
   revokingClaimsRevNonce: Array<BigInt>,
-  hasher: Hasher
 ): Promise<StateTransitionWitness> {
   const userID = trees.userID;
   const oldUserState = trees.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   for (let i = 0; i < insertingClaims.length; i++) {
@@ -60,8 +56,8 @@ export async function stateTransitionWitness(
   }
 
   const newUserState = trees.getIdenState();
-  const challenge = hasher([oldUserState, newUserState]);
-  const signature = await signChallenge(eddsa, trees.F, privateKey, challenge);
+  const challenge = getZidenParams().hasher([oldUserState, newUserState]);
+  const signature = await signChallenge(privateKey, challenge);
   return {
     userID: authClaimProof.id,
     oldUserState,
@@ -87,37 +83,33 @@ export async function stateTransitionWitness(
 
 /**
  * Update trees state through insert claims by hi, hv into claims tree and revoke claims
- * @param {EDDSA} eddsa
  * @param {Buffer} privateKey
  * @param {Entry} authClaim
  * @param {Trees} trees
  * @param {Array<[ArrayLike<number>, ArrayLike<number>]>} insertingClaimHiHvs claims inserted to claims tree
  * @param {Array<BigInt>} revokingClaimsRevNonce revoked claims
- * @param {Hasher} hasher
  * @returns {Promise<StateTransitionWitness>} state transition witness
  */
 export async function stateTransitionWitnessWithHiHv(
-  eddsa: EDDSA,
   privateKey: Buffer,
   authClaim: Entry,
   trees: Trees,
   insertingClaimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>,
-  revokingClaimsRevNonce: Array<BigInt>,
-  hasher: Hasher
+  revokingClaimsRevNonce: Array<BigInt>
 ): Promise<StateTransitionWitness> {
   const userID = trees.userID;
   const oldUserState = trees.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   await trees.batchInsertClaimByHiHv(insertingClaimHiHvs);
   await trees.batchRevokeClaim(revokingClaimsRevNonce);
 
   const newUserState = trees.getIdenState();
-  const challenge = hasher([oldUserState, newUserState]);
-  const signature = await signChallenge(eddsa, trees.F, privateKey, challenge);
+  const challenge = getZidenParams().hasher([oldUserState, newUserState]);
+  const signature = await signChallenge(privateKey, challenge);
   return {
     userID: authClaimProof.id,
     oldUserState,
@@ -161,7 +153,7 @@ export async function stateTransitionWitnessWithHiHv(
   const oldUserState = trees.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   for (let i = 0; i < insertingClaims.length; i++) {
@@ -215,7 +207,7 @@ export async function stateTransitionWitnessWithHiHv(
   const oldUserState = trees.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
   const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(trees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   await trees.batchInsertClaimByHiHv(insertingClaimHiHvs);

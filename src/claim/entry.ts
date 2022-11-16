@@ -1,5 +1,5 @@
 import bigInt from 'big-integer';
-import { SNARK_SIZE, Hasher, SnarkField } from '../global.js';
+import { getZidenParams, SNARK_SIZE } from '../global.js';
 import { bitsToNum, bufferArrayToHex, hexToBufferArray, numToBits } from '../utils.js';
 /*
 Claim structure
@@ -302,58 +302,50 @@ export class Entry {
   /**
    * Hash index calculation
    * Hash index is calculated from: elements 0,1,2,3
-   * @param {Hasher} hasher
    * @returns {ArrayLike<number>} Hash index of the claim element structure
    */
-  hiRaw(hasher: Hasher): ArrayLike<number> {
+  hiRaw(): ArrayLike<number> {
     const hashArray = this._elements.slice(0, 4).map((e) => bitsToNum(e));
-    return hasher(hashArray);
+    return getZidenParams().hasher(hashArray);
   }
 
   /**
    * Hash index calculation
    * Hash index is calculated from: elements 0,1,2,3
-   * @param {Hasher} hasher
-   * @param {SnarkField} F
    * @returns {BigInt} Hash index of the claim element structure
    */
-  hi(hasher: Hasher, F: SnarkField): BigInt {
-    return F.toObject(this.hiRaw(hasher));
+  hi(): BigInt {
+    return getZidenParams().F.toObject(this.hiRaw());
   }
 
   /**
    * Hash value calculation
-   * Hash value is calculated from: elements 0,1,2,3
-   * @param {Hasher} hasher
+   * Hash value is calculated from: elements 4,5,6,7
    * @returns {ArrayLike<number>} Hash value of the claim element structure
    */
 
-  hvRaw(hasher: Hasher): ArrayLike<number> {
+  hvRaw(): ArrayLike<number> {
     const hashArray = this._elements.slice(4).map((e) => bitsToNum(e));
-    return hasher(hashArray);
+    return getZidenParams().hasher(hashArray);
   }
 
   /**
    * Hash value calculation
-   * Hash value is calculated from: elements 0,1,2,3
-   * @param {Hasher} hasher
-   * @param {SnarkField} F
+   * Hash value is calculated from: elements 4,5,6,7
    * @returns {BigInt} Hash value of the claim element structure
    */
 
-  hv(hasher: Hasher, F: SnarkField): BigInt {
-    return F.toObject(this.hvRaw(hasher));
+  hv(): BigInt {
+    return getZidenParams().F.toObject(this.hvRaw());
   }
 
   /**
    * Hash value calculation
    * Hash value is calculated from: hi|hv
-   * @param {Hasher} hasher
-   * @param {SnarkField} F
    * @returns {BigInt} Hash value of the claim element structure
    */
-  getClaimHash(hasher: Hasher, F: SnarkField): BigInt {
-    return F.toObject(hasher([this.hi(hasher, F), this.hv(hasher, F)]));
+  getClaimHash(): BigInt {
+    return getZidenParams().F.toObject(getZidenParams().hasher([this.hi(), this.hv()]));
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Hasher } from '../global.js';
+import { getZidenParams } from '../global.js';
 import { numToBits } from '../utils.js';
 export const IDType = {
   Default: Buffer.from([0x00, 0x00]),
@@ -68,12 +68,11 @@ export function IDGenesisFromIdenState(idenState: Buffer, type: Buffer): Buffer 
 
 /**
  * Generate Iden State from claim tree root, revocation root, root of roots
- * @param {Hasher} hasher
  * @param {BigInt} clr claim tree root
  * @param {BigInt} rer revocation root
  * @param {BigInt} ror root of roots
  * @returns {ArrayLike<number>} idenState
  */
-export function idenState(hasher: Hasher, clr: BigInt, rer: BigInt, ror: BigInt): ArrayLike<number> {
-  return hasher([clr, rer, ror]);
+export function idenState(clr: BigInt, rer: BigInt, ror: BigInt): ArrayLike<number> {
+  return getZidenParams().hasher([clr, rer, ror]);
 }

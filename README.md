@@ -111,6 +111,24 @@ import { claim } from 'zidenjs';
 const privateKey = crypto.randomBytes(32);
 const authClaim = await claim.authClaim.newAuthClaimFromPrivateKey(eddsa, F, privateKey);
 ```
+
+##### Sign a challenge with private key
+
+```typescript
+// construct an auth claim from a random private key
+import crypto from 'crypto';
+import { claim } from 'zidenjs';
+const {signChallenge, SignedSignature} = claim.authClaim;
+const privateKey = crypto.randomBytes(32);
+const challenge = BigInt('4893740132');
+
+const signature: SignedSignature = await signChallenge(
+  eddsa,
+  F,
+  privateKey,
+  challenge
+)
+```
 ### 3. Generate Identity
 
 An identity is constructed from some **auth claims**. There are two Sparse Merkle Tree structures currently be supported by Ziden. The default one is **Quinary SMT** with depth of **14** (**highly recommended**), and another is **Binary SMT** with depth of **32**
@@ -130,10 +148,10 @@ const rootsDb = new SMTLevelDb('path/to/your/roots-tree-db', F);
 
 // Quinary SMT (default option, don't need to specify SMT type and depth)
 const idWithQSMT = await Trees.generateID(
-    F,
+    F, 
     hash0,
     hash1,
-    hasher,
+    hasher, 
     [authClaim],
     claimsDb,
     revocationDb,
@@ -161,7 +179,7 @@ const idWithBSMT = await Trees.generateID(
 
 The state of an identity can be updated by **issuing new claims** or **revoking invalid ones**.
 
-#### Example
+#### With private key
 
 ```typescript
 import { groth16 } from 'snarkjs';
@@ -184,6 +202,27 @@ const {proof, publicSignals} = await groth16.fullProve(witness,
 );
 ```
 
+#### With Hi-Hv and the revocation nonce of claims (if issuer doesn't access to raw claims)
+
+```typescript
+import { groth16 } from 'snarkjs';
+import { witnesses, claim } from 'zidenjs';
+
+// update your trees and calculate inputs for state transition circuits in a same time
+const witness = await witnesses.stateTransitionWitnessWithHiHv(
+    signature,
+    authClaim,
+    trees,
+    [claim0, claim1, claim2], // list of inserting claims
+    [claim3.getRevocationNonce(), claim4.getRevocationNonce()], // list of revoking claim revocation nonces
+    hasher
+);
+
+// optional - calculate zero knowledge proof from generated witness with snarkjs
+const {proof, publicSignals} = await groth16.fullProve(witness,
+    'path/to/your/wasm-file', 'path/to/your/zkey-file'
+);
+```
 ### 5. Credential atomic query MTP
 
 #### Issuer side - calculates claim exists MTP (private) and non-rev MTP (public) and sends it to holder

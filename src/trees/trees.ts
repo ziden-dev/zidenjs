@@ -1,13 +1,13 @@
 import { SMTDb } from '../db/index.js';
-import { Hash0, Hash1, Hasher, SnarkField } from 'src/global.js';
+import { getZidenParams } from '../global.js';
 import { Entry } from '../claim/entry.js';
 import { idenState, IDGenesisFromIdenState } from '../claim/id.js';
 import { numToBits, bitsToNum } from '../utils.js';
 import SMT, { BinSMT, QuinSMT } from './sparse-merkle-tree/index.js';
 
 export enum SMTType {
-  BinSMT = 0,
-  QuinSMT = 1,
+  BinSMT,
+  QuinSMT,
 }
 interface MTP {
   readonly fnc: number;
@@ -73,8 +73,6 @@ export class Trees {
   private _rootsVersion: number;
   private _revocationNonce: number;
   private _depth: number;
-  private _hasher: Hasher;
-  private _F: SnarkField;
 
   constructor(
     claimsTree: SMT,
@@ -84,8 +82,6 @@ export class Trees {
     revocationNonce: number,
     userID: Buffer,
     depth: number,
-    hasher: Hasher,
-    F: SnarkField
   ) {
     this._userID = userID;
     this._claimsTree = claimsTree;
@@ -94,8 +90,6 @@ export class Trees {
     this._rootsVersion = rootsVersion;
     this._revocationNonce = revocationNonce;
     this._depth = depth;
-    this._hasher = hasher;
-    this._F = F;
   }
 
   get userID() {
@@ -122,14 +116,6 @@ export class Trees {
     return this._revocationNonce;
   }
 
-  get hasher() {
-    return this._hasher;
-  }
-
-  get F() {
-    return this._F;
-  }
-
   get depth() {
     return this._depth;
   }
@@ -149,10 +135,6 @@ export class Trees {
    * @returns {Promise<Trees>}
    */
   static async generateID(
-    F: SnarkField,
-    hash0: Hash0,
-    hash1: Hash1,
-    hasher: Hasher,
     authClaims: Array<Entry>,
     claimsDb: SMTDb,
     revocationDb: SMTDb,
@@ -161,34 +143,35 @@ export class Trees {
     depth: number = 14,
     smtType: SMTType = SMTType.QuinSMT
   ): Promise<Trees> {
+    const F = getZidenParams().F
     let claimsTree: SMT, revocationTree: SMT, rootsTree: SMT;
     if (smtType === SMTType.QuinSMT) {
-      claimsTree = new QuinSMT(claimsDb, F.zero, hasher, hash1, F, depth);
-      revocationTree = new QuinSMT(revocationDb, F.zero, hasher, hash1, F, depth);
-      rootsTree = new QuinSMT(rootsDb, F.zero, hasher, hash1, F, depth);
+      claimsTree = new QuinSMT(claimsDb, F.zero, depth);
+      revocationTree = new QuinSMT(revocationDb, F.zero, depth);
+      rootsTree = new QuinSMT(rootsDb, F.zero, depth);
     } else if (smtType === SMTType.BinSMT) {
-      claimsTree = new BinSMT(claimsDb, F.zero, hash0, hash1, F, depth);
-      revocationTree = new BinSMT(revocationDb, F.zero, hash0, hash1, F, depth);
-      rootsTree = new BinSMT(rootsDb, F.zero, hash0, hash1, F, depth);
+      claimsTree = new BinSMT(claimsDb, F.zero, depth);
+      revocationTree = new BinSMT(revocationDb, F.zero, depth);
+      rootsTree = new BinSMT(rootsDb, F.zero, depth);
     } else {
       throw new Error('Not supported SMT type');
     }
     for (let i = 0; i < authClaims.length; i++) {
       const claim = authClaims[i];
       claim.setRevocationNonce(BigInt(i));
-      const hi = claim.hiRaw(hasher);
-      const hv = claim.hvRaw(hasher);
+      const hi = claim.hiRaw();
+      const hv = claim.hvRaw();
       await claimsTree.insert(hi, hv);
     }
 
     const idState = numToBits(
       F.toObject(
-        idenState(hasher, F.toObject(claimsTree.root), F.toObject(revocationTree.root), F.toObject(rootsTree.root))
+        idenState(F.toObject(claimsTree.root), F.toObject(revocationTree.root), F.toObject(rootsTree.root))
       ),
       32
     );
     const userID = IDGenesisFromIdenState(idState, type);
-    return new Trees(claimsTree, revocationTree, rootsTree, 0, authClaims.length, userID, depth, hasher, F);
+    return new Trees(claimsTree, revocationTree, rootsTree, 0, authClaims.length, userID, depth);
   }
 
   /**
@@ -205,8 +188,8 @@ export class Trees {
     while (true) {
       try {
         claim.setClaimSeed(seed);
-        const hi = claim.hiRaw(this._hasher);
-        const hv = claim.hvRaw(this._hasher);
+        const hi = claim.hiRaw();
+        const hv = claim.hvRaw();
         insertingResult = await this._claimsTree.insert(hi, hv);
         break;
       } catch (err) {
@@ -218,7 +201,7 @@ export class Trees {
       }
     }
     this._revocationNonce += 1;
-    await this._rootsTree.insert(this._F.e(this._rootsVersion), insertingResult.newRoot);
+    await this._rootsTree.insert(getZidenParams().F.e(this._rootsVersion), insertingResult.newRoot);
     this._rootsVersion++;
     return claim;
   }
@@ -231,7 +214,7 @@ export class Trees {
     for (let i = 0; i < claimHiHvs.length; i++) {
       await this._claimsTree.insert(claimHiHvs[i][0], claimHiHvs[i][1]);
     }
-    await this._rootsTree.insert(this._F.e(this._rootsVersion), this._claimsTree.root);
+    await this._rootsTree.insert(getZidenParams().F.e(this._rootsVersion), this._claimsTree.root);
     this._rootsVersion++;
   }
 
@@ -248,7 +231,7 @@ export class Trees {
     while (true) {
       try {
         claim.setClaimSeed(seed);
-        const hi = claim.hiRaw(this._hasher);
+        const hi = claim.hiRaw();
         const findingResult = await this._claimsTree.find(hi);
         if (findingResult.found) {
           throw new Error('Claim Hi already existed in claims tree');
@@ -271,7 +254,7 @@ export class Trees {
    * @param {BigInt[]} revNonces claim to revoke
    */
   async batchRevokeClaim(revNonces: BigInt[]) {
-    for (let i = 0; i < revNonces.length; i++) await this._revocationTree.insert(this._F.e(revNonces[i]), this._F.zero);
+    for (let i = 0; i < revNonces.length; i++) await this._revocationTree.insert(getZidenParams().F.e(revNonces[i]), getZidenParams().F.zero);
   }
 
   /**
@@ -279,7 +262,7 @@ export class Trees {
    * @param {BigInt} revNonce claim to revoke
    */
   async revokeClaim(revNonce: BigInt) {
-    await this._revocationTree.insert(this._F.e(revNonce), this._F.zero);
+    await this._revocationTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.zero);
   }
 
   /**
@@ -287,12 +270,11 @@ export class Trees {
    * @returns {BigInt} identity state
    */
   getIdenState(): BigInt {
-    const idState = this._F.toObject(
+    const idState = getZidenParams().F.toObject(
       idenState(
-        this._hasher,
-        this._F.toObject(this._claimsTree.root),
-        this._F.toObject(this._revocationTree.root),
-        this._F.toObject(this._rootsTree.root)
+        getZidenParams().F.toObject(this._claimsTree.root),
+        getZidenParams().F.toObject(this._revocationTree.root),
+        getZidenParams().F.toObject(this._rootsTree.root)
       )
     );
     return idState;
@@ -308,18 +290,18 @@ export class Trees {
       throw new Error('claim is not inserted to claim tree');
     }
     let siblings = [];
-    for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
+    for (let i = 0; i < res.siblings.length; i++) siblings.push(getZidenParams().F.toObject(res.siblings[i]));
     if (this._claimsTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
     else if (this._claimsTree instanceof QuinSMT) while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
     return {
       fnc: 0,
-      root: this._F.toObject(this._claimsTree.root),
+      root: getZidenParams().F.toObject(this._claimsTree.root),
       siblings: siblings,
       oldKey: 0,
       oldValue: 0,
       isOld0: 0,
-      key: this._F.toObject(claimHi),
-      value: this._F.toObject(res.foundValue!),
+      key: getZidenParams().F.toObject(claimHi),
+      value: getZidenParams().F.toObject(res.foundValue!),
     };
   }
 
@@ -329,24 +311,24 @@ export class Trees {
    * @returns {Promise<MTP>} exclusion proof
    */
   async generateExclusionProof(revocationNonce: BigInt): Promise<MTP> {
-    const res = await this._revocationTree.find(this._F.e(revocationNonce));
+    const res = await this._revocationTree.find(getZidenParams().F.e(revocationNonce));
 
     if (res.found) {
       throw new Error('claim is revoked');
     }
 
     let siblings = [];
-    for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
+    for (let i = 0; i < res.siblings.length; i++) siblings.push(getZidenParams().F.toObject(res.siblings[i]));
     if (this._revocationTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
     else if (this._revocationTree instanceof QuinSMT)
       while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
 
     return {
       fnc: 1,
-      root: this._F.toObject(this._revocationTree.root),
+      root: getZidenParams().F.toObject(this._revocationTree.root),
       siblings: siblings,
-      oldKey: res.isOld0 ? 0 : this._F.toObject(res.notFoundKey!),
-      oldValue: res.isOld0 ? 0 : this._F.toObject(res.notFoundValue!),
+      oldKey: res.isOld0 ? 0 : getZidenParams().F.toObject(res.notFoundKey!),
+      oldValue: res.isOld0 ? 0 : getZidenParams().F.toObject(res.notFoundValue!),
       isOld0: res.isOld0 ? 1 : 0,
       key: revocationNonce,
       value: 0,
@@ -364,12 +346,12 @@ export class Trees {
       throw new Error('claim is not inserted to the claim tree');
     }
     let siblings = [];
-    for (let i = 0; i < res.siblings.length; i++) siblings.push(this._F.toObject(res.siblings[i]));
+    for (let i = 0; i < res.siblings.length; i++) siblings.push(getZidenParams().F.toObject(res.siblings[i]));
     if (this._claimsTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
     else if (this._claimsTree instanceof QuinSMT) while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
     return {
       claimMTP: siblings,
-      treeRoot: this._F.toObject(this._claimsTree.root),
+      treeRoot: getZidenParams().F.toObject(this._claimsTree.root),
     };
   }
 
@@ -383,8 +365,8 @@ export class Trees {
     return {
       claimMTP: claimExistProof.claimMTP,
       claimsTreeRoot: claimExistProof.treeRoot,
-      revTreeRoot: this._F.toObject(this._revocationTree.root),
-      rootsTreeRoot: this._F.toObject(this._rootsTree.root),
+      revTreeRoot: getZidenParams().F.toObject(this._revocationTree.root),
+      rootsTreeRoot: getZidenParams().F.toObject(this._rootsTree.root),
       state: this.getIdenState(),
     };
   }
@@ -418,8 +400,8 @@ export class Trees {
       claimNonRevAuxHv: claimNonRevProof.auxHv,
       claimNonRevNoAux: claimNonRevProof.noAux,
       revTreeRoot: claimNonRevProof.treeRoot,
-      claimsTreeRoot: this._F.toObject(this._claimsTree.root),
-      rootsTreeRoot: this._F.toObject(this._rootsTree.root),
+      claimsTreeRoot: getZidenParams().F.toObject(this._claimsTree.root),
+      rootsTreeRoot: getZidenParams().F.toObject(this._rootsTree.root),
       state: this.getIdenState(),
     };
   }
@@ -461,7 +443,7 @@ export class Trees {
       claimNonRevAuxHi: claimNonRevProof.auxHi,
       claimNonRevAuxHv: claimNonRevProof.auxHv,
 
-      rootsTreeRoot: this._F.toObject(this._rootsTree.root),
+      rootsTreeRoot: getZidenParams().F.toObject(this._rootsTree.root),
     };
   }
 }

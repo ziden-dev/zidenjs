@@ -1,4 +1,4 @@
-import { SMTDb } from 'src/db/index.js';
+import { SMTDb } from '../../db/index.js';
 
 export type Primitive = string | number | ArrayLike<number> | BigInt;
 export interface FindingResult {

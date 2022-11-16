@@ -6,41 +6,29 @@ import { SMTType, Trees } from './trees.js';
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
 import { SMTLevelDb } from '../db/level_db.js';
-import { buildHash0Hash1, buildHasher, buildSnarkField, Hash0, Hash1, Hasher, SnarkField } from '../global.js';
 import { expect } from 'chai';
+import { getZidenParams, setupParams } from '../global.js';
 
 describe('test trees', async () => {
-  let F: SnarkField;
   let trees: Trees;
   let claimsDb: SMTLevelDb;
   let revocationDb: SMTLevelDb;
   let rootsDb: SMTLevelDb;
   let authClaim1: Entry;
   let authClaim2: Entry;
-  let hasher: Hasher;
-  let hash0: Hash0;
-  let hash1: Hash1;
   it('set up params', async () => {
-    F = await buildSnarkField();
-    hasher = await buildHasher();
-    const hs = buildHash0Hash1(hasher, F);
-    hash0 = hs.hash0;
-    hash1 = hs.hash1;
+    await setupParams();
   }).timeout(10000);
   it('generate new trees', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861770'));
     authClaim1 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 2)));
     authClaim2 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 2), Buffer.alloc(30, 3)));
-    claimsDb = new SMTLevelDb('src/trees/db_test/claims', F);
-    revocationDb = new SMTLevelDb('src/trees/db_test/revocation', F);
-    rootsDb = new SMTLevelDb('src/trees/db_test/roots', F);
+    claimsDb = new SMTLevelDb('src/trees/db_test/claims');
+    revocationDb = new SMTLevelDb('src/trees/db_test/revocation');
+    rootsDb = new SMTLevelDb('src/trees/db_test/roots');
   }).timeout(10000);
   it('benchmark generate trees', async () => {
     trees = await Trees.generateID(
-      F,
-      hash0,
-      hash1,
-      hasher,
       [authClaim1, authClaim2],
       claimsDb,
       revocationDb,
@@ -55,9 +43,9 @@ describe('test trees', async () => {
     const idenState = trees.getIdenState();
     const w = await circuit.calculateWitness(
       {
-        claimsTreeRoot: F.toObject(trees.claimsTree.root),
-        revTreeRoot: F.toObject(trees.revocationTree.root),
-        rootsTreeRoot: F.toObject(trees.rootsTree.root),
+        claimsTreeRoot: getZidenParams().F.toObject(trees.claimsTree.root),
+        revTreeRoot: getZidenParams().F.toObject(trees.revocationTree.root),
+        rootsTreeRoot: getZidenParams().F.toObject(trees.rootsTree.root),
         expectedState: idenState,
       },
       true
@@ -70,7 +58,7 @@ describe('test trees', async () => {
     const claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 2)));
     await trees.insertClaim(claim);
 
-    const claimExistProof = await trees.generateClaimExistsProof(claim.hiRaw(hasher));
+    const claimExistProof = await trees.generateClaimExistsProof(claim.hiRaw());
     const witness = {
       ...claimExistProof,
       claim: claim.getDataForCircuit(),

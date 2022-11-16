@@ -1,22 +1,16 @@
 // @ts-ignore
 import { Scalar } from 'ffjavascript';
-import { Hash1, Hasher, SnarkField } from '../../global.js';
+import { getZidenParams } from '../../global.js';
 import { SMTDb } from '../../db/index.js';
 import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
 
 export class QuinSMT implements SMT {
   private _db: SMTDb;
   private _root: ArrayLike<number>;
-  private _hasher: Hasher;
-  private _hash1: Hash1;
-  private _F: SnarkField;
   private _maxLevels: number;
-  constructor(db: SMTDb, root: ArrayLike<number>, hasher: Hasher, hash1: Hash1, F: SnarkField, maxLevels: number) {
+  constructor(db: SMTDb, root: ArrayLike<number>, maxLevels: number) {
     this._db = db;
     this._root = root;
-    this._hasher = hasher;
-    this._hash1 = hash1;
-    this._F = F;
     this._maxLevels = maxLevels;
   }
 
@@ -26,18 +20,9 @@ export class QuinSMT implements SMT {
   get root(): ArrayLike<number> {
     return this._root;
   }
-  get hasher(): Hasher {
-    return this._hasher;
-  }
-  get hash1(): Hash1 {
-    return this._hash1;
-  }
-  get F(): SnarkField {
-    return this._F;
-  }
 
   private _splitQuins(_key: ArrayLike<number>): Array<number> {
-    const F = this._F;
+    const F = getZidenParams().F;
     let E = F.toObject(_key).valueOf();
     let res = [];
     while (E) {
@@ -57,7 +42,7 @@ export class QuinSMT implements SMT {
    * @returns {Promise<UpdatingResult>} information about new root, siblings of the leaf after updating
    */
   async update(_key: Primitive, _newValue: Primitive): Promise<UpdatingResult> {
-    const F = this._F;
+    const F = getZidenParams().F;
     const key = F.e(_key);
     const newValue = F.e(_newValue);
 
@@ -75,8 +60,8 @@ export class QuinSMT implements SMT {
     const ins: [ArrayLike<number>, Primitive[]][] = [];
     const dels: ArrayLike<number>[] = [];
 
-    let rtOld = this._hash1(key, resFind.foundValue!);
-    let rtNew = this._hash1(key, newValue);
+    let rtOld = getZidenParams().hash1(key, resFind.foundValue!);
+    let rtNew = getZidenParams().hash1(key, newValue);
     ins.push([rtNew, [1, key, newValue]]);
     dels.push(rtOld);
 
@@ -88,8 +73,8 @@ export class QuinSMT implements SMT {
       oldNode.splice(index, 0, rtOld);
       const newNode = resFind.siblings.slice(4 * level, 4 * level + 4);
       newNode.splice(index, 0, rtNew);
-      rtOld = this._hasher(oldNode);
-      rtNew = this._hasher(newNode);
+      rtOld = getZidenParams().hasher(oldNode);
+      rtNew = getZidenParams().hasher(newNode);
       dels.push(rtOld);
       ins.push([rtNew, newNode]);
     }
@@ -110,7 +95,7 @@ export class QuinSMT implements SMT {
    * @returns {Promise<DeletingResult>} information about new root, siblings of the leaf after inserting to SMT
    */
   async delete(_key: Primitive): Promise<DeletingResult> {
-    const F = this._F;
+    const F = getZidenParams().F;
     const key = F.e(_key);
 
     const resFind = await this.find(key);
@@ -127,7 +112,7 @@ export class QuinSMT implements SMT {
 
     const ins: [ArrayLike<number>, Primitive[]][] = [];
     const dels: ArrayLike<number>[] = [];
-    let rtOld = this._hash1(key, resFind.foundValue!);
+    let rtOld = getZidenParams().hash1(key, resFind.foundValue!);
     let rtNew = F.zero;
     dels.push(rtOld);
 
@@ -187,7 +172,7 @@ export class QuinSMT implements SMT {
 
       const oldNode = oldSibling.slice();
       oldNode.splice(index, 0, rtOld);
-      rtOld = this._hasher(oldNode);
+      rtOld = getZidenParams().hasher(oldNode);
 
       dels.push(rtOld);
       if (
@@ -203,7 +188,7 @@ export class QuinSMT implements SMT {
         for (let j = 3; j >= 0; j--) res.siblings.unshift(oldSibling[j]);
         const newNode = newSibling.slice();
         newNode.splice(index, 0, rtNew);
-        rtNew = this._hasher(newNode);
+        rtNew = getZidenParams().hasher(newNode);
         ins.push([rtNew, newNode]);
       }
     }
@@ -225,7 +210,7 @@ export class QuinSMT implements SMT {
    * @returns {Promise<InsertingResult>} information about new root, siblings of the leaf after inserting to SMT
    */
   async insert(_key: Primitive, _value: Primitive): Promise<InsertingResult> {
-    const F = this._F;
+    const F = getZidenParams().F;
     const key = F.e(_key);
     const value = F.e(_value);
     const keyQuins = this._splitQuins(key);
@@ -245,7 +230,7 @@ export class QuinSMT implements SMT {
    * @returns {Promise<FindingResult>} membership/non-membership proof
    */
   async find(_key: ArrayLike<number>): Promise<FindingResult> {
-    const key = this._F.e(_key);
+    const key = getZidenParams().F.e(_key);
     const keyQuins = this._splitQuins(key);
     return await this._find(key, keyQuins, this._root, 0);
   }
@@ -259,7 +244,7 @@ export class QuinSMT implements SMT {
     if (level > this._maxLevels - 1) {
       throw new Error('Reached SMT max level');
     }
-    const F = this._F;
+    const F = getZidenParams().F;
 
     let res;
     if (F.isZero(root)) {
@@ -317,7 +302,7 @@ export class QuinSMT implements SMT {
     dels: ArrayLike<number>[];
     insertingResult: InsertingResult;
   }> {
-    const F = this._F;
+    const F = getZidenParams().F;
     if (level > this._maxLevels - 1) {
       throw new Error('Reached SMT max level');
     }
@@ -328,7 +313,7 @@ export class QuinSMT implements SMT {
     // - rtOld is an internal node => recursively call function
     if (F.isZero(rtOld)) {
       // current node is empty
-      const rtNew = this._hash1(key, value);
+      const rtNew = getZidenParams().hash1(key, value);
       return {
         ins: [[rtNew, [1, key, value]]],
         dels: [],
@@ -377,7 +362,7 @@ export class QuinSMT implements SMT {
       const res = await this._addLeaf(key, value, keyQuins, record[index], level + 1);
 
       record[index] = res.insertingResult.newRoot;
-      const rtNew = this._hasher(record);
+      const rtNew = getZidenParams().hasher(record);
 
       res.insertingResult.newRoot = rtNew;
       res.insertingResult.oldRoot = rtOld;
@@ -407,7 +392,7 @@ export class QuinSMT implements SMT {
     if (level > this._maxLevels - 2) {
       throw new Error('Reached SMT max level');
     }
-    const F = this._F;
+    const F = getZidenParams().F;
     if (oldKeyIndexes[level] === newKeyIndexes[level]) {
       // go deeper
       const res = this._pushLeaf(oldKey, oldKeyIndexes, oldValue, newKey, newKeyIndexes, newValue, level + 1);
@@ -415,14 +400,14 @@ export class QuinSMT implements SMT {
 
       const children = siblings.slice();
       children.splice(oldKeyIndexes[level], 0, res.rtNew);
-      res.rtNew = this._hasher(children);
+      res.rtNew = getZidenParams().hasher(children);
       res.ins.push([res.rtNew, children]);
       res.siblings.unshift(...siblings);
       return res;
     }
     const children = [];
-    const oldNode = this._hash1(oldKey, oldValue);
-    const newNode = this._hash1(newKey, newValue);
+    const oldNode = getZidenParams().hash1(oldKey, oldValue);
+    const newNode = getZidenParams().hash1(newKey, newValue);
     for (let i = 0; i < 5; i++) {
       if (i === oldKeyIndexes[level]) {
         children.push(oldNode);
@@ -432,14 +417,14 @@ export class QuinSMT implements SMT {
         children.push(F.zero);
       }
     }
-    const rtNew = this._hasher(children);
+    const rtNew = getZidenParams().hasher(children);
     const siblings = children.slice();
     siblings.splice(newKeyIndexes[level], 1);
     return {
       siblings,
       ins: [
         [rtNew, children],
-        [this._hash1(newKey, newValue), [1, newKey, newValue]],
+        [getZidenParams().hash1(newKey, newValue), [1, newKey, newValue]],
       ],
       rtNew,
     };

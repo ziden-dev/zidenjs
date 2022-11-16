@@ -1,22 +1,16 @@
 // @ts-ignore
 import { Scalar } from 'ffjavascript';
-import { Hash0, Hash1, SnarkField } from '../../global.js';
+import { getZidenParams } from '../../global.js';
 import { SMTDb } from '../../db/index.js';
 import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
 
 export class BinSMT implements SMT {
   private _db: SMTDb;
   private _root: ArrayLike<number>;
-  private _hash0: Hash0;
-  private _hash1: Hash1;
-  private _F: SnarkField;
   private _maxLevels: number;
-  constructor(db: SMTDb, root: ArrayLike<number>, hash0: Hash0, hash1: Hash1, F: SnarkField, maxLevels: number) {
+  constructor(db: SMTDb, root: ArrayLike<number>, maxLevels: number) {
     this._db = db;
     this._root = root;
-    this._hash0 = hash0;
-    this._hash1 = hash1;
-    this._F = F;
     this._maxLevels = maxLevels;
   }
 
@@ -26,18 +20,9 @@ export class BinSMT implements SMT {
   get root(): ArrayLike<number> {
     return this._root;
   }
-  get hash0(): Hash0 {
-    return this._hash0;
-  }
-  get hash1(): Hash1 {
-    return this._hash1;
-  }
-  get F(): SnarkField {
-    return this._F;
-  }
 
   private _splitBits(_key: ArrayLike<number>): Array<number> {
-    const F = this._F;
+    const F = getZidenParams().F;
     const res = Scalar.bits(F.toObject(_key));
 
     while (res.length < this._maxLevels) res.push(0);
@@ -52,7 +37,7 @@ export class BinSMT implements SMT {
    * @returns {Promise<UpdatingResult>} information about new root, siblings of the leaf after updating
    */
   async update(_key: Primitive, _newValue: Primitive): Promise<UpdatingResult> {
-    const F = this._F;
+    const F = getZidenParams().F;
     const key = F.e(_key);
     const newValue = F.e(_newValue);
 
@@ -70,8 +55,8 @@ export class BinSMT implements SMT {
     const ins: [ArrayLike<number>, Primitive[]][] = [];
     const dels: ArrayLike<number>[] = [];
 
-    let rtOld = this._hash1(key, resFind.foundValue!);
-    let rtNew = this._hash1(key, newValue);
+    let rtOld = getZidenParams().hash1(key, resFind.foundValue!);
+    let rtNew = getZidenParams().hash1(key, newValue);
     ins.push([rtNew, [1, key, newValue]]);
     dels.push(rtOld);
 
@@ -86,8 +71,8 @@ export class BinSMT implements SMT {
         oldNode = [rtOld, sibling];
         newNode = [rtNew, sibling];
       }
-      rtOld = this._hash0(oldNode[0], oldNode[1]);
-      rtNew = this._hash0(newNode[0], newNode[1]);
+      rtOld = getZidenParams().hash0(oldNode[0], oldNode[1]);
+      rtNew = getZidenParams().hash0(newNode[0], newNode[1]);
       dels.push(rtOld);
       ins.push([rtNew, newNode]);
     }
@@ -108,7 +93,7 @@ export class BinSMT implements SMT {
    * @returns {Promise<DeletingResult>} information about new root, siblings of the leaf after inserting to SMT
    */
   async delete(_key: Primitive): Promise<DeletingResult> {
-    const F = this._F;
+    const F = getZidenParams().F;
     const key = F.e(_key);
 
     const resFind = await this.find(key);
@@ -125,7 +110,7 @@ export class BinSMT implements SMT {
 
     const ins: [ArrayLike<number>, Primitive[]][] = [];
     const dels: ArrayLike<number>[] = [];
-    let rtOld = this._hash1(key, resFind.foundValue!);
+    let rtOld = getZidenParams().hash1(key, resFind.foundValue!);
     let rtNew;
     dels.push(rtOld);
 
@@ -166,9 +151,9 @@ export class BinSMT implements SMT {
       }
       const oldSibling = resFind.siblings[level];
       if (keyBits[level]) {
-        rtOld = this._hash0(oldSibling, rtOld);
+        rtOld = getZidenParams().hash0(oldSibling, rtOld);
       } else {
-        rtOld = this._hash0(rtOld, oldSibling);
+        rtOld = getZidenParams().hash0(rtOld, oldSibling);
       }
       dels.push(rtOld);
       if (!F.isZero(newSibling)) {
@@ -183,7 +168,7 @@ export class BinSMT implements SMT {
         } else {
           newNode = [rtNew, newSibling];
         }
-        rtNew = this._hash0(newNode[0], newNode[1]);
+        rtNew = getZidenParams().hash0(newNode[0], newNode[1]);
         ins.push([rtNew, newNode]);
       }
     }
@@ -205,7 +190,7 @@ export class BinSMT implements SMT {
    * @returns {Promise<InsertingResult>} information about new root, siblings of the leaf after inserting to SMT
    */
   async insert(_key: Primitive, _value: Primitive): Promise<InsertingResult> {
-    const F = this._F;
+    const F = getZidenParams().F;
     const key = F.e(_key);
     const value = F.e(_value);
     let addedOne = false;
@@ -234,7 +219,7 @@ export class BinSMT implements SMT {
             throw new Error('Reached SMT max level')
         }
       }
-      rtOld = this._hash1(resFind.notFoundKey!, resFind.notFoundValue!);
+      rtOld = getZidenParams().hash1(resFind.notFoundKey!, resFind.notFoundValue!);
       res.siblings.push(rtOld);
       addedOne = true;
       mixed = false;
@@ -246,7 +231,7 @@ export class BinSMT implements SMT {
     const ins: [ArrayLike<number>, Primitive[]][] = [];
     const dels: ArrayLike<number>[] = [];
 
-    let rt = this._hash1(key, value);
+    let rt = getZidenParams().hash1(key, value);
     ins.push([rt, [1, key, value]]);
 
     for (let i = res.siblings.length - 1; i >= 0; i--) {
@@ -256,19 +241,19 @@ export class BinSMT implements SMT {
       if (mixed) {
         const oldSibling = resFind.siblings[i];
         if (newKeyBits[i]) {
-          rtOld = this._hash0(oldSibling, rtOld);
+          rtOld = getZidenParams().hash0(oldSibling, rtOld);
         } else {
-          rtOld = this._hash0(rtOld, oldSibling);
+          rtOld = getZidenParams().hash0(rtOld, oldSibling);
         }
         dels.push(rtOld);
       }
 
       let newRt;
       if (newKeyBits[i]) {
-        newRt = this._hash0(res.siblings[i], rt);
+        newRt = getZidenParams().hash0(res.siblings[i], rt);
         ins.push([newRt, [res.siblings[i], rt]]);
       } else {
-        newRt = this._hash0(rt, res.siblings[i]);
+        newRt = getZidenParams().hash0(rt, res.siblings[i]);
         ins.push([newRt, [rt, res.siblings[i]]]);
       }
       rt = newRt;
@@ -297,7 +282,7 @@ export class BinSMT implements SMT {
    * @returns {Promise<FindingResult>} membership/non-membership proof
    */
   async find(_key: ArrayLike<number>): Promise<FindingResult> {
-    const key = this._F.e(_key);
+    const key = getZidenParams().F.e(_key);
     const keyBits = this._splitBits(key);
     return await this._find(key, keyBits, this._root, 0);
   }
@@ -311,7 +296,7 @@ export class BinSMT implements SMT {
     if (level > this._maxLevels - 1) {
       throw new Error('Reached SMT max level');
     }
-    const F = this._F;
+    const F = getZidenParams().F;
 
     let res;
     if (F.isZero(root)) {

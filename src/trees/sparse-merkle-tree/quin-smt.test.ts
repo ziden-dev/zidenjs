@@ -3,30 +3,31 @@ import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { QuinSMT } from './quin-smt.js';
 import { expect } from 'chai';
-import { buildHash0Hash1, buildHasher, buildSnarkField, Hash1, Hasher, SnarkField } from '../../global.js';
+import { getZidenParams, setupParams, SnarkField } from '../../global.js';
 import { SMTLevelDb } from '../../db/index.js';
 import { Primitive } from './index.js';
 
 async function testInclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
-  const key = tree.F.e(_key);
+  let F = getZidenParams().F;
+  const key = F.e(_key);
   const res = await tree.find(key);
 
   expect(res.found).to.be.true;
 
   let siblings: (BigInt | number)[] = [];
-  for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
+  for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
   while (siblings.length < 14 * 4) siblings.push(0);
 
   const w = await circuit.calculateWitness(
     {
       fnc: 0,
-      root: tree.F.toObject(tree.root),
+      root: F.toObject(tree.root),
       siblings: siblings,
       oldKey: 0,
       oldValue: 0,
       isOld0: 0,
-      key: tree.F.toObject(key),
-      value: tree.F.toObject(res.foundValue!),
+      key: F.toObject(key),
+      value: F.toObject(res.foundValue!),
     },
     true
   );
@@ -35,23 +36,24 @@ async function testInclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
 }
 
 async function testExclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
-  const key = tree.F.e(_key);
+  let F = getZidenParams().F;
+  const key = F.e(_key);
   const res = await tree.find(key);
 
   expect(res.found).to.be.false;
 
   let siblings: (BigInt | number)[] = [];
-  for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
+  for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
   while (siblings.length < 14 * 4) siblings.push(0);
 
   const w = await circuit.calculateWitness({
     fnc: 1,
-    root: tree.F.toObject(tree.root),
+    root: F.toObject(tree.root),
     siblings: siblings,
-    oldKey: res.isOld0 ? 0 : tree.F.toObject(res.notFoundKey!),
-    oldValue: res.isOld0 ? 0 : tree.F.toObject(res.notFoundValue!),
+    oldKey: res.isOld0 ? 0 : F.toObject(res.notFoundKey!),
+    oldValue: res.isOld0 ? 0 : F.toObject(res.notFoundValue!),
     isOld0: res.isOld0 ? 1 : 0,
-    key: tree.F.toObject(key),
+    key: F.toObject(key),
     value: 0,
   });
 
@@ -59,21 +61,16 @@ async function testExclusion(tree: QuinSMT, _key: Primitive, circuit: any) {
 }
 
 describe('SMT Verifier test', function () {
-  let F: SnarkField;
   let circuit: any;
   let tree: QuinSMT;
-  let hasher: Hasher;
-  let hash1: Hash1;
-
+  let F: SnarkField;
   it('setup params', async () => {
+    await setupParams();
+    F = getZidenParams().F;
     circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'quin_smt.circom'));
 
-    F = await buildSnarkField();
-    hasher = await buildHasher();
-    const hs = buildHash0Hash1(hasher, F);
-    hash1 = hs.hash1;
-    const db = new SMTLevelDb('src/trees/db_test/quin_smt_test', F);
-    tree = new QuinSMT(db, F.zero, hasher, hash1, F, 14);
+    const db = new SMTLevelDb('src/trees/db_test/quin_smt_test');
+    tree = new QuinSMT(db, F.zero, 14);
   }).timeout(10000);
 
   it('Benchmark insert into quin merkle tree', async () => {

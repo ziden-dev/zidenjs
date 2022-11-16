@@ -3,31 +3,32 @@ import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { BinSMT } from './bin-smt.js';
 import { expect } from 'chai';
-import { buildHash0Hash1, buildHasher, buildSnarkField, Hash0, Hash1, SnarkField } from '../../global.js';
+import { getZidenParams, setupParams } from '../../global.js';
 import { SMTLevelDb } from '../../db/index.js';
 import { Primitive } from './index.js';
 
 async function testInclusion(tree: BinSMT, _key: Primitive, circuit: any) {
-  const key = tree.F.e(_key);
+  let F = getZidenParams().F
+  const key = F.e(_key);
   const res = await tree.find(key);
 
   expect(res.found).to.be.true;
 
   let siblings: (BigInt | number)[] = [];
-  for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
+  for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
   while (siblings.length < 10) siblings.push(0);
 
   const w = await circuit.calculateWitness(
     {
       enabled: 1,
       fnc: 0,
-      root: tree.F.toObject(tree.root),
+      root: F.toObject(tree.root),
       siblings: siblings,
       oldKey: 0,
       oldValue: 0,
       isOld0: 0,
-      key: tree.F.toObject(key),
-      value: tree.F.toObject(res.foundValue!),
+      key: F.toObject(key),
+      value: F.toObject(res.foundValue!),
     },
     true
   );
@@ -36,24 +37,25 @@ async function testInclusion(tree: BinSMT, _key: Primitive, circuit: any) {
 }
 
 async function testExclusion(tree: BinSMT, _key: Primitive, circuit: any) {
-  const key = tree.F.e(_key);
+  let F = getZidenParams().F;
+  const key = F.e(_key);
   const res = await tree.find(key);
 
   expect(res.found).to.be.false;
 
   let siblings: (BigInt | number)[] = [];
-  for (let i = 0; i < res.siblings.length; i++) siblings.push(tree.F.toObject(res.siblings[i]));
+  for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
   while (siblings.length < 10) siblings.push(0);
 
   const w = await circuit.calculateWitness({
     enabled: 1,
     fnc: 1,
-    root: tree.F.toObject(tree.root),
+    root: F.toObject(tree.root),
     siblings: siblings,
-    oldKey: res.isOld0 ? 0 : tree.F.toObject(res.notFoundKey!),
-    oldValue: res.isOld0 ? 0 : tree.F.toObject(res.notFoundValue!),
+    oldKey: res.isOld0 ? 0 : F.toObject(res.notFoundKey!),
+    oldValue: res.isOld0 ? 0 : F.toObject(res.notFoundValue!),
     isOld0: res.isOld0 ? 1 : 0,
-    key: tree.F.toObject(key),
+    key: F.toObject(key),
     value: 0,
   });
 
@@ -61,23 +63,15 @@ async function testExclusion(tree: BinSMT, _key: Primitive, circuit: any) {
 }
 
 describe('SMT Verifier test', function () {
-  let F: SnarkField;
   let circuit: any;
   let tree: BinSMT;
-  let hash0: Hash0;
-  let hash1: Hash1;
   this.timeout(100000);
 
   before(async () => {
+    await setupParams();
     circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'smt.circom'));
-
-    F = await buildSnarkField();
-    const hasher = await buildHasher();
-    const hs = buildHash0Hash1(hasher, F);
-    hash0 = hs.hash0;
-    hash1 = hs.hash1;
-    const db = new SMTLevelDb('src/trees/db_test/smt_test', F);
-    tree = new BinSMT(db, F.zero, hash0, hash1, F, 10);
+    const db = new SMTLevelDb('src/trees/db_test/smt_test');
+    tree = new BinSMT(db, getZidenParams().F.zero,10);
   });
   it('Benchmark insert into smt', async () => {
     await tree.insert(8, 88);
@@ -107,8 +101,8 @@ describe('SMT Verifier test', function () {
 
   it('Test update a leaf', async () => {
     await tree.update(8, 11);
-    const f = await tree.find(F.e(8));
-    expect(F.toObject(f.foundValue!)).to.be.equal(BigInt(11));
+    const f = await tree.find(getZidenParams().F.e(8));
+    expect(getZidenParams().F.toObject(f.foundValue!)).to.be.equal(BigInt(11));
     await testInclusion(tree, 8, circuit);
   });
 
@@ -132,8 +126,8 @@ describe('SMT Verifier test', function () {
   });
 
   it('check collision resistant', async () => {
-    const db = new SMTLevelDb('src/trees/db_test/smt_test_1', F);
-    const tree = new BinSMT(db, F.zero, hash0, hash1, F, 10);
+    const db = new SMTLevelDb('src/trees/db_test/smt_test_1');
+    const tree = new BinSMT(db, getZidenParams().F.zero, 10);
     await tree.insert(1, 1);
     await tree.insert(2, 1);
     try {

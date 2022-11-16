@@ -1,5 +1,5 @@
-import { SnarkField } from '../global.js';
-import MerkleTree, { HashFunction } from './fixed-merkle-tree/index.js';
+import { getZidenParams } from '../global.js';
+import MerkleTree from './fixed-merkle-tree/index.js';
 
 export interface MerkleQueryInput {
   readonly determinisiticValue: BigInt;
@@ -12,13 +12,13 @@ export interface MerkleQueryInput {
 }
 
 export enum OPERATOR {
-  NOOP = 0,
-  EQUAL = 1,
-  LESS_THAN = 2,
-  GREATER_THAN = 3,
-  IN = 4,
-  NOT_IN = 5,
-  IN_RANGE = 6
+  NOOP,
+  EQUAL,
+  LESS_THAN,
+  GREATER_THAN,
+  IN,
+  NOT_IN,
+  IN_RANGE
 }
 
 const ErrInvalidValues = new Error('Invalid values');
@@ -26,8 +26,6 @@ const ErrInvalidValues = new Error('Invalid values');
  * Create merkle query input for query circuits from values
  * @param {Array<BigInt>} values
  * @param {number} valueTreeDepth
- * @param {HashFunction} hashFunction hashFunction to build fixed merkle tree
- * @param {SnarkField} F
  * @param {BigInt} attestingValue
  * @param {OPERATOR} operator
  * @returns {MerkleQueryInput} input for circuits
@@ -35,8 +33,6 @@ const ErrInvalidValues = new Error('Invalid values');
 export function createMerkleQueryInput(
   values: Array<BigInt>,
   valueTreeDepth: number,
-  hashFunction: HashFunction,
-  F: SnarkField,
   attestingValue: BigInt,
   operator: OPERATOR
 ): MerkleQueryInput {
@@ -89,7 +85,7 @@ export function createMerkleQueryInput(
     for (let i = values.length; i < valueArraySize; i++) {
       sortedValues.push(biggestValue);
     }
-    const fmt = new MerkleTree(valueTreeDepth, sortedValues, hashFunction, F.toObject(F.zero));
+    const fmt = new MerkleTree(valueTreeDepth, sortedValues, getZidenParams().fmtHash, getZidenParams().F.toObject(getZidenParams().F.zero));
     // find the smallest value in array which greater than the attesting value
     const greaterIndex = sortedValues.findIndex((value) => value > attestingValue);
 

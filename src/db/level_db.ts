@@ -1,51 +1,46 @@
 import { Level } from 'level';
 import { Primitive } from '../trees/sparse-merkle-tree/index.js';
-import { SnarkField } from '../global.js';
+import { getZidenParams } from '../global.js';
 import { SMTDb } from './index.js';
 
 export class SMTLevelDb implements SMTDb {
   private _nodes: Level<string, string>;
-  private _F: SnarkField;
-  constructor(pathDb: string, F: SnarkField) {
+  constructor(pathDb: string) {
     this._nodes = new Level(pathDb);
-    this._F = F;
   }
 
   get nodes(){
     return this._nodes
   }
-  get F() {
-    return this._F;
-  }
   
   async getRoot() {
     try {
       const rootS = await this._nodes.get('root');
-      if (rootS) return this._F.e(BigInt(rootS));
+      if (rootS) return getZidenParams().F.e(BigInt(rootS));
     } catch (err) {}
-    return this._F.zero;
+    return getZidenParams().F.zero;
   }
 
   _key2str(k: ArrayLike<number>) {
-    const keyS = this._F.toString(k);
+    const keyS = getZidenParams().F.toString(k);
     return keyS;
   }
 
   _normalize(n: Primitive[]): Array<ArrayLike<number>> {
     const result: Array<ArrayLike<number>> = [];
     for (let i = 0; i < n.length; i++) {
-      result.push(this._F.e(n[i]));
+      result.push(getZidenParams().F.e(n[i]));
     }
     return result;
   }
   /**
    * Convert to string
    * normally used in order to add it to database
-   * @param {Array<ArrayLike<number>} val - any input parameter
+   * @param {Array<ArrayLike<number>>} val - any input parameter
    * @returns {String}
    */
   _serialize(val: ArrayLike<number>[]): string {
-    return JSON.stringify(val.map((e) => this._F.toObject(e).toString()));
+    return JSON.stringify(val.map((e) => getZidenParams().F.toObject(e).toString()));
   }
 
   /**
@@ -55,7 +50,7 @@ export class SMTLevelDb implements SMTDb {
    * @returns {Array<ArrayLike<number>>}
    */
   _deserialize(val: string): Array<ArrayLike<number>> {
-    return JSON.parse(val).map((v: string) => this._F.e(BigInt(v)));
+    return JSON.parse(val).map((v: string) => getZidenParams().F.e(BigInt(v)));
   }
 
   async get(key: ArrayLike<number>) {
@@ -77,7 +72,7 @@ export class SMTLevelDb implements SMTDb {
   }
 
   async setRoot(rt: ArrayLike<number>) {
-    await this._nodes.put('root', this._F.toObject(rt).toString());
+    await this._nodes.put('root', getZidenParams().F.toObject(rt).toString());
   }
 
   async multiIns(inserts: [ArrayLike<number>, Primitive[]][]) {

@@ -1,9 +1,7 @@
-import { EDDSA, SnarkField } from 'src/global.js';
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
 import { Trees } from '../trees/trees.js';
 import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils.js';
-import { HashFunction } from './fixed-merkle-tree/index.js';
 import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
 
 export interface KYCQueryMTPInput {
@@ -88,7 +86,6 @@ export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInpu
 /**
  * Holder Generate credential atomic query MTP witness from issuer input
  * @param {Entry} issuerClaim
- * @param {EDDSA} eddsa
  * @param {Buffer} privateKey
  * @param {Entry} authClaim
  * @param {BigInt} challenge
@@ -101,13 +98,10 @@ export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInpu
  * @param {number} valueTreeDepth
  * @param {number} from
  * @param {number} to
- * @param {HashFunction} hashFunction
- * @param {SnarkField} F
  * @returns {Promise<QueryMTPWitness>} queryMTP witness
  */
 export async function holderGenerateQueryMTPWitness(
   issuerClaim: Entry,
-  eddsa: EDDSA,
   privateKey: Buffer,
   authClaim: Entry,
   challenge: BigInt,
@@ -119,13 +113,11 @@ export async function holderGenerateQueryMTPWitness(
   values: Array<BigInt>,
   valueTreeDepth: number,
   from: number,
-  to: number,
-  hashFunction: HashFunction,
-  F: SnarkField
+  to: number
 ): Promise<QueryMTPWitness> {
-  const signature = await signChallenge(eddsa, userAuthTrees.F, privateKey, challenge);
+  const signature = await signChallenge(privateKey, challenge);
   const authClaimProof = await userAuthTrees.generateProofForClaim(
-    authClaim.hiRaw(userAuthTrees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
@@ -136,8 +128,6 @@ export async function holderGenerateQueryMTPWitness(
   const merkleQueryInput = createMerkleQueryInput(
     values.map((value) => shiftValue(value, from)),
     valueTreeDepth,
-    hashFunction,
-    F,
     getPartialValue(slotValue, from, to),
     operator
   );
@@ -178,8 +168,6 @@ export async function holderGenerateQueryMTPWitness(
  * @param {number} valueTreeDepth
  * @param {number} from
  * @param {number} to
- * @param {HashFunction} hashFunction
- * @param {SnarkField} F
  * @returns {Promise<QueryMTPWitness>} queryMTP witness
  */
  export async function holderGenerateQueryMTPWitnessWithSignature(
@@ -195,11 +183,9 @@ export async function holderGenerateQueryMTPWitness(
   valueTreeDepth: number,
   from: number,
   to: number,
-  hashFunction: HashFunction,
-  F: SnarkField
 ): Promise<QueryMTPWitness> {
   const authClaimProof = await userAuthTrees.generateProofForClaim(
-    authClaim.hiRaw(userAuthTrees.hasher),
+    authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
@@ -210,8 +196,6 @@ export async function holderGenerateQueryMTPWitness(
   const merkleQueryInput = createMerkleQueryInput(
     values.map((value) => shiftValue(value, from)),
     valueTreeDepth,
-    hashFunction,
-    F,
     getPartialValue(slotValue, from, to),
     operator
   );
