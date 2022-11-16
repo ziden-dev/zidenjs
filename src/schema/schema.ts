@@ -20,7 +20,15 @@ export type Schema = {
     required: Array<string>
 }
 
-
+/**
+ * Generate entry from data, schema and registry
+ * @param {any} data raw data of user 
+ * @param {Schema} schema schema form
+ * @param {Registry} registry registry of issuer
+ * @param {SnarkField} F 
+ * @param {Hasher} hasher 
+ * @returns {Entry} Claim of data
+ */
 export function generateEntry(data: any, schema: Schema, registry: Registry, F: SnarkField, hasher: Hasher): Entry {
     let id = data["userId"];
     if (id == undefined) {
@@ -53,7 +61,13 @@ export function generateEntry(data: any, schema: Schema, registry: Registry, F: 
     return claim;
 }
 
-export function generateDataFromEntry(entry: Entry, schema: Schema, F: SnarkField): any {
+/**
+ * convert entry to data
+ * @param {Entry} entry Claim
+ * @param {Schema} schema Schema form
+ * @returns {any} object of raw data
+ */
+export function generateDataFromEntry(entry: Entry, schema: Schema): any {
     let data: any = {};
     data["userId"] = bufferToHex(entry.getID());
     let indexData: Array<BigInt> = [bitsToNum(entry.getSlotData(3)), bitsToNum(entry.getSlotData(4))];
@@ -196,7 +210,12 @@ function entryToData(slotData: Array<BigInt>, index: Array<string>, properties: 
     return ans;
 }
 
-export function schemaPropertiesSlot(schema: Schema) {
+/**
+ * 
+ * @param {Schema} schema form schema 
+ * @returns {Array<any>} return properti slot of schema
+ */
+export function schemaPropertiesSlot(schema: Schema): Array<any> {
     let propertiesSlot: Array<any> = [];
     let indexSlot = propertiesToSlot(3, schema.index, schema.properties);
     let valueSlot = propertiesToSlot(6, schema.value, schema.properties);

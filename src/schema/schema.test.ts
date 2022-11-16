@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Entry } from '../claim/entry.js';
 import { buildHasher, buildSnarkField, Hasher, SnarkField } from '../global.js';
-import { generateDataFromEntry, generateEntry, getSchemaHashFromSchema, Registry, Schema } from './schema.js';
+import { generateDataFromEntry, generateEntry, getSchemaHashFromSchema, Registry, Schema, schemaPropertiesSlot } from './schema.js';
 
 describe('test schema', async () => {
     let F: SnarkField;
@@ -91,7 +91,7 @@ describe('test schema', async () => {
     });
 
     it('test convert entry to data', async () => {
-        let dataFromEntry = generateDataFromEntry(claim, schema, F);
+        let dataFromEntry = generateDataFromEntry(claim, schema);
         console.log(dataFromEntry);
         expect(dataFromEntry["userId"]).to.be.equal(data["userId"]);
         expect(dataFromEntry["dateOfBirth"]).to.be.equal(data["dateOfBirth"]);
@@ -105,6 +105,10 @@ describe('test schema', async () => {
         let schemaHash = getSchemaHashFromSchema(schema, F, hasher);
         console.log(schemaHash);
         
-    })
+    });
 
+    it('test get properties slot', async () => {
+        let propertiesSlot = schemaPropertiesSlot(schema);
+        console.log(propertiesSlot);
+    })
 }).timeout(10000);
