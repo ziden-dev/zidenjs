@@ -1,18 +1,15 @@
 import { expect } from 'chai';
+import { setupParams } from '../global.js';
 import { Entry } from '../claim/entry.js';
-import { buildHasher, buildSnarkField, Hasher, SnarkField } from '../global.js';
 import { generateDataFromEntry, generateEntry, getSchemaHashFromSchema, Registry, Schema, schemaPropertiesSlot } from './schema.js';
 
 describe('test schema', async () => {
-    let F: SnarkField;
-    let hasher: Hasher;
     let data: any;
     let schema: Schema;
     let registry: Registry;
     let claim: Entry;
     it('set up params', async () => {
-        F = await buildSnarkField();
-        hasher = await buildHasher();
+        await setupParams();
         schema = {
             "title": "US Identity Document Claim",
             "properties": {
@@ -86,7 +83,7 @@ describe('test schema', async () => {
     });
 
     it('test generate entry from data', async () => {
-        claim = generateEntry(data, schema, registry, F, hasher);
+        claim = generateEntry(data, schema, registry);
         console.log(claim);
     });
 
@@ -102,7 +99,7 @@ describe('test schema', async () => {
     });
 
     it('test hash schema', async () => {
-        let schemaHash = getSchemaHashFromSchema(schema, F, hasher);
+        let schemaHash = getSchemaHashFromSchema(schema);
         console.log(schemaHash);
         
     });
