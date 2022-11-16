@@ -179,3 +179,36 @@ export function createMask(from: number, to: number): BigInt {
     const partialBits = sourceBits.slice(from, to).reverse();
     return BigInt('0b' + partialBits.join(''));
   }
+
+  /**
+   * Convert float64 to buffer
+   * @param {number} f float we want to convert to buffer
+   * @returns {Buffer} value f in buffer
+   */
+  export function floatToBuffer(f:  number): Buffer {
+    let buf = new ArrayBuffer(8);
+    (new Float64Array(buf))[0] = f;
+
+    var buffer = Buffer.alloc(8);
+    var view = new Uint8Array(buf);
+    for (var i = 0; i < buffer.length; ++i) {
+        buffer[i] = view[i];
+    }
+
+    return buffer;
+  }
+
+  /**
+   * Convert Buffer to float64
+   * @param {Buffer} buffer buffer we want to convert to float
+   * @returns {number} value of float
+   */
+  export function bufferToFloat(buffer: Buffer): number {
+    const buf = new ArrayBuffer(buffer.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < buffer.length; ++i) {
+        view[i] = buffer[i];
+    }
+    var float = new Float64Array(buf);
+    return float[0];
+  }
