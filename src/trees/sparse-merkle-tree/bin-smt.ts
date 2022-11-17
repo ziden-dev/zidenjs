@@ -1,6 +1,4 @@
-// @ts-ignore
-import { Scalar } from 'ffjavascript';
-import { getZidenParams } from '../../global.js';
+import { getFF, getZidenParams } from '../../global.js';
 import { SMTDb } from '../../db/index.js';
 import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
 
@@ -23,7 +21,8 @@ export class BinSMT implements SMT {
 
   private _splitBits(_key: ArrayLike<number>): Array<number> {
     const F = getZidenParams().F;
-    const res = Scalar.bits(F.toObject(_key));
+    //@ts-ignore
+    const res = getFF().Scalar.bits(F.toObject(_key));
 
     while (res.length < this._maxLevels) res.push(0);
 
@@ -215,8 +214,8 @@ export class BinSMT implements SMT {
       const oldKeyBits = this._splitBits(resFind.notFoundKey!);
       for (let i = res.siblings.length; oldKeyBits[i] === newKeyBits[i]; i++) {
         res.siblings.push(F.zero);
-        if(i === this._maxLevels - 1){
-            throw new Error('Reached SMT max level')
+        if (i === this._maxLevels - 1) {
+          throw new Error('Reached SMT max level');
         }
       }
       rtOld = getZidenParams().hash1(resFind.notFoundKey!, resFind.notFoundValue!);

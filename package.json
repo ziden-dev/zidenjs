@@ -31,9 +31,10 @@
   "dependencies": {
     "big-integer": "^1.6.51",
     "bigint-buffer": "^1.1.5",
+    "blake-hash": "^2.0.0",
     "circomlib": "^2.0.5",
-    "circomlibjs": "^0.1.7",
     "ffjavascript": "^0.2.56",
+    "ffjavascript-browser": "^0.0.3",
     "level": "^8.0.0"
   },
   "devDependencies": {

@@ -1,4 +1,6 @@
 import chai from 'chai';
+import dynamic_ffjavascript from './crypto/dynamic_ffjavascript.js';
+import { getFF } from './global.js';
 import {
   bitsToNum,
   bufferArrayToHex,
@@ -18,6 +20,13 @@ import {
 const { expect } = chai;
 
 describe('[util] convert', () => {
+  it('import ff', async () => {
+    await dynamic_ffjavascript();
+    //@ts-ignore
+    const bn128 = await getFF().getCurveFromName('bn128', true);
+    const F = bn128.Fr;
+    console.log(F.e(1));
+  });
   it('convert buffer - bigint', () => {
     const bi = BigInt(0x12abcdef);
     const buff = numToBits(bi, 4);
@@ -65,6 +74,6 @@ describe('[util] convert', () => {
     const f = 10.05;
     const floatToBuff = floatToBuffer(f);
     const buffToFloat = bufferToFloat(floatToBuff);
-    expect((Math.abs(buffToFloat - f)) < 1e-6).to.be.true;
+    expect(Math.abs(buffToFloat - f) < 1e-6).to.be.true;
   });
 });

@@ -1,12 +1,12 @@
 import bigInt from 'big-integer';
-// @ts-ignore
-import { Scalar, getCurveFromName } from 'ffjavascript';
-// @ts-ignore
-import { buildPoseidon, buildEddsa } from 'circomlibjs';
+
+import { buildPoseidon } from './crypto/poseidon_wasm.js';
 import { HashFunction } from './witnesses/fixed-merkle-tree/index.js';
+import dynamic_ffjavascript from './crypto/dynamic_ffjavascript.js';
+import buildEddsa from './crypto/eddsa.js';
 
 export const SNARK_SIZE: bigInt.BigNumber = bigInt(
-  Scalar.fromString('21888242871839275222246405745257275088548364400416034343698204186575808495617')
+  '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 );
 
 export interface ZidenParams {
@@ -37,17 +37,9 @@ export interface EDDSA {
   prv2pub: (privateKey: Buffer) => Array<ArrayLike<number>>;
   signPoseidon: (privateKey: Buffer, msg: ArrayLike<number>) => EDDSASignature;
 }
-export async function buildSnarkField(): Promise<SnarkField> {
-  const bn128 = await getCurveFromName('bn128', true);
-  return bn128.Fr;
-}
 
 export async function buildHasher(): Promise<Hasher> {
   return await buildPoseidon();
-}
-
-export async function buildSigner(): Promise<EDDSA> {
-  return await buildEddsa();
 }
 
 export function buildHash0Hash1(hasher: Hasher, F: SnarkField): { hash0: Hash0; hash1: Hash1 } {
@@ -70,6 +62,7 @@ export function buildFMTHashFunction(hash0: Hash0, F: SnarkField): HashFunction 
 
 declare global {
   var zidenParams: ZidenParams;
+  var ff: any;
 }
 
 export function getZidenParams(): ZidenParams {
@@ -82,13 +75,25 @@ export function getZidenParams(): ZidenParams {
   }
   return params;
 }
+export function getFF(): any {
+  let ff: any;
+  try {
+    //@ts-ignore
+    ff = window.ff;
+  } catch (err) {
+    ff = global.ff;
+  }
+  return ff;
+}
 
 export async function setupParams() {
-  const F = await buildSnarkField();
+  await dynamic_ffjavascript();
+  const bn128 = await getFF().getCurveFromName('bn128', true);
+  const F = bn128.Fr;
   const hasher = await buildPoseidon();
   const { hash0, hash1 } = buildHash0Hash1(hasher, F);
   const fmtHash = buildFMTHashFunction(hash0, F);
-  const eddsa = await buildSigner();
+  const eddsa = await buildEddsa(F);
 
   const params: ZidenParams = {
     hasher,

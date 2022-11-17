@@ -1,5 +1,3 @@
-// @ts-ignore
-import { Scalar } from 'ffjavascript';
 import { getZidenParams } from '../../global.js';
 import { SMTDb } from '../../db/index.js';
 import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
