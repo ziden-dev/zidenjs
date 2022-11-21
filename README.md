@@ -1,6 +1,6 @@
 # Zidenjs *(Internal version)*
 
-> Core library for interacting with **Ziden** protocol, support all functions for **holders**, **issuers** and **verifiers**
+> Core library for interacting with **Ziden** protocol, supports all functions for **holders**, **issuers** and **verifiers**
 
 ## Library structure
 
@@ -16,23 +16,24 @@
 
 ## Usage
 
-### 1. Initialize global parameters
+### 1. Setup parameters
 
-Precompute all global parameters and store them somewhere in your program. You may need to use them often
+Ziden is built from some cryptography tools, they are stored in global parameter called **ZidenParams**, some features provided by **ZidenParams** are: **BN128 Scalar Field, BabyJub EDDSA, Poseidon Hasher**
+
+Precompute parameters
 
 ```typescript
 import { global as zidenParams } from 'zidenjs';
 
-// construct Bn128 prime field
-const F = await zidenParams.buildSnarkField();
-// constructs Poseidon hasher
-const hasher = await zidenParams.buildHasher();
-// constructs EDDSA Signer
-const eddsa = await zidenParams.buildSigner();
-// constructs Hash0, Hash1 functions used in Sparse Merkle Tree
-const { hash0, hash1 } = await zidenParams.buildHash0Hash1(hasher, F);
+await zidenParams.setupParams();
+```
 
-// You should store (F, hasher, eddsa, hash0, hash1) here
+After setup successfully, you can use **ZidenParams** by:
+
+```typescript
+import { global as zidenParams } from 'zidenjs';
+
+const params = zidenParams.getZidenParams();
 ```
 
 ### 2. Claims
@@ -109,7 +110,14 @@ import crypto from 'crypto';
 import { claim } from 'zidenjs';
 
 const privateKey = crypto.randomBytes(32);
-const authClaim = await claim.authClaim.newAuthClaimFromPrivateKey(eddsa, F, privateKey);
+const authClaim = await claim.authClaim.newAuthClaimFromPrivateKey(privateKey);
+
+// construct an auth claim from a public key
+const pubkey = getZidenParams().eddsa.prv2pub(privateKey);
+const pubkeyX = getZidenParams().F.toObject(pubkey[0]);
+const pubkeyY = getZidenParams().F.toObject(pubkey[1]);
+
+const authClaim_1 = await claim.authClaim.newAuthClaimFromPublicKey(pubkeyX, pubkeyY); 
 ```
 
 ##### Sign a challenge with private key
@@ -123,15 +131,17 @@ const privateKey = crypto.randomBytes(32);
 const challenge = BigInt('4893740132');
 
 const signature: SignedSignature = await signChallenge(
-  eddsa,
-  F,
   privateKey,
   challenge
 )
 ```
 ### 3. Generate Identity
 
-An identity is constructed from some **auth claims**. There are two Sparse Merkle Tree structures currently be supported by Ziden. The default one is **Quinary SMT** with depth of **14** (**highly recommended**), and another is **Binary SMT** with depth of **32**
+An identity can be initialized from some **auth claims**. 
+
+There are two **Sparse Merkle Tree** structures currently be supported by Ziden. The default one is **Quinary SMT** with depth of **14** (**highly recommended**), and another is **Binary SMT** with depth of **32**
+
+Ziden supports store **Sparse Merkle Tree** in **LevelDB**
 
 ##### Example
 
@@ -142,16 +152,12 @@ const {SMTLevelDb} = db;
 const {Trees, SMTType} = trees;
 const {IDType} = claim.id;
 // Specify data base to store claims, revocation and roots trees. 
-const claimsDb = new SMTLevelDb('path/to/your/claims-tree-db', F);
-const revocationDb = new SMTLevelDb('path/to/your/revocation-tree-db', F);
-const rootsDb = new SMTLevelDb('path/to/your/roots-tree-db', F);
+const claimsDb = new SMTLevelDb('path/to/your/claims-tree-db');
+const revocationDb = new SMTLevelDb('path/to/your/revocation-tree-db');
+const rootsDb = new SMTLevelDb('path/to/your/roots-tree-db');
 
 // Quinary SMT (default option, don't need to specify SMT type and depth)
 const idWithQSMT = await Trees.generateID(
-    F, 
-    hash0,
-    hash1,
-    hasher, 
     [authClaim],
     claimsDb,
     revocationDb,
@@ -161,10 +167,6 @@ const idWithQSMT = await Trees.generateID(
 
 // Binary SMT (need to specify SMT type and depth)
 const idWithBSMT = await Trees.generateID(
-    F,
-    hash0,
-    hash1,
-    hasher,
     [authClaim],
     claimsDb,
     revocationDb,
@@ -187,13 +189,11 @@ import { witnesses } from 'zidenjs';
 
 // update your trees and calculate inputs for state transition circuits in a same time
 const witness = await witnesses.stateTransitionWitness(
-    eddsa,
-    privateKey,
+    privateKey, // Your private key corresponeding with auth claim
     authClaim,
     trees,
     [claim0, claim1, claim2], // list of inserting claims
     [claim3.getRevocationNonce(), claim4.getRevocationNonce()], // list of revoking claim revocation nonces
-    hasher
 );
 
 // optional - calculate zero knowledge proof from generated witness with snarkjs
@@ -210,12 +210,11 @@ import { witnesses, claim } from 'zidenjs';
 
 // update your trees and calculate inputs for state transition circuits in a same time
 const witness = await witnesses.stateTransitionWitnessWithHiHv(
-    signature,
+    privateKey, // Your private key corresponeding with auth claim
     authClaim,
     trees,
     [claim0, claim1, claim2], // list of inserting claims
     [claim3.getRevocationNonce(), claim4.getRevocationNonce()], // list of revoking claim revocation nonces
-    hasher
 );
 
 // optional - calculate zero knowledge proof from generated witness with snarkjs
@@ -253,7 +252,6 @@ const challenge = BigInt('12345');
 
 const witness = await holderGenerateQueryMTPWitness(
     issuerClaim,
-    eddsa,
     holderPrivateKey,
     holderAuthClaim,
     challenge,
@@ -262,12 +260,10 @@ const witness = await holderGenerateQueryMTPWitness(
     kycQueryNonRevMTPInput,
     2, // slot index
     witnesses.query.OPERATOR.LESS_THAN, // operator
-    values,
-    10, 
-    0,
-    100,
-    hashFunction,
-    F
+    values, // attesting values
+    10, // depth of Fixed Merkle Tree used in QueryMTP circuit
+    0, // from offset of slot
+    100, // to offset of slot
 );
 
 // use witness to generate zk proof here
@@ -287,8 +283,6 @@ import { witnesses } from 'zidenjs';
 
 // calculates claim signature (private data, need to encrypt the input before sending it to holder) 
 const kycQuerySigInput = await kycGenerateQuerySigInput(
-    eddsa,
-    hasher,
     issuerPrivateKey,
     issuerAuthClaim,
     issuerClaim,
@@ -311,21 +305,18 @@ const challenge = BigInt('12345');
 
 const witness = await holderGenerateQuerySigWitness(
     issuerClaim,
-    eddsa,
     holderPrivateKey,
     holderAuthClaim,
     challenge,
     holderTrees,
     kycQuerySigInput,
     kycQuerySigNonRevInput,
-    2,
-    witnesses.query.OPERATOR.LESS_THAN,
-    values,
-    10,
-    0,
-    100,
-    hashFunction,
-    F
+    2, // slot index
+    witnesses.query.OPERATOR.LESS_THAN, // operator
+    values, // attesting values
+    10, // depth of Fixed Merkle Tree used in Query sig circuit
+    0, // from offset of slot
+    100 // to offset of slot
 );
 
 // use witness to generate zk proof here
