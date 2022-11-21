@@ -1,8 +1,8 @@
 {
-  "name": "zidenjs",
+  "name": "@zidendev/zidenjs",
   "type": "module",
   "version": "1.0.0",
-  "description": "",
+  "description": "Core library for interacting with Ziden protocol, supports all functions for holders, issuers and verifiers",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {

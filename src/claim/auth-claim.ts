@@ -35,7 +35,7 @@ export interface SignedChallenge {
   readonly challengeSignatureS: BigInt;
 }
 /**
- * Sign challenge with private
+ * Sign challenge with private key
  * @param {Buffer} privateKey
  * @param {BigInt} challenge
  * @returns {Promise<SignedChallenge>} signature
