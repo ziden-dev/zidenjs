@@ -1,5 +1,6 @@
-import { getFF, getZidenParams } from '../../global.js';
+import { getZidenParams } from '../../global.js';
 import { SMTDb } from '../../db/index.js';
+import { Scalar } from '../../crypto/ffjavascript.js';
 import SMT, { DeletingResult, FindingResult, InsertingResult, Primitive, UpdatingResult } from './index.js';
 
 export class BinSMT implements SMT {
@@ -22,7 +23,7 @@ export class BinSMT implements SMT {
   private _splitBits(_key: ArrayLike<number>): Array<number> {
     const F = getZidenParams().F;
     //@ts-ignore
-    const res = getFF().Scalar.bits(F.toObject(_key));
+    const res = Scalar.bits(F.toObject(_key));
 
     while (res.length < this._maxLevels) res.push(0);
 

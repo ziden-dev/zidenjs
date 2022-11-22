@@ -1,6 +1,5 @@
 import chai from 'chai';
-import dynamic_ffjavascript from './crypto/dynamic_ffjavascript.js';
-import { getFF } from './global.js';
+import { getCurveFromName } from './crypto/ffjavascript.js';
 import {
   bitsToNum,
   bufferArrayToHex,
@@ -21,9 +20,7 @@ const { expect } = chai;
 
 describe('[util] convert', () => {
   it('import ff', async () => {
-    await dynamic_ffjavascript();
-    //@ts-ignore
-    const bn128 = await getFF().getCurveFromName('bn128', true);
+    const bn128 = await getCurveFromName('bn128', true);
     const F = bn128.Fr;
     console.log(F.e(1));
   });

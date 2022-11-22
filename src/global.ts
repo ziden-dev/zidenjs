@@ -2,8 +2,8 @@ import bigInt from 'big-integer';
 
 import { buildPoseidon } from './crypto/poseidon_wasm.js';
 import { HashFunction } from './witnesses/fixed-merkle-tree/index.js';
-import dynamic_ffjavascript from './crypto/dynamic_ffjavascript.js';
 import buildEddsa from './crypto/eddsa.js';
+import { getCurveFromName } from './crypto/ffjavascript.js';
 
 export const SNARK_SIZE: bigInt.BigNumber = bigInt(
   '21888242871839275222246405745257275088548364400416034343698204186575808495617'
@@ -62,7 +62,6 @@ export function buildFMTHashFunction(hash0: Hash0, F: SnarkField): HashFunction 
 
 declare global {
   var zidenParams: ZidenParams;
-  var ff: any;
 }
 
 export function getZidenParams(): ZidenParams {
@@ -75,20 +74,9 @@ export function getZidenParams(): ZidenParams {
   }
   return params;
 }
-export function getFF(): any {
-  let ff: any;
-  try {
-    //@ts-ignore
-    ff = window.ff;
-  } catch (err) {
-    ff = global.ff;
-  }
-  return ff;
-}
 
 export async function setupParams() {
-  await dynamic_ffjavascript();
-  const bn128 = await getFF().getCurveFromName('bn128', true);
+  const bn128 = await getCurveFromName('bn128', true);
   const F = bn128.Fr;
   const hasher = await buildPoseidon();
   const { hash0, hash1 } = buildHash0Hash1(hasher, F);

@@ -1,4 +1,5 @@
-import { getFF, getZidenParams } from '../global.js';
+import { getZidenParams } from '../global.js';
+import { Scalar } from './ffjavascript.js';
 
 export default async function buildBabyJub(F) {
   return new BabyJub(F);
@@ -7,8 +8,8 @@ export default async function buildBabyJub(F) {
 class BabyJub {
   constructor(F) {
     this.F = F;
-    this.p = getFF().Scalar.fromString('21888242871839275222246405745257275088548364400416034343698204186575808495617');
-    this.pm1d2 = getFF().Scalar.div(getFF().Scalar.sub(this.p, getFF().Scalar.e(1)), getFF().Scalar.e(2));
+    this.p = Scalar.fromString('21888242871839275222246405745257275088548364400416034343698204186575808495617');
+    this.pm1d2 = Scalar.div(Scalar.sub(this.p, Scalar.e(1)), Scalar.e(2));
 
     this.Generator = [
       F.e('995203441582195749578291179787384436505546430278305826713579947235728471134'),
@@ -18,8 +19,8 @@ class BabyJub {
       F.e('5299619240641551281634865583518297030282874472190772894086521144482721001553'),
       F.e('16950150798460657717958625567821834550301663161624707787222815936182638968203'),
     ];
-    this.order = getFF().Scalar.fromString('21888242871839275222246405745257275088614511777268538073601725287587578984328');
-    this.subOrder = getFF().Scalar.shiftRight(this.order, 3);
+    this.order = Scalar.fromString('21888242871839275222246405745257275088614511777268538073601725287587578984328');
+    this.subOrder = Scalar.shiftRight(this.order, 3);
     this.A = F.e('168700');
     this.D = F.e('168696');
   }
@@ -53,12 +54,12 @@ class BabyJub {
     let rem = e;
     let exp = base;
 
-    while (!getFF().Scalar.isZero(rem)) {
-      if (getFF().Scalar.isOdd(rem)) {
+    while (!Scalar.isZero(rem)) {
+      if (Scalar.isOdd(rem)) {
         res = this.addPoint(res, exp);
       }
       exp = this.addPoint(exp, exp);
-      rem = getFF().Scalar.shiftRight(rem, 1);
+      rem = Scalar.shiftRight(rem, 1);
     }
 
     return res;
@@ -86,7 +87,7 @@ class BabyJub {
     const buff = new Uint8Array(32);
     F.toRprLE(buff, 0, P[1]);
     const n = F.toObject(P[0]);
-    if (getFF().Scalar.gt(n, this.pm1d2)) {
+    if (Scalar.gt(n, this.pm1d2)) {
       buff[31] = buff[31] | 0x80;
     }
     return buff;
@@ -101,7 +102,7 @@ class BabyJub {
       buff[31] = buff[31] & 0x7f;
     }
     P[1] = F.fromRprLE(buff, 0);
-    if (getFF().Scalar.gt(F.toObject(P[1]), this.p)) return null;
+    if (Scalar.gt(F.toObject(P[1]), this.p)) return null;
 
     const y2 = F.square(P[1]);
 
