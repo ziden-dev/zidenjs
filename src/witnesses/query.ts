@@ -1,3 +1,4 @@
+import { createMask, shiftValue } from '../utils.js';
 import { getZidenParams } from '../global.js';
 import MerkleTree from './fixed-merkle-tree/index.js';
 
@@ -18,7 +19,7 @@ export enum OPERATOR {
   GREATER_THAN,
   IN,
   NOT_IN,
-  IN_RANGE
+  IN_RANGE,
 }
 
 const ErrInvalidValues = new Error('Invalid values');
@@ -85,7 +86,12 @@ export function createMerkleQueryInput(
     for (let i = values.length; i < valueArraySize; i++) {
       sortedValues.push(biggestValue);
     }
-    const fmt = new MerkleTree(valueTreeDepth, sortedValues, getZidenParams().fmtHash, getZidenParams().F.toObject(getZidenParams().F.zero));
+    const fmt = new MerkleTree(
+      valueTreeDepth,
+      sortedValues,
+      getZidenParams().fmtHash,
+      getZidenParams().F.toObject(getZidenParams().F.zero)
+    );
     // find the smallest value in array which greater than the attesting value
     const greaterIndex = sortedValues.findIndex((value) => value > attestingValue);
 
@@ -166,6 +172,38 @@ export function createMerkleQueryInput(
 }
 
 /**
+ * Calculate deterministicValue from values and operator
+ * @param {Array<BigInt>} values
+ * @param {number} valueTreeDepth
+ * @param {OPERATOR} operator
+ * @returns {BigInt}
+ */
+export function calculateDeterministicValue(values: Array<BigInt>, valueTreeDepth: number, operator: OPERATOR): BigInt {
+  if (operator === OPERATOR.NOOP) return BigInt(0);
+  if (operator < OPERATOR.IN) {
+    return values[0];
+  }
+  // OPERATOR 4 (IN), 5 (NOT IN), 6 (IN RANGE) need to build fixed merkle tree from sorted array of values
+  const valueArraySize = 1 << valueTreeDepth;
+  const sortedValues = values.slice();
+  sortedValues.sort();
+  const biggestValue = sortedValues[values.length - 1];
+
+  // pad the sortedValues to fill valueArraySize
+  for (let i = values.length; i < valueArraySize; i++) {
+    sortedValues.push(biggestValue);
+  }
+  const fmt = new MerkleTree(
+    valueTreeDepth,
+    sortedValues,
+    getZidenParams().fmtHash,
+    getZidenParams().F.toObject(getZidenParams().F.zero)
+  );
+
+  return fmt.root;
+}
+
+/**
  * Compress timestamp (64 bits), claimSchema (128 bits), slotIndex (3 bits), operator (3 bits) into 1 input
  * @param {number} timestamp
  * @param {BigInt} claimSchema
@@ -180,4 +218,48 @@ export function compressInputs(timestamp: number, claimSchema: BigInt, slotIndex
     slotIndex.toString(2).padStart(3, '0') +
     operator.toString(2).padStart(3, '0');
   return BigInt('0b' + compactInput);
+}
+
+export interface RawQuery {
+  slotIndex: number;
+  operator: OPERATOR;
+  values: Array<BigInt>;
+  valueTreeDepth: number;
+  from: number;
+  to: number;
+  timestamp: number;
+  claimSchema: BigInt;
+}
+
+export interface CompactedQuery {
+  determinisiticValue?: BigInt;
+  compactInput: BigInt;
+  mask: BigInt;
+}
+
+/**
+ * Compact raw query into Compacted Query to pass in circuit
+ * @param {RawQuery} rawQuery
+ * @param {boolean} withDeterminisiticValue
+ * @returns {CompactedQuery}
+ */
+export function compactQuery(rawQuery: RawQuery, withDeterminisiticValue: boolean): CompactedQuery {
+  const compactInput = compressInputs(rawQuery.timestamp, rawQuery.claimSchema, rawQuery.slotIndex, rawQuery.operator);
+  const mask = createMask(rawQuery.from, rawQuery.to);
+  if (!withDeterminisiticValue) {
+    return {
+      compactInput,
+      mask,
+    };
+  }
+  const determinisiticValue = calculateDeterministicValue(
+    rawQuery.values.map((value) => shiftValue(value, rawQuery.from)),
+    rawQuery.valueTreeDepth,
+    rawQuery.operator
+  );
+  return {
+    compactInput,
+    mask,
+    determinisiticValue,
+  };
 }

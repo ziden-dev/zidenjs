@@ -83,6 +83,7 @@ export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInpu
   readonly mask: BigInt;
   readonly issuerClaim: Array<BigInt>;
 }
+
 /**
  * Holder Generate credential atomic query MTP witness from issuer input
  * @param {Entry} issuerClaim
@@ -98,6 +99,7 @@ export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInpu
  * @param {number} valueTreeDepth
  * @param {number} from
  * @param {number} to
+ * @param {number} timestamp
  * @returns {Promise<QueryMTPWitness>} queryMTP witness
  */
 export async function holderGenerateQueryMTPWitness(
@@ -113,7 +115,8 @@ export async function holderGenerateQueryMTPWitness(
   values: Array<BigInt>,
   valueTreeDepth: number,
   from: number,
-  to: number
+  to: number,
+  timestamp: number
 ): Promise<QueryMTPWitness> {
   const signature = await signChallenge(privateKey, challenge);
   const authClaimProof = await userAuthTrees.generateProofForClaim(
@@ -121,7 +124,6 @@ export async function holderGenerateQueryMTPWitness(
     authClaim.getRevocationNonce()
   );
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
-  const timestamp = Date.now();
   const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
   const mask = createMask(from, to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
@@ -168,6 +170,7 @@ export async function holderGenerateQueryMTPWitness(
  * @param {number} valueTreeDepth
  * @param {number} from
  * @param {number} to
+ * @param {number} timestamp
  * @returns {Promise<QueryMTPWitness>} queryMTP witness
  */
  export async function holderGenerateQueryMTPWitnessWithSignature(
@@ -183,13 +186,13 @@ export async function holderGenerateQueryMTPWitness(
   valueTreeDepth: number,
   from: number,
   to: number,
+  timestamp: number
 ): Promise<QueryMTPWitness> {
   const authClaimProof = await userAuthTrees.generateProofForClaim(
     authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
-  const timestamp = Date.now();
   const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
   const mask = createMask(from, to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));

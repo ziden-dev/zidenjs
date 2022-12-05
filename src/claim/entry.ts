@@ -669,9 +669,6 @@ export class Entry {
    */
   setSlotData(index: number, data: Buffer) {
     checkElemFitsClaim(data);
-    if (!(index in [2, 3, 6, 7])) {
-      throw ErrInvalidSlotIndex;
-    }
     data.copy(this._elements[index]);
   }
 

@@ -117,7 +117,8 @@ describe('test query sig', async () => {
       [BigInt(20010210)],
       10,
       0,
-      100
+      100,
+      Date.now()
     );
     console.log(witness);
   });

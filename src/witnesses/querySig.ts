@@ -127,8 +127,7 @@ export interface QuerySigWitness extends KYCQuerySigInput, KYCQuerySigNonRevInpu
  * @param {number} valueTreeDepth
  * @param {number} from
  * @param {number} to
- * @param {HashFunction} hashFunction
- * @param {SnarkField} F
+ * @param {number} timestamp
  * @returns {Promise<QuerySigWitness>} querySig witness
  */
 export async function holderGenerateQuerySigWitness(
@@ -144,14 +143,14 @@ export async function holderGenerateQuerySigWitness(
   values: Array<BigInt>,
   valueTreeDepth: number,
   from: number,
-  to: number
+  to: number,
+  timestamp: number
 ): Promise<QuerySigWitness> {
   const signature = await signChallenge( privateKey, challenge);
   const authClaimProof = await userAuthTrees.generateProofForClaim(
     authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
-  const timestamp = Date.now();
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
   const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
   const mask = createMask(from, to);
@@ -199,8 +198,7 @@ export async function holderGenerateQuerySigWitness(
  * @param {number} valueTreeDepth
  * @param {number} from
  * @param {number} to
- * @param {HashFunction} hashFunction
- * @param {SnarkField} F
+ * @param {number} timestamp
  * @returns {Promise<QuerySigWitness>} querySig witness
  */
  export async function holderGenerateQuerySigWitnessWithSignature(
@@ -215,13 +213,13 @@ export async function holderGenerateQuerySigWitness(
   values: Array<BigInt>,
   valueTreeDepth: number,
   from: number,
-  to: number
+  to: number,
+  timestamp: number
 ): Promise<QuerySigWitness> {
   const authClaimProof = await userAuthTrees.generateProofForClaim(
     authClaim.hiRaw(),
     authClaim.getRevocationNonce()
   );
-  const timestamp = Date.now();
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
   const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
   const mask = createMask(from, to);

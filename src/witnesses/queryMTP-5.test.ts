@@ -126,7 +126,8 @@ describe('test query atomic MTP', async () => {
       values,
       10,
       0,
-      100
+      100,
+      Date.now()
     );
     console.log(witness);
   });
@@ -154,7 +155,8 @@ describe('test query atomic MTP', async () => {
       values,
       10,
       0,
-      100
+      100,
+      Date.now()
     );
     const circuit = await wasm_tester(
       path.join('src', 'witnesses', 'circom_test', 'quin', 'credentialAtomicQueryMTP.circom')
