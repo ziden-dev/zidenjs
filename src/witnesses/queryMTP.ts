@@ -128,7 +128,8 @@ export async function holderGenerateQueryMTPWitness(
   const mask = createMask(from, to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
   const merkleQueryInput = createMerkleQueryInput(
-    values.map((value) => shiftValue(value, from)),
+    // values.map((value) => shiftValue(value, from)),
+    values.map((value) => (value)),
     valueTreeDepth,
     getPartialValue(slotValue, from, to),
     operator
