@@ -37,6 +37,8 @@ export function createMerkleQueryInput(
   attestingValue: BigInt,
   operator: OPERATOR
 ): MerkleQueryInput {
+  console.log("value: ", values);
+  console.log("attestingValue: ", attestingValue);
   let determinisiticValue: BigInt = BigInt(0);
   let leaf0: BigInt = BigInt(0);
   let leaf1: BigInt = BigInt(0);
