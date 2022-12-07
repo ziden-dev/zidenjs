@@ -88,7 +88,7 @@ export function generateEntry(data: any, schema: Schema, registry: Registry): En
 export function generateDataFromEntry(entry: Entry, schema: Schema): any {
   let data: any = {};
   data['userId'] = bufferToHex(entry.getID());
-  let indexData: Array<BigInt> = [bitsToNum(entry.getSlotData(3)), bitsToNum(entry.getSlotData(4))];
+  let indexData: Array<BigInt> = [bitsToNum(entry.getSlotData(2)), bitsToNum(entry.getSlotData(3))];
   let valueData: Array<BigInt> = [bitsToNum(entry.getSlotData(6)), bitsToNum(entry.getSlotData(7))];
   let index = entryToData(indexData, schema.index, schema.properties);
   let value = entryToData(valueData, schema.value, schema.properties);
@@ -113,12 +113,12 @@ function dataSlot(data: any, index: Array<string>, properties: any) {
     let property = properties[element];
     let value: BigInt = BigInt(0);
     switch (property['type']) {
-      case 'string': // 128 bit
-        bitEnd = bitStart + 127;
+      case 'string': // 127 bit
+        bitEnd = bitStart + 126;
         let hashData = getZidenParams()
           .F.toObject(getZidenParams().hasher([BigInt(stringToHex(data[element] ?? ''))]))
           .toString(2);
-        let bitRemove = hashData.length < 128 ? 0 : hashData.length - 128;
+        let bitRemove = hashData.length < 126 ? 0 : hashData.length - 126;
         let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
         value = BigInt(hashDataFixed);
         break;
@@ -172,8 +172,8 @@ function entryToData(slotData: Array<BigInt>, index: Array<string>, properties: 
   index.forEach((element) => {
     let property = properties[element];
     switch (property['type']) {
-      case 'string': // 128 bit
-        bitEnd = bitStart + 127;
+      case 'string': // 126 bit
+        bitEnd = bitStart + 126;
         break;
       case 'float': // 64 bit
         bitEnd = bitStart + 63;
@@ -203,7 +203,7 @@ function entryToData(slotData: Array<BigInt>, index: Array<string>, properties: 
     }
     ans[element] = getPartialValue(slotData[slotNumber], bitStart, bitEnd);
     switch (property['type']) {
-      case 'string': // 128 bit
+      case 'string': // 126 bit
         ans[element] = ans[element].toString();
         break;
       case 'float': // 64 bit
@@ -237,7 +237,7 @@ function entryToData(slotData: Array<BigInt>, index: Array<string>, properties: 
  */
 export function schemaPropertiesSlot(schema: Schema): Array<any> {
   let propertiesSlot: Array<any> = [];
-  let indexSlot = propertiesToSlot(3, schema.index, schema.properties);
+  let indexSlot = propertiesToSlot(2, schema.index, schema.properties);
   let valueSlot = propertiesToSlot(6, schema.value, schema.properties);
   indexSlot.forEach((element) => {
     propertiesSlot.push(element);
@@ -257,8 +257,8 @@ function propertiesToSlot(pos: number, index: Array<string>, properties: any) {
   index.forEach((element) => {
     let property = properties[element];
     switch (property['type']) {
-      case 'string': // 128 bit
-        bitEnd = bitStart + 127;
+      case 'string': // 126 bit
+        bitEnd = bitStart + 126;
         break;
       case 'float': // 64 bit
         bitEnd = bitStart + 63;
