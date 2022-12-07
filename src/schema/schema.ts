@@ -311,12 +311,12 @@ export function getSchemaHashFromSchema(schema: any): string {
   return value.toString();
 }
 
-export function getHashString(val: string): string {
+export function getHashString(val: string): BigInt {
   let hashData = getZidenParams()
           .F.toObject(getZidenParams().hasher([BigInt(stringToHex(val ?? ''))]))
           .toString(2);
   let bitRemove = hashData.length < 126 ? 0 : hashData.length - 126;
   let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
   let value = BigInt(hashDataFixed);
-  return value.toString();
+  return value;
 }
