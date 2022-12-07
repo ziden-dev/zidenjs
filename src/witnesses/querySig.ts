@@ -1,7 +1,7 @@
 import { Trees } from '../trees/trees.js';
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
-import { bitsToNum, createMask, getPartialValue } from '../utils.js';
+import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils.js';
 import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
 
 export interface KYCQuerySigInput {
@@ -156,7 +156,7 @@ export async function holderGenerateQuerySigWitness(
   const mask = createMask(from, to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
   const merkleQueryInput = createMerkleQueryInput(
-    values,
+    values.map((value) => shiftValue(value, from)),
     valueTreeDepth,
     getPartialValue(slotValue, from, to),
     operator
@@ -225,7 +225,7 @@ export async function holderGenerateQuerySigWitness(
   const mask = createMask(from, to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
   const merkleQueryInput = createMerkleQueryInput(
-    values,
+    values.map((value) => shiftValue(value, from)),
     valueTreeDepth,
     getPartialValue(slotValue, from, to),
     operator

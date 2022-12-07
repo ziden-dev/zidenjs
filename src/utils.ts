@@ -175,9 +175,8 @@ export function createMask(from: number, to: number): BigInt {
    * @returns {BigInt} value lie in range
    */
   export function getPartialValue(source: BigInt, from: number, to: number): BigInt {
-    const sourceBits = source.toString(2).padStart(256, '0').split('').reverse();
-    const partialBits = sourceBits.slice(from, to).reverse();
-    return BigInt('0b' + partialBits.join(''));
+    const mask = createMask(from, to);
+    return source.valueOf() & mask.valueOf();
   }
 
   /**
