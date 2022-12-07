@@ -113,12 +113,12 @@ function dataSlot(data: any, index: Array<string>, properties: any) {
     let property = properties[element];
     let value: BigInt = BigInt(0);
     switch (property['type']) {
-      case 'string': // 127 bit
-        bitEnd = bitStart + 126;
+      case 'string': // 124 bit
+        bitEnd = bitStart + 124;
         let hashData = getZidenParams()
           .F.toObject(getZidenParams().hasher([BigInt(stringToHex(data[element] ?? ''))]))
           .toString(2);
-        let bitRemove = hashData.length < 126 ? 0 : hashData.length - 126;
+        let bitRemove = hashData.length < 124 ? 0 : hashData.length - 124;
         let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
         value = BigInt(hashDataFixed);
         break;
@@ -172,8 +172,8 @@ function entryToData(slotData: Array<BigInt>, index: Array<string>, properties: 
   index.forEach((element) => {
     let property = properties[element];
     switch (property['type']) {
-      case 'string': // 126 bit
-        bitEnd = bitStart + 126;
+      case 'string': // 124 bit
+        bitEnd = bitStart + 124;
         break;
       case 'float': // 64 bit
         bitEnd = bitStart + 63;
@@ -196,14 +196,14 @@ function entryToData(slotData: Array<BigInt>, index: Array<string>, properties: 
         throw 'Not have type: ' + property['type'] + ' in ' + element;
     }
 
-    if (bitEnd > 253) {
+    if (bitEnd > 252) {
       bitEnd = bitEnd - bitStart;
       bitStart = 0;
       slotNumber = 1;
     }
     ans[element] = getPartialValue(slotData[slotNumber], bitStart, bitEnd);
     switch (property['type']) {
-      case 'string': // 126 bit
+      case 'string': // 124 bit
         ans[element] = ans[element].toString();
         break;
       case 'float': // 64 bit
@@ -257,8 +257,8 @@ function propertiesToSlot(pos: number, index: Array<string>, properties: any) {
   index.forEach((element) => {
     let property = properties[element];
     switch (property['type']) {
-      case 'string': // 126 bit
-        bitEnd = bitStart + 126;
+      case 'string': // 124 bit
+        bitEnd = bitStart + 124;
         break;
       case 'float': // 64 bit
         bitEnd = bitStart + 63;
@@ -281,7 +281,7 @@ function propertiesToSlot(pos: number, index: Array<string>, properties: any) {
         throw 'Not have type: ' + property['type'] + ' in ' + element;
     }
 
-    if (bitEnd > 253) {
+    if (bitEnd > 252) {
       bitEnd = bitEnd - bitStart;
       bitStart = 0;
       pos = pos + 1;
@@ -315,7 +315,7 @@ export function getHashString(val: string): BigInt {
   let hashData = getZidenParams()
           .F.toObject(getZidenParams().hasher([BigInt(stringToHex(val ?? ''))]))
           .toString(2);
-  let bitRemove = hashData.length < 126 ? 0 : hashData.length - 126;
+  let bitRemove = hashData.length < 124 ? 0 : hashData.length - 124;
   let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
   let value = BigInt(hashDataFixed);
   return value;
