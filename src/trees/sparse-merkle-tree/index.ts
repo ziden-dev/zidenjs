@@ -45,6 +45,4 @@ export default interface SMT {
   readonly root: ArrayLike<number>;
   readonly db: SMTDb;
 }
-
-export { QuinSMT } from './quin-smt.js';
 export { BinSMT } from './bin-smt.js';

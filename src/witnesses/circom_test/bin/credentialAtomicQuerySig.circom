@@ -6,7 +6,7 @@ component main{public [challenge,
                         userID,
                         userState,
                         issuerID,
-                        issuerClaimNonRevState,
                         determinisiticValue,
                         compactInput,
-                        mask]} = CredentialAtomicQuerySig(32, 32, 10);
+                        issuerState,
+                        mask]} = CredentialAtomicQuerySig(8, 8, 10);

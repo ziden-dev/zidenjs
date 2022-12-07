@@ -11,15 +11,13 @@ include "claimUtils.circom";
 // revocations tree root and roots tree root.
 template getIdenState() {
 	signal input claimsTreeRoot;
-	signal input revTreeRoot;
-	signal input rootsTreeRoot;
+	signal input authTreeRoot;
 
 	signal output idenState;
 
-	component calcIdState = Poseidon(3);
+	component calcIdState = Poseidon(2);
 	calcIdState.inputs[0] <== claimsTreeRoot;
-	calcIdState.inputs[1] <== revTreeRoot;
-	calcIdState.inputs[2] <== rootsTreeRoot;
+	calcIdState.inputs[1] <== authTreeRoot;
 
 	idenState <== calcIdState.out;
 }
@@ -44,63 +42,28 @@ template checkClaimExists(IssuerLevels) {
 	smtClaimExists.key <== claimHiHv.hi;
 	smtClaimExists.value <== claimHiHv.hv;
 }
-
-template checkClaimNotRevoked(treeLevels) {
-    signal input claim[8];
-    signal input claimNonRevMTP[treeLevels];
-    signal input treeRoot;
-    signal input noAux;
-    signal input auxHi;
-    signal input auxHv;
-
-	component claimRevNonce = getClaimRevNonce();
-	for (var i=0; i<8; i++) { claimRevNonce.claim[i] <== claim[i]; }
-
-    component smtClaimNotExists = SMTVerifier(treeLevels);
-    smtClaimNotExists.enabled <== 1;
-    smtClaimNotExists.fnc <== 1; // Non-inclusion
-    smtClaimNotExists.root <== treeRoot;
-    for (var i=0; i<treeLevels; i++) { smtClaimNotExists.siblings[i] <== claimNonRevMTP[i]; }
-    smtClaimNotExists.oldKey <== auxHi;
-    smtClaimNotExists.oldValue <== auxHv;
-    smtClaimNotExists.isOld0 <== noAux;
-    smtClaimNotExists.key <== claimRevNonce.revNonce;
-    smtClaimNotExists.value <== 0;
-}
-
 // checkIdenStateMatchesRoots checks that a hash of 3 tree
 // roots is equal to expected identity state
 template checkIdenStateMatchesRoots() {
 	signal input claimsTreeRoot;
-	signal input revTreeRoot;
-	signal input rootsTreeRoot;
+	signal input authTreeRoot;
 	signal input expectedState;
 
 	component isProofValidIdenState = getIdenState();
 	isProofValidIdenState.claimsTreeRoot <== claimsTreeRoot;
-	isProofValidIdenState.revTreeRoot <== revTreeRoot;
-	isProofValidIdenState.rootsTreeRoot <== rootsTreeRoot;
+	isProofValidIdenState.authTreeRoot <== authTreeRoot;
 
 	isProofValidIdenState.idenState === expectedState;
 }
 
-// verifyClaimIssuance verifies that claim is issued by the issuer and not revoked
-template verifyClaimIssuanceNonRev(IssuerLevels) {
+// verifyClaimIssuance verifies that claim is issued by the issuer
+template verifyClaimIssuance(IssuerLevels) {
 	signal input claim[8];
 	signal input claimIssuanceMtp[IssuerLevels];
 	signal input claimIssuanceClaimsTreeRoot;
-	signal input claimIssuanceRevTreeRoot;
-	signal input claimIssuanceRootsTreeRoot;
-	signal input claimIssuanceIdenState;
+	signal input claimIssuanceAuthTreeRoot;
 
-	signal input claimNonRevMtp[IssuerLevels];
-	signal input claimNonRevMtpNoAux;
-	signal input claimNonRevMtpAuxHi;
-	signal input claimNonRevMtpAuxHv;
-	signal input claimNonRevIssuerClaimsTreeRoot;
-	signal input claimNonRevIssuerRevTreeRoot;
-	signal input claimNonRevIssuerRootsTreeRoot;
-	signal input claimNonRevIssuerState;
+	signal input claimIssuanceIdenState;
 
     // verify country claim is included in claims tree root
     component claimIssuanceCheck = checkClaimExists(IssuerLevels);
@@ -111,39 +74,15 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     // verify issuer state includes country claim
     component verifyClaimIssuanceIdenState = checkIdenStateMatchesRoots();
     verifyClaimIssuanceIdenState.claimsTreeRoot <== claimIssuanceClaimsTreeRoot;
-    verifyClaimIssuanceIdenState.revTreeRoot <== claimIssuanceRevTreeRoot;
-    verifyClaimIssuanceIdenState.rootsTreeRoot <== claimIssuanceRootsTreeRoot;
+    verifyClaimIssuanceIdenState.authTreeRoot <== claimIssuanceAuthTreeRoot;
+
     verifyClaimIssuanceIdenState.expectedState <== claimIssuanceIdenState;
-
-    // check non-revocation proof for claim
-    component verifyClaimNotRevoked = checkClaimNotRevoked(IssuerLevels);
-    for (var i=0; i<8; i++) { verifyClaimNotRevoked.claim[i] <== claim[i]; }
-    for (var i=0; i<IssuerLevels; i++) {
-        verifyClaimNotRevoked.claimNonRevMTP[i] <== claimNonRevMtp[i];
-    }
-    verifyClaimNotRevoked.noAux <== claimNonRevMtpNoAux;
-    verifyClaimNotRevoked.auxHi <== claimNonRevMtpAuxHi;
-    verifyClaimNotRevoked.auxHv <== claimNonRevMtpAuxHv;
-    verifyClaimNotRevoked.treeRoot <== claimNonRevIssuerRevTreeRoot;
-
-    // check issuer state matches for non-revocation proof
-    component verifyClaimNonRevIssuerState = checkIdenStateMatchesRoots();
-    verifyClaimNonRevIssuerState.claimsTreeRoot <== claimNonRevIssuerClaimsTreeRoot;
-    verifyClaimNonRevIssuerState.revTreeRoot <== claimNonRevIssuerRevTreeRoot;
-    verifyClaimNonRevIssuerState.rootsTreeRoot <== claimNonRevIssuerRootsTreeRoot;
-    verifyClaimNonRevIssuerState.expectedState <== claimNonRevIssuerState;
 }
 
 template VerifyAuthClaimAndSignature(nLevels) {
-	signal input claimsTreeRoot;
+	signal input authTreeRoot;
 	signal input authClaimMtp[nLevels];
 	signal input authClaim[8];
-
-	signal input revTreeRoot;
-    signal input authClaimNonRevMtp[nLevels];
-    signal input authClaimNonRevMtpNoAux;
-    signal input authClaimNonRevMtpAuxHi;
-    signal input authClaimNonRevMtpAuxHv;
 
 	signal input challenge;
 	signal input challengeSignatureR8x;
@@ -160,17 +99,7 @@ template VerifyAuthClaimAndSignature(nLevels) {
     component claimExists = checkClaimExists(nLevels);
     for (var i=0; i<8; i++) { claimExists.claim[i] <== authClaim[i]; }
 	for (var i=0; i<nLevels; i++) { claimExists.claimMTP[i] <== authClaimMtp[i]; }
-    claimExists.treeRoot <== claimsTreeRoot;
-
-    component smtClaimNotRevoked = checkClaimNotRevoked(nLevels);
-    for (var i=0; i<8; i++) { smtClaimNotRevoked.claim[i] <== authClaim[i]; }
-    for (var i=0; i<nLevels; i++) {
-        smtClaimNotRevoked.claimNonRevMTP[i] <== authClaimNonRevMtp[i];
-    }
-    smtClaimNotRevoked.treeRoot <== revTreeRoot;
-    smtClaimNotRevoked.noAux <== authClaimNonRevMtpNoAux;
-    smtClaimNotRevoked.auxHi <== authClaimNonRevMtpAuxHi;
-    smtClaimNotRevoked.auxHv <== authClaimNonRevMtpAuxHv;
+    claimExists.treeRoot <== authTreeRoot;
 
     component sigVerifier = checkDataSignatureWithPubKeyInClaim();
     for (var i=0; i<8; i++) {

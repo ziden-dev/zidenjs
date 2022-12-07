@@ -1,6 +1,6 @@
 import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry.js';
 import { IDType } from '../claim/id.js';
-import { SMTType, Trees } from './trees.js';
+import { Trees } from './trees.js';
 
 // @ts-ignore
 import { wasm as wasm_tester } from 'circom_tester';
@@ -12,8 +12,7 @@ import { getZidenParams, setupParams } from '../global.js';
 describe('test trees', async () => {
   let trees: Trees;
   let claimsDb: SMTLevelDb;
-  let revocationDb: SMTLevelDb;
-  let rootsDb: SMTLevelDb;
+  let authDb: SMTLevelDb;
   let authClaim1: Entry;
   let authClaim2: Entry;
   it('set up params', async () => {
@@ -24,19 +23,12 @@ describe('test trees', async () => {
     authClaim1 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 2)));
     authClaim2 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 2), Buffer.alloc(30, 3)));
     claimsDb = new SMTLevelDb('src/trees/db_test/claims');
-    revocationDb = new SMTLevelDb('src/trees/db_test/revocation');
-    rootsDb = new SMTLevelDb('src/trees/db_test/roots');
+    authDb = new SMTLevelDb('src/trees/db_test/auth');
   }).timeout(10000);
   it('benchmark generate trees', async () => {
-    trees = await Trees.generateID(
-      [authClaim1, authClaim2],
-      claimsDb,
-      revocationDb,
-      rootsDb,
-      IDType.Default,
-      32,
-      SMTType.BinSMT
-    );
+    trees = await Trees.generateID([authClaim1, authClaim2], claimsDb, authDb, IDType.Default);
+    console.log(authClaim1.getRevocationNonce());
+    console.log(authClaim2.getRevocationNonce());
   });
   it('test getClaimHeader circuit', async () => {
     const circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'checkIdenStateMatchesRoots.circom'));
@@ -44,8 +36,7 @@ describe('test trees', async () => {
     const w = await circuit.calculateWitness(
       {
         claimsTreeRoot: getZidenParams().F.toObject(trees.claimsTree.root),
-        revTreeRoot: getZidenParams().F.toObject(trees.revocationTree.root),
-        rootsTreeRoot: getZidenParams().F.toObject(trees.rootsTree.root),
+        authTreeRoot: getZidenParams().F.toObject(trees.authTree.root),
         expectedState: idenState,
       },
       true
@@ -68,9 +59,24 @@ describe('test trees', async () => {
     await circuit.checkConstraints(w);
   }).timeout(10000);
 
-  it('test claim not revoked', async () => {
+  it('test insert auth claim', async () => {
+    const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861770'));
+    const authClaim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 5), Buffer.alloc(30, 2)));
+    await trees.insertAuthClaim(authClaim);
+    console.log(authClaim.getRevocationNonce());
+
+    const claimExistProof = await trees.generateClaimExistsProof(authClaim.hiRaw(), false);
+    const witness = {
+      ...claimExistProof,
+      claim: authClaim.getDataForCircuit(),
+    };
+    const circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'checkAuthClaimExists.circom'));
+    const w = await circuit.calculateWitness(witness, true);
+    await circuit.checkConstraints(w);
+  }).timeout(10000);
+
+  it('test insert claims', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861771'));
-    const claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 2)));
     const claim1 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 2), Buffer.alloc(30, 3)));
     const claim2 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 3), Buffer.alloc(30, 4)));
     const claim3 = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 4), Buffer.alloc(30, 5)));
@@ -83,22 +89,6 @@ describe('test trees', async () => {
     await trees.insertClaim(claim4);
     await trees.insertClaim(claim5);
     await trees.insertClaim(claim6);
-    await trees.revokeClaim(claim1.getRevocationNonce());
-    await trees.revokeClaim(claim2.getRevocationNonce());
-    await trees.revokeClaim(claim3.getRevocationNonce());
-    await trees.revokeClaim(claim4.getRevocationNonce());
-    await trees.revokeClaim(claim5.getRevocationNonce());
-    await trees.revokeClaim(claim6.getRevocationNonce());
-
-    const claimNonRev = claim.getRevocationNonce();
-    const claimNonRevProof = await trees.generateClaimNotRevokedProof(claimNonRev);
-    const witness = {
-      ...claimNonRevProof,
-      claim: claim.getDataForCircuit(),
-    };
-    const circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'checkClaimNotRevoked.circom'));
-    const w = await circuit.calculateWitness(witness, true);
-    await circuit.checkConstraints(w);
   }).timeout(10000);
 
   it('test inserting a claim multiple times', async () => {

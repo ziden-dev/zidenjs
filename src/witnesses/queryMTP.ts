@@ -1,14 +1,13 @@
 import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
 import { Trees } from '../trees/trees.js';
-import { bitsToNum, createMask, getPartialValue, shiftValue } from '../utils.js';
+import { bitsToNum, createMask, getPartialValue } from '../utils.js';
 import { compressInputs, createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
 
 export interface KYCQueryMTPInput {
   issuerClaimMtp: Array<BigInt>;
   issuerClaimClaimsTreeRoot: BigInt;
-  issuerClaimRevTreeRoot: BigInt;
-  issuerClaimRootsTreeRoot: BigInt;
+  issuerClaimAuthTreeRoot: BigInt;
   issuerClaimIdenState: BigInt;
   issuerID: BigInt;
 }
@@ -22,63 +21,24 @@ export async function kycGenerateQueryMTPInput(
   issuerClaimHi: ArrayLike<number>,
   issuerClaimTrees: Trees
 ): Promise<KYCQueryMTPInput> {
-  const issuerClaimProof = await issuerClaimTrees.generateClaimFullExistsProof(issuerClaimHi);
+  const issuerClaimProof = await issuerClaimTrees.generateProofForClaim(issuerClaimHi);
 
   return {
     issuerClaimMtp: issuerClaimProof.claimMTP,
     issuerClaimClaimsTreeRoot: issuerClaimProof.claimsTreeRoot,
-    issuerClaimRevTreeRoot: issuerClaimProof.revTreeRoot,
-    issuerClaimRootsTreeRoot: issuerClaimProof.rootsTreeRoot,
+    issuerClaimAuthTreeRoot: issuerClaimProof.authTreeRoot,
     issuerClaimIdenState: issuerClaimProof.state,
     issuerID: bitsToNum(issuerClaimTrees.userID),
   };
 }
 
-export interface KYCNonRevQueryMTPInput {
-  readonly issuerClaimNonRevMtp: Array<BigInt>;
-  readonly issuerClaimNonRevMtpNoAux: number | BigInt;
-  readonly issuerClaimNonRevMtpAuxHi: number | BigInt;
-  readonly issuerClaimNonRevMtpAuxHv: number | BigInt;
-  readonly issuerClaimNonRevClaimsTreeRoot: BigInt;
-  readonly issuerClaimNonRevRevTreeRoot: BigInt;
-  readonly issuerClaimNonRevRootsTreeRoot: BigInt;
-  readonly issuerClaimNonRevState: BigInt;
-}
-/**
- * KYC service Generate credential atomic query Non Rev MTP witness for Holder
- * @param {BigInt} issuerClaimRevNonce
- * @param {Trees} issuerClaimNonRevTrees trees of issuer, not revoke issuerClaim
- * @returns {Promise<KYCNonRevQueryMTPInput>} nonrev queryMTP input
- */
-export async function kycGenerateNonRevQueryMTPInput(
-  issuerClaimRevNonce: BigInt,
-  issuerClaimNonRevTrees: Trees
-): Promise<KYCNonRevQueryMTPInput> {
-  const issuerClaimNonRevProof = await issuerClaimNonRevTrees.generateClaimFullNotRevokedProof(issuerClaimRevNonce);
-  return {
-    issuerClaimNonRevMtp: issuerClaimNonRevProof.claimNonRevMTP,
-    issuerClaimNonRevMtpNoAux: issuerClaimNonRevProof.claimNonRevNoAux,
-    issuerClaimNonRevMtpAuxHi: issuerClaimNonRevProof.claimNonRevAuxHi,
-    issuerClaimNonRevMtpAuxHv: issuerClaimNonRevProof.claimNonRevAuxHv,
-    issuerClaimNonRevClaimsTreeRoot: issuerClaimNonRevProof.claimsTreeRoot,
-    issuerClaimNonRevRevTreeRoot: issuerClaimNonRevProof.revTreeRoot,
-    issuerClaimNonRevRootsTreeRoot: issuerClaimNonRevProof.rootsTreeRoot,
-    issuerClaimNonRevState: issuerClaimNonRevProof.state,
-  };
-}
-
-export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInput, SignedChallenge, MerkleQueryInput {
+export interface QueryMTPWitness extends KYCQueryMTPInput, SignedChallenge, MerkleQueryInput {
   readonly userID: BigInt;
   readonly userState: BigInt;
   readonly userClaimsTreeRoot: BigInt;
   readonly userAuthClaimMtp: Array<BigInt>;
   readonly userAuthClaim: Array<BigInt>;
-  readonly userRevTreeRoot: BigInt;
-  readonly userAuthClaimNonRevMtp: Array<BigInt>;
-  readonly userAuthClaimNonRevMtpNoAux: number | BigInt;
-  readonly userAuthClaimNonRevMtpAuxHv: number | BigInt;
-  readonly userAuthClaimNonRevMtpAuxHi: number | BigInt;
-  readonly userRootsTreeRoot: BigInt;
+  readonly userAuthTreeRoot: BigInt;
   readonly compactInput: BigInt;
   readonly mask: BigInt;
   readonly issuerClaim: Array<BigInt>;
@@ -90,9 +50,8 @@ export interface QueryMTPWitness extends KYCQueryMTPInput, KYCNonRevQueryMTPInpu
  * @param {Buffer} privateKey
  * @param {Entry} authClaim
  * @param {BigInt} challenge
- * @param {Trees} userAuthTrees
+ * @param {Trees} userTrees
  * @param {KYCQueryMTPInput} kycQueryMTPInput
- * @param {KYCNonRevQueryMTPInput} kycQueryNonRevMTPInput
  * @param {number} slotIndex
  * @param {OPERATOR} operator
  * @param {Array<BigInt>} values
@@ -107,9 +66,8 @@ export async function holderGenerateQueryMTPWitness(
   privateKey: Buffer,
   authClaim: Entry,
   challenge: BigInt,
-  userAuthTrees: Trees,
+  userTrees: Trees,
   kycQueryMTPInput: KYCQueryMTPInput,
-  kycQueryNonRevMTPInput: KYCNonRevQueryMTPInput,
   slotIndex: number,
   operator: OPERATOR,
   values: Array<BigInt>,
@@ -119,16 +77,13 @@ export async function holderGenerateQueryMTPWitness(
   timestamp: number
 ): Promise<QueryMTPWitness> {
   const signature = await signChallenge(privateKey, challenge);
-  const authClaimProof = await userAuthTrees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
-  );
+  const authClaimProof = await userTrees.generateProofForAuthClaim(authClaim.hiRaw());
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
   const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
   const mask = createMask(from, to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
   const merkleQueryInput = createMerkleQueryInput(
-    values.map((value) => shiftValue(value, from)),
+    values,
     valueTreeDepth,
     getPartialValue(slotValue, from, to),
     operator
@@ -142,17 +97,11 @@ export async function holderGenerateQueryMTPWitness(
     userAuthClaimMtp: authClaimProof.claimMTP,
     userAuthClaim: authClaim.getDataForCircuit(),
     issuerClaim: issuerClaim.getDataForCircuit(),
-    userRevTreeRoot: authClaimProof.revTreeRoot,
-    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    userAuthTreeRoot: authClaimProof.authTreeRoot,
     compactInput,
     mask,
     ...merkleQueryInput,
     ...kycQueryMTPInput,
-    ...kycQueryNonRevMTPInput,
   };
 }
 
@@ -173,13 +122,12 @@ export async function holderGenerateQueryMTPWitness(
  * @param {number} timestamp
  * @returns {Promise<QueryMTPWitness>} queryMTP witness
  */
- export async function holderGenerateQueryMTPWitnessWithSignature(
+export async function holderGenerateQueryMTPWitnessWithSignature(
   issuerClaim: Entry,
   authClaim: Entry,
   signature: SignedChallenge,
   userAuthTrees: Trees,
   kycQueryMTPInput: KYCQueryMTPInput,
-  kycQueryNonRevMTPInput: KYCNonRevQueryMTPInput,
   slotIndex: number,
   operator: OPERATOR,
   values: Array<BigInt>,
@@ -188,16 +136,13 @@ export async function holderGenerateQueryMTPWitness(
   to: number,
   timestamp: number
 ): Promise<QueryMTPWitness> {
-  const authClaimProof = await userAuthTrees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
-  );
+  const authClaimProof = await userAuthTrees.generateProofForAuthClaim(authClaim.hiRaw());
   const claimSchema = bitsToNum(issuerClaim.getSchemaHash());
   const compactInput = compressInputs(timestamp, claimSchema, slotIndex, operator);
   const mask = createMask(from, to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(slotIndex));
   const merkleQueryInput = createMerkleQueryInput(
-    values.map((value) => shiftValue(value, from)),
+    values,
     valueTreeDepth,
     getPartialValue(slotValue, from, to),
     operator
@@ -211,16 +156,10 @@ export async function holderGenerateQueryMTPWitness(
     userAuthClaimMtp: authClaimProof.claimMTP,
     userAuthClaim: authClaim.getDataForCircuit(),
     issuerClaim: issuerClaim.getDataForCircuit(),
-    userRevTreeRoot: authClaimProof.revTreeRoot,
-    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    userAuthTreeRoot: authClaimProof.authTreeRoot,
     compactInput,
     mask,
     ...merkleQueryInput,
-    ...kycQueryMTPInput,
-    ...kycQueryNonRevMTPInput,
+    ...kycQueryMTPInput
   };
 }

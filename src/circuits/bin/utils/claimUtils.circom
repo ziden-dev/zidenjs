@@ -79,14 +79,14 @@ template getClaimSchema() {
 
 // getClaimRevNonce gets the revocation nonce out of a claim outputing it as an integer.
 template getClaimRevNonce() {
-	signal input claim[8];
+	signal input slot;
 
 	signal output revNonce;
 
 	component claimRevNonce = Bits2Num(64);
 
  	component v0Bits = Num2Bits(256);
-	v0Bits.in <== claim[4];
+	v0Bits.in <== slot;
 	for (var i=0; i<64; i++) {
 		claimRevNonce.in[i] <== v0Bits.out[i];
 	}

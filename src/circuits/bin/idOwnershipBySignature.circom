@@ -14,17 +14,12 @@ include "utils/treeUtils.circom";
 template IdOwnershipBySignature(nLevels) {
     signal input userState;
 
-	signal input userClaimsTreeRoot;
+	signal input userAuthTreeRoot;
 	signal input userAuthClaimMtp[nLevels];
 	signal input userAuthClaim[8];
 
-	signal input userRevTreeRoot;
-    signal input userAuthClaimNonRevMtp[nLevels];
-    signal input userAuthClaimNonRevMtpNoAux;
-    signal input userAuthClaimNonRevMtpAuxHi;
-    signal input userAuthClaimNonRevMtpAuxHv;
-
-	signal input userRootsTreeRoot;
+	signal input userClaimsTreeRoot;
+    signal output authClaimRevocationNonce;
 
 	signal input challenge;
 	signal input challengeSignatureR8x;
@@ -35,12 +30,7 @@ template IdOwnershipBySignature(nLevels) {
     component verifyAuthClaim = VerifyAuthClaimAndSignature(nLevels);
     for (var i=0; i<8; i++) { verifyAuthClaim.authClaim[i] <== userAuthClaim[i]; }
 	for (var i=0; i<nLevels; i++) { verifyAuthClaim.authClaimMtp[i] <== userAuthClaimMtp[i]; }
-	verifyAuthClaim.claimsTreeRoot <== userClaimsTreeRoot;
-	verifyAuthClaim.revTreeRoot <== userRevTreeRoot;
-	for (var i=0; i<nLevels; i++) { verifyAuthClaim.authClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
-	verifyAuthClaim.authClaimNonRevMtpNoAux <== userAuthClaimNonRevMtpNoAux;
-	verifyAuthClaim.authClaimNonRevMtpAuxHv <== userAuthClaimNonRevMtpAuxHv;
-	verifyAuthClaim.authClaimNonRevMtpAuxHi <== userAuthClaimNonRevMtpAuxHi;
+	verifyAuthClaim.authTreeRoot <== userAuthTreeRoot;
 
     verifyAuthClaim.challengeSignatureS <== challengeSignatureS;
     verifyAuthClaim.challengeSignatureR8x <== challengeSignatureR8x;
@@ -49,8 +39,12 @@ template IdOwnershipBySignature(nLevels) {
 
     component checkUserState = checkIdenStateMatchesRoots();
     checkUserState.claimsTreeRoot <== userClaimsTreeRoot;
-    checkUserState.revTreeRoot <== userRevTreeRoot;
-    checkUserState.rootsTreeRoot <== userRootsTreeRoot;
+    checkUserState.authTreeRoot <== userAuthTreeRoot;
+
     checkUserState.expectedState <== userState;
+
+    component getRevNonce = getClaimRevNonce();
+    getRevNonce.slot <== userAuthClaim[4];
+    authClaimRevocationNonce <== getRevNonce.revNonce;
 }
 

@@ -132,11 +132,14 @@ describe('test entries', async () => {
     const circuit = await wasm_tester(path.join('src', 'claim', 'circom_test', 'getClaimRevNonce.circom'));
     const w = await circuit.calculateWitness(
       {
-        claim: claimCircuit,
+        slot: claimCircuit[4],
       },
       true
     );
     await circuit.assertOut(w, { revNonce: claim.getRevocationNonce() });
+
+    claim.setRevocationNonce(BigInt(666));
+    expect(claim.getRevocationNonce() === BigInt(666)).to.be.true;
   });
 
   it('test getClaimExpiration circuit', async () => {

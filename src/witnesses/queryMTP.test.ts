@@ -16,16 +16,13 @@ import {
   withFlagExpirable,
   Entry,
 } from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
 import { SMTLevelDb } from '../db/level_db.js';
-import { SMTType, Trees } from '../trees/trees.js';
+import { Trees } from '../trees/trees.js';
 import { numToBits } from '../utils.js';
 import {
   kycGenerateQueryMTPInput,
   holderGenerateQueryMTPWitness,
-  kycGenerateNonRevQueryMTPInput,
   KYCQueryMTPInput,
-  KYCNonRevQueryMTPInput,
   QueryMTPWitness,
   holderGenerateQueryMTPWitnessWithSignature,
 } from './queryMTP.js';
@@ -34,8 +31,7 @@ import { setupParams } from '../global.js';
 
 describe('test query atomic MTP', async () => {
   let claimsDb: SMTLevelDb;
-  let revocationDb: SMTLevelDb;
-  let rootsDb: SMTLevelDb;
+  let authDb: SMTLevelDb;
   let issuerPrivateKey: Buffer;
   let issuerTrees: Trees;
   let holderPrivateKey: Buffer;
@@ -45,8 +41,7 @@ describe('test query atomic MTP', async () => {
   it('setup params', async () => {
     await setupParams();
     claimsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/claims');
-    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/revocation');
-    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/roots');
+    authDb = new SMTLevelDb('src/witnesses/db_test/query_mtp/auth');
   }).timeout(10000);
   it('setup kyc auth claim', async () => {
     issuerPrivateKey = Buffer.alloc(32, 1);
@@ -54,11 +49,7 @@ describe('test query atomic MTP', async () => {
     issuerTrees = await Trees.generateID(
       [issuerAuthClaim],
       claimsDb,
-      revocationDb,
-      rootsDb,
-      IDType.Default,
-      32,
-      SMTType.BinSMT
+      authDb
     );
   }).timeout(10000);
 
@@ -66,22 +57,16 @@ describe('test query atomic MTP', async () => {
     holderPrivateKey = Buffer.alloc(32, 2);
     holderAuthClaim = await newAuthClaimFromPrivateKey(holderPrivateKey);
     const claimsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp_holder/claims');
-    const revocationDb = new SMTLevelDb('src/witnesses/db_test/query_mtp_holder/revocation');
-    const rootsDb = new SMTLevelDb('src/witnesses/db_test/query_mtp_holder/roots');
+    const authDb = new SMTLevelDb('src/witnesses/db_test/query_mtp_holder/auth');
     holderTrees = await Trees.generateID(
       [holderAuthClaim],
       claimsDb,
-      revocationDb,
-      rootsDb,
-      IDType.Default,
-      32,
-      SMTType.BinSMT
+      authDb
     );
   }).timeout(10000);
 
   let issuerClaim: Entry;
   let kycQueryMTPInput: KYCQueryMTPInput;
-  let kycQueryNonRevMTPInput: KYCNonRevQueryMTPInput;
   it('issuer issue issuerClaim for holder', async () => {
     const indexSlotA = BigInt(20010209);
     const indexSlotB = BigInt(1);
@@ -98,7 +83,6 @@ describe('test query atomic MTP', async () => {
     );
     await issuerTrees.insertClaim(issuerClaim);
     kycQueryMTPInput = await kycGenerateQueryMTPInput(issuerClaim.hiRaw(), issuerTrees);
-    kycQueryNonRevMTPInput = await kycGenerateNonRevQueryMTPInput(issuerClaim.getRevocationNonce(), issuerTrees);
   }).timeout(10000);
 
   let witness: QueryMTPWitness;
@@ -112,9 +96,8 @@ describe('test query atomic MTP', async () => {
     await signChallenge(holderPrivateKey, challenge);
   });
   it('Benchmark holder auth claim MTP', async () => {
-    await holderTrees.generateProofForClaim(
-      holderAuthClaim.hiRaw(),
-      holderAuthClaim.getRevocationNonce()
+    await holderTrees.generateProofForAuthClaim(
+      holderAuthClaim.hiRaw()
     );
   });
   it('holder query slot index A with OPERATOR LESS THAN', async () => {
@@ -125,7 +108,6 @@ describe('test query atomic MTP', async () => {
       challenge,
       holderTrees,
       kycQueryMTPInput,
-      kycQueryNonRevMTPInput,
       2,
       OPERATOR.LESS_THAN,
       values,
@@ -154,7 +136,6 @@ describe('test query atomic MTP', async () => {
       challenge,
       holderTrees,
       kycQueryMTPInput,
-      kycQueryNonRevMTPInput,
       7,
       OPERATOR.EQUAL,
       values,
@@ -179,7 +160,6 @@ describe('test query atomic MTP', async () => {
       signature,
       holderTrees,
       kycQueryMTPInput,
-      kycQueryNonRevMTPInput,
       7,
       OPERATOR.EQUAL,
       values,
@@ -195,7 +175,7 @@ describe('test query atomic MTP', async () => {
     await circuit.checkConstraints(w);
   }).timeout(100000);
 
-  it.skip('benchmark proving time', async () => {
+  it('benchmark proving time', async () => {
     await groth16.fullProve(
       witness,
       'src/witnesses/circom_test/bin/credentialAtomicQueryMTP.wasm',

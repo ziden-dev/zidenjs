@@ -20,9 +20,8 @@ export async function authenticationWitness(
   trees: Trees
 ): Promise<AuthenticationWitness> {
   const signature = await signChallenge(privateKey, challenge);
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
+  const authClaimProof = await trees.generateProofForAuthClaim(
+    authClaim.hiRaw()
   );
   return {
     ...signature,
@@ -30,13 +29,7 @@ export async function authenticationWitness(
     userAuthClaimMtp: authClaimProof.claimMTP,
     userAuthClaim: authClaim.getDataForCircuit(),
 
-    userRevTreeRoot: authClaimProof.revTreeRoot,
-    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-
-    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    userAuthTreeRoot: authClaimProof.authTreeRoot,
 
     userState: authClaimProof.state,
     userID: authClaimProof.id,
@@ -55,9 +48,8 @@ export async function authenticationWitness(
   authClaim: Entry,
   trees: Trees
 ): Promise<AuthenticationWitness> {
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
+  const authClaimProof = await trees.generateProofForAuthClaim(
+    authClaim.hiRaw()
   );
   return {
     ...signature,
@@ -65,13 +57,7 @@ export async function authenticationWitness(
     userAuthClaimMtp: authClaimProof.claimMTP,
     userAuthClaim: authClaim.getDataForCircuit(),
 
-    userRevTreeRoot: authClaimProof.revTreeRoot,
-    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-
-    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    userAuthTreeRoot: authClaimProof.authTreeRoot,
 
     userState: authClaimProof.state,
     userID: authClaimProof.id,
@@ -84,13 +70,7 @@ export interface IdOwnershipBySignatureWitness extends SignedChallenge{
   readonly userAuthClaimMtp: Array<BigInt>;
   readonly userAuthClaim: Array<BigInt>;
 
-  readonly userRevTreeRoot: BigInt;
-  readonly userAuthClaimNonRevMtp: Array<BigInt>;
-  readonly userAuthClaimNonRevMtpNoAux: number | BigInt;
-  readonly userAuthClaimNonRevMtpAuxHv: number | BigInt;
-  readonly userAuthClaimNonRevMtpAuxHi: number | BigInt;
-
-  readonly userRootsTreeRoot: BigInt;
+  readonly userAuthTreeRoot: BigInt;
 
   readonly userState: BigInt;
 }
@@ -109,22 +89,16 @@ export async function idOwnershipBySignatureWitness(
   trees: Trees
 ): Promise<IdOwnershipBySignatureWitness> {
   const signature = await signChallenge(privateKey, challenge);
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
+  const authClaimProof = await trees.generateProofForAuthClaim(
+    authClaim.hiRaw()
   );
   return {
     ...signature,
     userClaimsTreeRoot: authClaimProof.claimsTreeRoot,
     userAuthClaimMtp: authClaimProof.claimMTP,
     userAuthClaim: authClaim.getDataForCircuit(),
-    userRevTreeRoot: authClaimProof.revTreeRoot,
-    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
 
-    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    userAuthTreeRoot: authClaimProof.authTreeRoot,
 
     userState: authClaimProof.state,
   };
@@ -143,22 +117,16 @@ export async function idOwnershipBySignatureWitness(
   authClaim: Entry,
   trees: Trees
 ): Promise<IdOwnershipBySignatureWitness> {
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
+  const authClaimProof = await trees.generateProofForAuthClaim(
+    authClaim.hiRaw()
   );
   return {
     ...signature,
     userClaimsTreeRoot: authClaimProof.claimsTreeRoot,
     userAuthClaimMtp: authClaimProof.claimMTP,
     userAuthClaim: authClaim.getDataForCircuit(),
-    userRevTreeRoot: authClaimProof.revTreeRoot,
-    userAuthClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    userAuthClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    userAuthClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    userAuthClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
 
-    userRootsTreeRoot: authClaimProof.rootsTreeRoot,
+    userAuthTreeRoot: authClaimProof.authTreeRoot,
 
     userState: authClaimProof.state,
   };

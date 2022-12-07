@@ -1,14 +1,10 @@
 import { SMTDb } from '../db/index.js';
 import { getZidenParams } from '../global.js';
 import { Entry } from '../claim/entry.js';
-import { idenState, IDGenesisFromIdenState } from '../claim/id.js';
+import { idenState, IDGenesisFromIdenState, IDType } from '../claim/id.js';
 import { numToBits, bitsToNum } from '../utils.js';
-import SMT, { BinSMT, QuinSMT } from './sparse-merkle-tree/index.js';
+import SMT, { BinSMT, FindingResult } from './sparse-merkle-tree/index.js';
 
-export enum SMTType {
-  BinSMT,
-  QuinSMT,
-}
 interface MTP {
   readonly fnc: number;
   readonly root: BigInt;
@@ -25,71 +21,36 @@ interface ClaimExistsProof {
   readonly treeRoot: BigInt;
 }
 
-interface ClaimFullExistsProof {
-  readonly claimMTP: Array<BigInt>;
-  readonly claimsTreeRoot: BigInt;
-  readonly revTreeRoot: BigInt;
-  readonly rootsTreeRoot: BigInt;
-  readonly state: BigInt;
-}
-
-interface ClaimNotRevokedProof {
-  readonly claimNonRevMTP: Array<BigInt>;
-  readonly treeRoot: BigInt;
-  readonly auxHi: number | BigInt;
-  readonly auxHv: number | BigInt;
-  readonly noAux: number | BigInt;
-}
-
-interface ClaimFullNotRevokedProof {
-  readonly claimNonRevMTP: Array<BigInt>;
-  readonly claimNonRevAuxHi: number | BigInt;
-  readonly claimNonRevAuxHv: number | BigInt;
-  readonly claimNonRevNoAux: number | BigInt;
-  readonly revTreeRoot: BigInt;
-  readonly claimsTreeRoot: BigInt;
-  readonly rootsTreeRoot: BigInt;
-  readonly state: BigInt;
-}
-
 interface ProofForClaim {
   readonly state: BigInt;
   readonly id: BigInt;
   readonly claimsTreeRoot: BigInt;
   readonly claimMTP: Array<BigInt>;
-  readonly revTreeRoot: BigInt;
-  readonly claimNonRevMTP: Array<BigInt>;
-  readonly claimNonRevNoAux: number | BigInt;
-  readonly claimNonRevAuxHi: number | BigInt;
-  readonly claimNonRevAuxHv: number | BigInt;
-  readonly rootsTreeRoot: BigInt;
+  readonly authTreeRoot: BigInt;
 }
 
 export class Trees {
   private _userID: Buffer;
   private _claimsTree: SMT;
-  private _revocationTree: SMT;
-  private _rootsTree: SMT;
-  private _rootsVersion: number;
+  private _authTree: SMT;
   private _revocationNonce: number;
-  private _depth: number;
+  private _authDepth: number;
+  private _claimsDepth: number;
 
   constructor(
     claimsTree: SMT,
-    revocationTree: SMT,
-    rootsTree: SMT,
-    rootsVersion: number,
+    authTree: SMT,
     revocationNonce: number,
     userID: Buffer,
-    depth: number,
+    authDepth: number,
+    claimsDepth: number
   ) {
     this._userID = userID;
     this._claimsTree = claimsTree;
-    this._revocationTree = revocationTree;
-    this._rootsTree = rootsTree;
-    this._rootsVersion = rootsVersion;
+    this._authTree = authTree;
     this._revocationNonce = revocationNonce;
-    this._depth = depth;
+    this._authDepth = authDepth;
+    this._claimsDepth = claimsDepth;
   }
 
   get userID() {
@@ -100,78 +61,55 @@ export class Trees {
     return this._claimsTree;
   }
 
-  get revocationTree() {
-    return this._revocationTree;
-  }
-
-  get rootsTree() {
-    return this._rootsTree;
-  }
-
-  get rootsVersion() {
-    return this._rootsVersion;
+  get authTree() {
+    return this._authTree;
   }
 
   get revocationNonce() {
     return this._revocationNonce;
   }
 
-  get depth() {
-    return this._depth;
+  get authDepth() {
+    return this._authDepth;
+  }
+
+  get claimsDepth() {
+    return this._claimsDepth;
   }
   /**
    * Generate iden state from auth claims
    * @param {Array<Entry>} authClaims list of auth claims to add to claim tree
-   * @param {SnarkField} F
-   * @param {Hash0} hash0
-   * @param {Hash1} hash1
-   * @param {Hasher} hasher
    * @param {SMTDb} claimsDb database for claims tree
-   * @param {SMTDb} revocationDb database for revocation tree
-   * @param {SMTDb} rootsDb database for roots tree
    * @param {Buffer} type 2 bytes of ID type
-   * @param {number} depth the depth of 3 sparse merkle trees
-   * @param {SMTType} smtType type of sparse merkle trees (currently supports binSMT and quinSMT)
+   * @param {number} authDepth the depth of auth tree
+   * @param {number} claimsDepth the depth of claims tree
    * @returns {Promise<Trees>}
    */
   static async generateID(
     authClaims: Array<Entry>,
     claimsDb: SMTDb,
-    revocationDb: SMTDb,
-    rootsDb: SMTDb,
-    type: Buffer,
-    depth: number = 14,
-    smtType: SMTType = SMTType.QuinSMT
+    authDb: SMTDb,
+    type: Buffer = IDType.Default,
+    authDepth: number = 8,
+    claimsDepth: number = 32
   ): Promise<Trees> {
-    const F = getZidenParams().F
-    let claimsTree: SMT, revocationTree: SMT, rootsTree: SMT;
-    if (smtType === SMTType.QuinSMT) {
-      claimsTree = new QuinSMT(claimsDb, F.zero, depth);
-      revocationTree = new QuinSMT(revocationDb, F.zero, depth);
-      rootsTree = new QuinSMT(rootsDb, F.zero, depth);
-    } else if (smtType === SMTType.BinSMT) {
-      claimsTree = new BinSMT(claimsDb, F.zero, depth);
-      revocationTree = new BinSMT(revocationDb, F.zero, depth);
-      rootsTree = new BinSMT(rootsDb, F.zero, depth);
-    } else {
-      throw new Error('Not supported SMT type');
-    }
+    const F = getZidenParams().F;
+    let claimsTree: SMT, authTree: SMT;
+
+    claimsTree = new BinSMT(claimsDb, F.zero, claimsDepth);
+    authTree = new BinSMT(authDb, F.zero, authDepth);
+
     for (let i = 0; i < authClaims.length; i++) {
       const claim = authClaims[i];
       claim.setRevocationNonce(BigInt(i));
       const hi = claim.hiRaw();
       const hv = claim.hvRaw();
-      await claimsTree.insert(hi, hv);
+      await authTree.insert(hi, hv);
     }
 
-    const idState = numToBits(
-      F.toObject(
-        idenState(F.toObject(claimsTree.root), F.toObject(revocationTree.root), F.toObject(rootsTree.root))
-      ),
-      32
-    );
+    const idState = numToBits(F.toObject(idenState(F.toObject(claimsTree.root), F.toObject(authTree.root))), 32);
     const userID = IDGenesisFromIdenState(idState, type);
-    return new Trees(claimsTree, revocationTree, rootsTree, 0, authClaims.length, userID, depth);
+    return new Trees(claimsTree, authTree, authClaims.length, userID, authDepth, claimsDepth);
   }
 
   /**
@@ -182,7 +120,6 @@ export class Trees {
    */
   async insertClaim(claim: Entry, maxAttempTimes: number = 100): Promise<Entry> {
     claim.setRevocationNonce(BigInt(this._revocationNonce));
-    let insertingResult;
     let triedCount = 0;
     let seed = BigInt(0);
     while (true) {
@@ -190,7 +127,7 @@ export class Trees {
         claim.setClaimSeed(seed);
         const hi = claim.hiRaw();
         const hv = claim.hvRaw();
-        insertingResult = await this._claimsTree.insert(hi, hv);
+        await this._claimsTree.insert(hi, hv);
         break;
       } catch (err) {
         if (triedCount >= maxAttempTimes - 1) {
@@ -201,9 +138,23 @@ export class Trees {
       }
     }
     this._revocationNonce += 1;
-    await this._rootsTree.insert(getZidenParams().F.e(this._rootsVersion), insertingResult.newRoot);
-    this._rootsVersion++;
     return claim;
+  }
+
+  /**
+   * Insert new claim to claim tree
+   * @param {Entry} authClaim authClaim to insert
+   * @returns {Promise<Entry>} inserted claim
+   */
+  async insertAuthClaim(authClaim: Entry): Promise<Entry> {
+    authClaim.setRevocationNonce(BigInt(this._revocationNonce));
+
+    const hi = authClaim.hiRaw();
+    const hv = authClaim.hvRaw();
+    await this._authTree.insert(hi, hv);
+
+    this._revocationNonce += 1;
+    return authClaim;
   }
 
   /**
@@ -214,8 +165,16 @@ export class Trees {
     for (let i = 0; i < claimHiHvs.length; i++) {
       await this._claimsTree.insert(claimHiHvs[i][0], claimHiHvs[i][1]);
     }
-    await this._rootsTree.insert(getZidenParams().F.e(this._rootsVersion), this._claimsTree.root);
-    this._rootsVersion++;
+  }
+
+  /**
+   * Insert a batch of claims by their his and hvs
+   * @param {Array<Entry>} authClaims auth claims to insert
+   */
+  async batchInsertAuthClaim(authClaims: Array<Entry>) {
+    for (let i = 0; i < authClaims.length; i++) {
+      await this.insertAuthClaim(authClaims[i]);
+    }
   }
 
   /**
@@ -250,52 +209,35 @@ export class Trees {
   }
 
   /**
-   * Revoke a batch of claim by their revocation nonces
-   * @param {BigInt[]} revNonces claim to revoke
-   */
-  async batchRevokeClaim(revNonces: BigInt[]) {
-    for (let i = 0; i < revNonces.length; i++) await this._revocationTree.insert(getZidenParams().F.e(revNonces[i]), getZidenParams().F.zero);
-  }
-
-  /**
-   * Revoke a claim
-   * @param {BigInt} revNonce claim to revoke
-   */
-  async revokeClaim(revNonce: BigInt) {
-    await this._revocationTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.zero);
-  }
-
-  /**
    * Return identity State from 3 roots
    * @returns {BigInt} identity state
    */
   getIdenState(): BigInt {
     const idState = getZidenParams().F.toObject(
-      idenState(
-        getZidenParams().F.toObject(this._claimsTree.root),
-        getZidenParams().F.toObject(this._revocationTree.root),
-        getZidenParams().F.toObject(this._rootsTree.root)
-      )
+      idenState(getZidenParams().F.toObject(this._claimsTree.root), getZidenParams().F.toObject(this._authTree.root))
     );
     return idState;
   }
   /**
-   * Generate Inclusion Proof for a claim in claim tree
+   * Generate Inclusion Proof for a claim
    * @param {ArrayLike<number>} claimHi
+   * @param {boolean} isClaimsTree claim is in claims tree or auth tree ?
    * @returns {Promise<MTP>} inclustion proof
    */
-  async generateInclusionProof(claimHi: ArrayLike<number>): Promise<MTP> {
-    const res = await this._claimsTree.find(claimHi);
+  async generateInclusionProof(claimHi: ArrayLike<number>, isClaimsTree: boolean = true): Promise<MTP> {
+    let res: FindingResult;
+    if (isClaimsTree) res = await this._claimsTree.find(claimHi);
+    else res = await this._authTree.find(claimHi);
     if (!res.found) {
       throw new Error('claim is not inserted to claim tree');
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(getZidenParams().F.toObject(res.siblings[i]));
-    if (this._claimsTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
-    else if (this._claimsTree instanceof QuinSMT) while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
+    while (siblings.length < (isClaimsTree ? this._claimsDepth : this._authDepth)) siblings.push(BigInt(0));
+
     return {
       fnc: 0,
-      root: getZidenParams().F.toObject(this._claimsTree.root),
+      root: getZidenParams().F.toObject(isClaimsTree ? this._claimsTree.root : this._authTree.root),
       siblings: siblings,
       oldKey: 0,
       oldValue: 0,
@@ -306,144 +248,63 @@ export class Trees {
   }
 
   /**
-   * Generate Inclusion Proof for a claim in revocation tree
-   * @param {BigInt} revocationNonce
-   * @returns {Promise<MTP>} exclusion proof
-   */
-  async generateExclusionProof(revocationNonce: BigInt): Promise<MTP> {
-    const res = await this._revocationTree.find(getZidenParams().F.e(revocationNonce));
-
-    if (res.found) {
-      throw new Error('claim is revoked');
-    }
-
-    let siblings = [];
-    for (let i = 0; i < res.siblings.length; i++) siblings.push(getZidenParams().F.toObject(res.siblings[i]));
-    if (this._revocationTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
-    else if (this._revocationTree instanceof QuinSMT)
-      while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
-
-    return {
-      fnc: 1,
-      root: getZidenParams().F.toObject(this._revocationTree.root),
-      siblings: siblings,
-      oldKey: res.isOld0 ? 0 : getZidenParams().F.toObject(res.notFoundKey!),
-      oldValue: res.isOld0 ? 0 : getZidenParams().F.toObject(res.notFoundValue!),
-      isOld0: res.isOld0 ? 1 : 0,
-      key: revocationNonce,
-      value: 0,
-    };
-  }
-
-  /**
-   * Generate Claim Exist Proof for a claim in claim tree
+   * Generate Claim Exist Proof for a claim
    * @param {ArrayLike<number>} claimHi
+   * @param {boolean} isClaimsTree claim is in claims tree or auth tree ?
    * @returns {Promise<ClaimExistsProof>} claim exist proof
    */
-  async generateClaimExistsProof(claimHi: ArrayLike<number>): Promise<ClaimExistsProof> {
-    const res = await this._claimsTree.find(claimHi);
+  async generateClaimExistsProof(claimHi: ArrayLike<number>, isClaimsTree: boolean = true): Promise<ClaimExistsProof> {
+    let res: FindingResult;
+    if (isClaimsTree) res = await this._claimsTree.find(claimHi);
+    else res = await this._authTree.find(claimHi);
     if (!res.found) {
       throw new Error('claim is not inserted to the claim tree');
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(getZidenParams().F.toObject(res.siblings[i]));
-    if (this._claimsTree instanceof BinSMT) while (siblings.length < this._depth) siblings.push(BigInt(0));
-    else if (this._claimsTree instanceof QuinSMT) while (siblings.length < this._depth * 4) siblings.push(BigInt(0));
+    while (siblings.length < (isClaimsTree ? this._claimsDepth : this._authDepth)) siblings.push(BigInt(0));
+
     return {
       claimMTP: siblings,
-      treeRoot: getZidenParams().F.toObject(this._claimsTree.root),
+      treeRoot: getZidenParams().F.toObject(isClaimsTree ? this._claimsTree.root : this._authTree.root),
     };
   }
 
   /**
-   * Generate Claim Full Exist Proof for a claim in claim tree (include claim exist proof ,all roots, and state)
+   * Generate ID Ownership by Signature Proof for a claim in claims tree
    * @param {ArrayLike<number>} claimHi
-   * @returns {Promise<ClaimFullExistsProof>} full claim exist proof
-   */
-  async generateClaimFullExistsProof(claimHi: ArrayLike<number>): Promise<ClaimFullExistsProof> {
-    const claimExistProof = await this.generateClaimExistsProof(claimHi);
-    return {
-      claimMTP: claimExistProof.claimMTP,
-      claimsTreeRoot: claimExistProof.treeRoot,
-      revTreeRoot: getZidenParams().F.toObject(this._revocationTree.root),
-      rootsTreeRoot: getZidenParams().F.toObject(this._rootsTree.root),
-      state: this.getIdenState(),
-    };
-  }
-
-  /**
-   * Generate Claim Not Revoked Proof for a claim in revocation tree
-   * @param {BigInt} revocationNonce
-   * @returns {Promise<ClaimNotRevokedProof>} claim not revoked proof
-   */
-  async generateClaimNotRevokedProof(revocationNonce: BigInt): Promise<ClaimNotRevokedProof> {
-    const res = await this.generateExclusionProof(revocationNonce);
-    return {
-      claimNonRevMTP: res.siblings,
-      treeRoot: res.root,
-      auxHi: res.oldKey,
-      auxHv: res.oldValue,
-      noAux: res.isOld0,
-    };
-  }
-
-  /**
-   * Generate Claim Full Not Revoked Proof for a claim in claim tree (include claim not revoked proof ,all roots, and state)
-   * @param {BigInt} revocationNonce
-   * @returns {Promise<ClaimFullNotRevokedProof>} full claim not revoked proof
-   */
-  async generateClaimFullNotRevokedProof(revocationNonce: BigInt): Promise<ClaimFullNotRevokedProof> {
-    const claimNonRevProof = await this.generateClaimNotRevokedProof(revocationNonce);
-    return {
-      claimNonRevMTP: claimNonRevProof.claimNonRevMTP,
-      claimNonRevAuxHi: claimNonRevProof.auxHi,
-      claimNonRevAuxHv: claimNonRevProof.auxHv,
-      claimNonRevNoAux: claimNonRevProof.noAux,
-      revTreeRoot: claimNonRevProof.treeRoot,
-      claimsTreeRoot: getZidenParams().F.toObject(this._claimsTree.root),
-      rootsTreeRoot: getZidenParams().F.toObject(this._rootsTree.root),
-      state: this.getIdenState(),
-    };
-  }
-
-  /**
-   * Generate ID Ownership by Signature Proof for a claim in revocation tree
-   * @param {ArrayLike<number>} claimHi
-   * @param {BigInt} revocationNonce
    * @returns {Promise<ProofForClaim>} ID Ownership by Signature proof
    */
-  async generateProofForClaim(claimHi: ArrayLike<number>, revocationNonce: BigInt): Promise<ProofForClaim> {
-    // signal input userState;
-
-    // signal input userClaimsTreeRoot;
-    // signal input userAuthClaimMtp[nLevels];
-    // signal input userAuthClaim[8];
-
-    // signal input userRevTreeRoot;
-    //   signal input userAuthClaimNonRevMtp[nLevels];
-    //   signal input userAuthClaimNonRevMtpNoAux;
-    //   signal input userAuthClaimNonRevMtpAuxHi;
-    //   signal input userAuthClaimNonRevMtpAuxHv;
-
-    // signal input userRootsTreeRoot;
-
+  async generateProofForClaim(claimHi: ArrayLike<number>): Promise<ProofForClaim> {
     const state = this.getIdenState();
     const id = bitsToNum(this._userID);
     const claimExistProof = await this.generateClaimExistsProof(claimHi);
-    const claimNonRevProof = await this.generateClaimNotRevokedProof(revocationNonce);
+
     return {
       state,
       id,
-
       claimsTreeRoot: claimExistProof.treeRoot,
       claimMTP: claimExistProof.claimMTP,
-      revTreeRoot: claimNonRevProof.treeRoot,
-      claimNonRevMTP: claimNonRevProof.claimNonRevMTP,
-      claimNonRevNoAux: claimNonRevProof.noAux,
-      claimNonRevAuxHi: claimNonRevProof.auxHi,
-      claimNonRevAuxHv: claimNonRevProof.auxHv,
+      authTreeRoot: getZidenParams().F.toObject(this._authTree.root),
+    };
+  }
 
-      rootsTreeRoot: getZidenParams().F.toObject(this._rootsTree.root),
+  /**
+   * Generate ID Ownership by Signature Proof for an auth claim in auth tree
+   * @param {ArrayLike<number>} claimHi
+   * @returns {Promise<ProofForClaim>} ID Ownership by Signature proof
+   */
+  async generateProofForAuthClaim(claimHi: ArrayLike<number>): Promise<ProofForClaim> {
+    const state = this.getIdenState();
+    const id = bitsToNum(this._userID);
+    const claimExistProof = await this.generateClaimExistsProof(claimHi, false);
+
+    return {
+      state,
+      id,
+      claimsTreeRoot: getZidenParams().F.toObject(this._claimsTree.root),
+      claimMTP: claimExistProof.claimMTP,
+      authTreeRoot: getZidenParams().F.toObject(this._authTree.root),
     };
   }
 }

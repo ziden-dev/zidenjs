@@ -35,18 +35,13 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     signal input userID;
     signal input userState;
 
-    signal input userClaimsTreeRoot;
+    signal input userAuthTreeRoot;
     signal input userAuthClaimMtp[IdOwnershipLevels];
     signal input userAuthClaim[8];
 
-    signal input userRevTreeRoot;
-    signal input userAuthClaimNonRevMtp[IdOwnershipLevels];
-    signal input userAuthClaimNonRevMtpNoAux;
-    signal input userAuthClaimNonRevMtpAuxHi;
-    signal input userAuthClaimNonRevMtpAuxHv;
+    signal input userClaimsTreeRoot;
 
-    signal input userRootsTreeRoot;
-
+    signal output userAuthRevocationNonce;
     /* signature*/
     signal input challenge;
     signal input challengeSignatureR8x;
@@ -67,27 +62,12 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
 
     signal input issuerAuthClaim[8];
     signal input issuerAuthClaimMtp[IssuerLevels];
-    // issuer auth claim non rev proof
-    signal input issuerAuthClaimNonRevMtp[IssuerLevels];
-    signal input issuerAuthClaimNonRevMtpNoAux;
-    signal input issuerAuthClaimNonRevMtpAuxHi;
-    signal input issuerAuthClaimNonRevMtpAuxHv;
 
-    signal input issuerAuthClaimsTreeRoot;
-    signal input issuerAuthRevTreeRoot;
-    signal input issuerAuthRootsTreeRoot;
-    signal output issuerAuthState;
-
-    // issuerClaim non rev inputs
-    signal input issuerClaimNonRevMtp[IssuerLevels];
-    signal input issuerClaimNonRevMtpNoAux;
-    signal input issuerClaimNonRevMtpAuxHi;
-    signal input issuerClaimNonRevMtpAuxHv;
-    signal input issuerClaimNonRevClaimsTreeRoot;
-    signal input issuerClaimNonRevRevTreeRoot;
-    signal input issuerClaimNonRevRootsTreeRoot;
-    signal input issuerClaimNonRevState;
-
+    signal input issuerClaimsTreeRoot;
+    signal input issuerAuthTreeRoot;
+    signal input issuerState;
+    
+    signal output issuerAuthClaimRevocationNonce;
     /** Query */
     signal input compactInput;
     signal input determinisiticValue;
@@ -110,17 +90,11 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     /* Id ownership check*/
     component userIdOwnership = IdOwnershipBySignature(IdOwnershipLevels);
 
-    userIdOwnership.userClaimsTreeRoot <== userClaimsTreeRoot; // currentHolderStateClaimsTreeRoot
+    userIdOwnership.userAuthTreeRoot <== userAuthTreeRoot; // currentHolderStateClaimsTreeRoot
     for (var i=0; i<IdOwnershipLevels; i++) { userIdOwnership.userAuthClaimMtp[i] <== userAuthClaimMtp[i]; }
     for (var i=0; i<8; i++) { userIdOwnership.userAuthClaim[i] <== userAuthClaim[i]; }
 
-    userIdOwnership.userRevTreeRoot <== userRevTreeRoot;  // currentHolderStateClaimsRevTreeRoot
-    for (var i=0; i<IdOwnershipLevels; i++) { userIdOwnership.userAuthClaimNonRevMtp[i] <== userAuthClaimNonRevMtp[i]; }
-    userIdOwnership.userAuthClaimNonRevMtpNoAux <== userAuthClaimNonRevMtpNoAux;
-    userIdOwnership.userAuthClaimNonRevMtpAuxHv <== userAuthClaimNonRevMtpAuxHv;
-    userIdOwnership.userAuthClaimNonRevMtpAuxHi <== userAuthClaimNonRevMtpAuxHi;
-
-    userIdOwnership.userRootsTreeRoot <== userRootsTreeRoot; // currentHolderStateClaimsRootsTreeRoot
+    userIdOwnership.userClaimsTreeRoot <== userClaimsTreeRoot; // currentHolderStateClaimsRootsTreeRoot
 
     userIdOwnership.challenge <== challenge;
     userIdOwnership.challengeSignatureR8x <== challengeSignatureR8x;
@@ -128,7 +102,7 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     userIdOwnership.challengeSignatureS <== challengeSignatureS;
 
     userIdOwnership.userState <== userState;
-
+    userAuthRevocationNonce <== userIdOwnership.authClaimRevocationNonce;
 
     // Check issuerClaim is issued to provided identity
     component claimIdCheck = verifyCredentialSubject();
@@ -155,14 +129,13 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     component issuerSchemaCheck = verifyCredentialSchema();
     for (var i=0; i<8; i++) { issuerSchemaCheck.claim[i] <== issuerAuthClaim[i]; }
     issuerSchemaCheck.schema <== AUTH_SCHEMA_HASH;
-    // verify authClaim issued and not revoked
-    // calculate issuerAuthState
-    component issuerAuthStateComponent = getIdenState();
-    issuerAuthStateComponent.claimsTreeRoot <== issuerAuthClaimsTreeRoot;
-    issuerAuthStateComponent.revTreeRoot <== issuerAuthRevTreeRoot;
-    issuerAuthStateComponent.rootsTreeRoot <== issuerAuthRootsTreeRoot;
 
-    issuerAuthState <== issuerAuthStateComponent.idenState;
+    // verify issuerAuthState
+    component issuerAuthStateComponent = checkIdenStateMatchesRoots();
+    issuerAuthStateComponent.claimsTreeRoot <== issuerClaimsTreeRoot;
+    issuerAuthStateComponent.authTreeRoot <== issuerAuthTreeRoot;
+
+    issuerAuthStateComponent.expectedState <== issuerState;
 
 
     // issuerAuthClaim proof of existence (isProofExist)
@@ -170,19 +143,7 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     component smtIssuerAuthClaimExists = checkClaimExists(IssuerLevels);
     for (var i=0; i<8; i++) { smtIssuerAuthClaimExists.claim[i] <== issuerAuthClaim[i]; }
     for (var i=0; i<IssuerLevels; i++) { smtIssuerAuthClaimExists.claimMTP[i] <== issuerAuthClaimMtp[i]; }
-    smtIssuerAuthClaimExists.treeRoot <== issuerAuthClaimsTreeRoot;
-
-    // issuerAuthClaim proof of non-revocation
-    //
-    component verifyIssuerAuthClaimNotRevoked = checkClaimNotRevoked(IssuerLevels);
-    for (var i=0; i<8; i++) { verifyIssuerAuthClaimNotRevoked.claim[i] <== issuerAuthClaim[i]; }
-    for (var i=0; i<IssuerLevels; i++) {
-        verifyIssuerAuthClaimNotRevoked.claimNonRevMTP[i] <== issuerAuthClaimNonRevMtp[i];
-    }
-    verifyIssuerAuthClaimNotRevoked.noAux <== issuerAuthClaimNonRevMtpNoAux;
-    verifyIssuerAuthClaimNotRevoked.auxHi <== issuerAuthClaimNonRevMtpAuxHi;
-    verifyIssuerAuthClaimNotRevoked.auxHv <== issuerAuthClaimNonRevMtpAuxHv;
-    verifyIssuerAuthClaimNotRevoked.treeRoot <== issuerClaimNonRevRevTreeRoot;
+    smtIssuerAuthClaimExists.treeRoot <== issuerAuthTreeRoot;
 
     component issuerAuthPubKey = getPubKeyFromClaim();
     for (var i=0; i<8; i++){ issuerAuthPubKey.claim[i] <== issuerAuthClaim[i]; }
@@ -196,23 +157,10 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     verifyClaimSig.pubKeyX <== issuerAuthPubKey.Ax;
     verifyClaimSig.pubKeyY <== issuerAuthPubKey.Ay;
 
-    // verify issuer state includes issuerClaim
-    component verifyClaimIssuanceIdenState = checkIdenStateMatchesRoots();
-    verifyClaimIssuanceIdenState.claimsTreeRoot <== issuerClaimNonRevClaimsTreeRoot;
-    verifyClaimIssuanceIdenState.revTreeRoot <== issuerClaimNonRevRevTreeRoot;
-    verifyClaimIssuanceIdenState.rootsTreeRoot <== issuerClaimNonRevRootsTreeRoot;
-    verifyClaimIssuanceIdenState.expectedState <== issuerClaimNonRevState;
-
-    // non revocation status
-    component verifyClaimNotRevoked = checkClaimNotRevoked(IssuerLevels);
-    for (var i=0; i<8; i++) { verifyClaimNotRevoked.claim[i] <== issuerClaim[i]; }
-    for (var i=0; i<IssuerLevels; i++) {
-        verifyClaimNotRevoked.claimNonRevMTP[i] <== issuerClaimNonRevMtp[i];
-    }
-    verifyClaimNotRevoked.noAux <== issuerClaimNonRevMtpNoAux;
-    verifyClaimNotRevoked.auxHi <== issuerClaimNonRevMtpAuxHi;
-    verifyClaimNotRevoked.auxHv <== issuerClaimNonRevMtpAuxHv;
-    verifyClaimNotRevoked.treeRoot <== issuerClaimNonRevRevTreeRoot;
+    // get claim revocation nonce
+    component getRevNonce = getClaimRevNonce();
+    getRevNonce.slot <== issuerAuthClaim[4];
+    issuerAuthClaimRevocationNonce <== getRevNonce.revNonce;
 
     // masking
     component masking = maskingValue();

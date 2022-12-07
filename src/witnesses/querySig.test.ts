@@ -14,16 +14,13 @@ import {
   withFlagExpirable,
   Entry,
 } from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
 import { SMTLevelDb } from '../db/level_db.js';
-import { SMTType, Trees } from '../trees/trees.js';
+import { Trees } from '../trees/trees.js';
 import { numToBits } from '../utils.js';
 import {
   kycGenerateQuerySigInput,
-  kycGenerateQuerySigNonRevInput,
   holderGenerateQuerySigWitness,
   KYCQuerySigInput,
-  KYCQuerySigNonRevInput,
   QuerySigWitness,
 } from './querySig.js';
 
@@ -32,8 +29,7 @@ import { setupParams } from '../global.js';
 
 describe('test query sig', async () => {
   let claimsDb: SMTLevelDb;
-  let revocationDb: SMTLevelDb;
-  let rootsDb: SMTLevelDb;
+  let authDb: SMTLevelDb;
   let issuerPrivateKey: Buffer;
   let issuerAuthClaim: Entry;
   let issuerTrees: Trees;
@@ -43,18 +39,13 @@ describe('test query sig', async () => {
   it('create trees for kyc service and holder', async () => {
     await setupParams();
     claimsDb = new SMTLevelDb('src/witnesses/db_test/query_sig/claims');
-    revocationDb = new SMTLevelDb('src/witnesses/db_test/query_sig/revocation');
-    rootsDb = new SMTLevelDb('src/witnesses/db_test/query_sig/roots');
+    authDb = new SMTLevelDb('src/witnesses/db_test/query_sig/auth');
     issuerPrivateKey = Buffer.alloc(32, 1);
     issuerAuthClaim = await newAuthClaimFromPrivateKey(issuerPrivateKey);
     issuerTrees = await Trees.generateID(
       [issuerAuthClaim],
       claimsDb,
-      revocationDb,
-      rootsDb,
-      IDType.Default,
-      32,
-      SMTType.BinSMT
+      authDb
     );
 
     holderPrivateKey = Buffer.alloc(32, 2);
@@ -62,17 +53,12 @@ describe('test query sig', async () => {
     holderTrees = await Trees.generateID(
       [holderAuthClaim],
       new SMTLevelDb('src/witnesses/db_test/query_sig_holder/claims'),
-      new SMTLevelDb('src/witnesses/db_test/query_sig_holder/revocation'),
-      new SMTLevelDb('src/witnesses/db_test/query_sig_holder/roots'),
-      IDType.Default,
-      32,
-      SMTType.BinSMT
+      new SMTLevelDb('src/witnesses/db_test/query_sig_holder/auth')
     );
   }).timeout(10000);
 
   let issuerClaim: Entry;
   let kycQuerySigInput: KYCQuerySigInput;
-  let kycQuerySigNonRevInput: KYCQuerySigNonRevInput;
   it('issuer issue issuerClaim for holder', async () => {
     const indexSlotA = BigInt(20010209);
     const indexSlotB = BigInt(1);
@@ -95,10 +81,6 @@ describe('test query sig', async () => {
       issuerTrees
     );
     console.log('KYC Query Sig Input: ', kycQuerySigInput);
-
-    kycQuerySigNonRevInput = await kycGenerateQuerySigNonRevInput(issuerClaim.getRevocationNonce(), issuerTrees);
-
-    console.log('KYC Query Sig NonRev Input: ', kycQuerySigNonRevInput);
   }).timeout(10000);
 
   let witness: QuerySigWitness;
@@ -111,7 +93,6 @@ describe('test query sig', async () => {
       challenge,
       holderTrees,
       kycQuerySigInput,
-      kycQuerySigNonRevInput,
       2,
       OPERATOR.LESS_THAN,
       [BigInt(20010210)],
@@ -129,7 +110,7 @@ describe('test query sig', async () => {
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
   }).timeout(100000);
-  it.skip('benchmark proving time', async () => {
+  it('benchmark proving time', async () => {
     await groth16.fullProve(
       witness,
       'src/witnesses/circom_test/bin/credentialAtomicQuerySig.wasm',

@@ -17,22 +17,20 @@ template StateTransition(nLevels) {
     signal input newUserState;
     signal input isOldStateGenesis;
 
-    signal input claimsTreeRoot;
+    signal input authTreeRoot;
     signal input authClaimMtp[nLevels];
     signal input authClaim[8];
 
-    signal input revTreeRoot;
-    signal input authClaimNonRevMtp[nLevels];
-    signal input authClaimNonRevMtpNoAux;
-    signal input authClaimNonRevMtpAuxHv;
-    signal input authClaimNonRevMtpAuxHi;
+    signal output authRevocationNonce;
 
-    signal input rootsTreeRoot;
+    signal input claimsTreeRoot;
 
     signal input signatureR8x;
     signal input signatureR8y;
     signal input signatureS;
 
+
+    userID * 0 === 0;
     component cutId = cutId();
     cutId.in <== userID;
 
@@ -65,17 +63,11 @@ template StateTransition(nLevels) {
 
     component checkIdOwnership = IdOwnershipBySignature(nLevels);
 
-    checkIdOwnership.userClaimsTreeRoot <== claimsTreeRoot;
+    checkIdOwnership.userAuthTreeRoot <== authTreeRoot;
     for (var i=0; i<nLevels; i++) { checkIdOwnership.userAuthClaimMtp[i] <== authClaimMtp[i]; }
     for (var i=0; i<8; i++) { checkIdOwnership.userAuthClaim[i] <== authClaim[i]; }
 
-    checkIdOwnership.userRevTreeRoot <== revTreeRoot;
-    for (var i=0; i<nLevels; i++) { checkIdOwnership.userAuthClaimNonRevMtp[i] <== authClaimNonRevMtp[i]; }
-    checkIdOwnership.userAuthClaimNonRevMtpNoAux <== authClaimNonRevMtpNoAux;
-    checkIdOwnership.userAuthClaimNonRevMtpAuxHv <== authClaimNonRevMtpAuxHv;
-    checkIdOwnership.userAuthClaimNonRevMtpAuxHi <== authClaimNonRevMtpAuxHi;
-
-    checkIdOwnership.userRootsTreeRoot <== rootsTreeRoot;
+    checkIdOwnership.userClaimsTreeRoot <== claimsTreeRoot;
 
     checkIdOwnership.challenge <== challenge.out;
     checkIdOwnership.challengeSignatureR8x <== signatureR8x;
@@ -83,4 +75,6 @@ template StateTransition(nLevels) {
     checkIdOwnership.challengeSignatureS <== signatureS;
 
     checkIdOwnership.userState <== oldUserState;
+
+    authRevocationNonce <== checkIdOwnership.authClaimRevocationNonce;
 }

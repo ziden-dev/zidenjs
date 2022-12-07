@@ -6,8 +6,7 @@ import path from 'path';
 
 import { newAuthClaimFromPrivateKey } from '../claim/auth-claim.js';
 import { newClaim, withIndexData, schemaHashFromBigInt, Entry } from '../claim/entry.js';
-import { IDType } from '../claim/id.js';
-import { SMTType, Trees } from '../trees/trees.js';
+import { Trees } from '../trees/trees.js';
 import {
   AuthenticationWitness,
   authenticationWitness,
@@ -28,16 +27,11 @@ describe('test authentication', async () => {
     authClaim = await newAuthClaimFromPrivateKey(privateKey);
 
     const claimsDb = new SMTLevelDb('src/witnesses/db_test/auth/claims');
-    const revocationDb = new SMTLevelDb('src/witnesses/db_test/auth/revocation');
-    const rootsDb = new SMTLevelDb('src/witnesses/db_test/auth/roots');
+    const authDb = new SMTLevelDb('src/witnesses/db_test/auth/auth');
     authTrees = await Trees.generateID(
       [authClaim],
       claimsDb,
-      revocationDb,
-      rootsDb,
-      IDType.Default,
-      32,
-      SMTType.BinSMT
+      authDb
     );
   }).timeout(10000);
 
@@ -60,9 +54,6 @@ describe('test authentication', async () => {
     await authTrees.insertClaim(claim1);
     await authTrees.insertClaim(claim2);
     await authTrees.insertClaim(claim3);
-    await authTrees.revokeClaim(claim1.getRevocationNonce());
-    await authTrees.revokeClaim(claim2.getRevocationNonce());
-    await authTrees.revokeClaim(claim3.getRevocationNonce());
 
     const authClaim1 = await newAuthClaimFromPrivateKey(Buffer.alloc(32, 2));
 
