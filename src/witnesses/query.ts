@@ -1,4 +1,4 @@
-import { createMask, shiftValue } from '../utils.js';
+import { createMask } from '../utils.js';
 import { getZidenParams } from '../global.js';
 import MerkleTree from './fixed-merkle-tree/index.js';
 
@@ -253,7 +253,7 @@ export function compactQuery(rawQuery: RawQuery, withDeterminisiticValue: boolea
     };
   }
   const determinisiticValue = calculateDeterministicValue(
-    rawQuery.values.map((value) => shiftValue(value, rawQuery.from)),
+    rawQuery.values,
     rawQuery.valueTreeDepth,
     rawQuery.operator
   );
