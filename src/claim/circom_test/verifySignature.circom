@@ -1,5 +1,5 @@
 pragma circom 2.0.0;
 
-include "../../../node_modules/circomlib/circuits/bin/eddsaposeidon.circom";
+include "../../../node_modules/circomlib/circuits/quin/eddsaposeidon.circom";
 
 component main = EdDSAPoseidonVerifier();

@@ -1,5 +1,5 @@
 pragma circom 2.0.0;
 
-include "../../circuits/bin/utils/claimUtils.circom";
+include "../../circuits/quin/utils/claimUtils.circom";
 
 component main = getClaimRevNonce();
