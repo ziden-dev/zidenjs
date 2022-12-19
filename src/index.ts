@@ -1,4 +1,39 @@
+import bigInt from 'big-integer';
+import { HashFunction } from './witnesses/fixed-merkle-tree';
 import { MerkleQueryInput } from './witnesses/query';
+
+export const SNARK_SIZE: bigInt.BigNumber = bigInt(
+  '21888242871839275222246405745257275088548364400416034343698204186575808495617'
+);
+
+export interface ZidenParams {
+  readonly hasher: Hasher;
+  readonly hash0: Hash0;
+  readonly hash1: Hash1;
+  readonly fmtHash: HashFunction;
+  readonly eddsa: EDDSA;
+  readonly F: SnarkField;
+}
+export type Hasher = (arr: Array<BigInt | ArrayLike<number>>) => ArrayLike<number>;
+export type Hash0 = (left: BigInt | ArrayLike<number>, right: BigInt | ArrayLike<number>) => ArrayLike<number>;
+export type Hash1 = (key: BigInt | ArrayLike<number>, value: BigInt | ArrayLike<number>) => ArrayLike<number>;
+export interface SnarkField {
+  toObject: (arr: ArrayLike<number>) => BigInt;
+  e: (num: BigInt | ArrayLike<number> | number | string) => ArrayLike<number>;
+  one: ArrayLike<number>;
+  zero: ArrayLike<number>;
+  eq: (value1: ArrayLike<number>, value2: ArrayLike<number>) => boolean;
+  isZero: (value: ArrayLike<number>) => boolean;
+  toString: (value: ArrayLike<number>) => string;
+}
+export interface EDDSASignature {
+  R8: Array<ArrayLike<number>>;
+  S: BigInt;
+}
+export interface EDDSA {
+  prv2pub: (privateKey: Buffer) => Array<ArrayLike<number>>;
+  signPoseidon: (privateKey: Buffer, msg: ArrayLike<number>) => EDDSASignature;
+}
 
 export interface EDDSAPublicKey {
   X: BigInt;
@@ -110,6 +145,16 @@ export interface QueryMTPWitness
   readonly slotIndex: number;
   readonly operator: OPERATOR;
   readonly mask: BigInt;
-  readonly issuerClaim: Array<BigInt>,
-  readonly userID: BigInt
+  readonly issuerClaim: Array<BigInt>;
+  readonly userID: BigInt;
 }
+
+export * as params from './global.js';
+export * as utils from './utils.js';
+export * as claim from './claim/entry.js';
+export * as id from './claim/id.js';
+export * as auth from './state/auth.js';
+export * as state from './state/state.js';
+export * as idOwnership from './witnesses/authentication.js';
+export * as stateTransition from './witnesses/stateTransition.js';
+export * as queryMTP from './witnesses/queryMTP.js';

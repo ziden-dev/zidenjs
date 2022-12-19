@@ -1,5 +1,5 @@
 import { getZidenParams } from '../global.js';
-import { Auth, EDDSAPublicKey, SignedChallenge } from 'src/index.js';
+import { Auth, EDDSAPublicKey, SignedChallenge } from '../index.js';
 
 /**
  * Generate new eddsa public key from private key

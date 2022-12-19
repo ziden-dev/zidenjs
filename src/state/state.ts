@@ -4,7 +4,7 @@ import { Entry } from '../claim/entry.js';
 import { idenState, IDGenesisFromIdenState, IDType } from '../claim/id.js';
 import { bitsToNum, numToBits } from '../utils.js';
 import { QuinSMT } from './sparse-merkle-tree/index.js';
-import { Auth } from 'src/index.js';
+import { Auth } from '../index.js';
 import { hashPublicKey } from './auth.js';
 
 interface AuthExistsProof {

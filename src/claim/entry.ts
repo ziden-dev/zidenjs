@@ -1,5 +1,6 @@
 import bigInt from 'big-integer';
-import { getZidenParams, SNARK_SIZE } from '../global.js';
+import { getZidenParams } from '../global.js';
+import { SNARK_SIZE } from '../index.js';
 import { bitsToNum, bufferArrayToHex, hexToBufferArray, numToBits } from '../utils.js';
 /*
 Claim structure
