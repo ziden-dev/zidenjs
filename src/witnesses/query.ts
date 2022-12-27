@@ -192,20 +192,3 @@ export function calculateDeterministicValue(values: Array<BigInt>, valueTreeDept
 
   return fmt.root;
 }
-
-/**
- * Compress timestamp (64 bits), claimSchema (128 bits), slotIndex (3 bits), operator (3 bits) into 1 input
- * @param {number} timestamp
- * @param {BigInt} claimSchema
- * @param {number} slotIndex
- * @param {number} operator
- * @returns {BigInt} compressed input
- */
-export function compressInputs(timestamp: number, claimSchema: BigInt, slotIndex: number, operator: number): BigInt {
-  let compactInput =
-    timestamp.toString(2).padStart(64, '0') +
-    claimSchema.toString(2).padStart(128, '0') +
-    slotIndex.toString(2).padStart(3, '0') +
-    operator.toString(2).padStart(3, '0');
-  return BigInt('0b' + compactInput);
-}

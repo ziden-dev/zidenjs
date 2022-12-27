@@ -155,6 +155,7 @@ export * as claim from './claim/entry.js';
 export * as id from './claim/id.js';
 export * as auth from './state/auth.js';
 export * as state from './state/state.js';
+export * as db from './db/index.js';
 export * as idOwnership from './witnesses/authentication.js';
 export * as stateTransition from './witnesses/stateTransition.js';
 export * as queryMTP from './witnesses/queryMTP.js';

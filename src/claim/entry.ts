@@ -171,6 +171,7 @@ export function withRevocationNonce(nonce: BigInt): Option {
 export function withExpirationDate(date: BigInt): Option {
   return function (entry: Entry) {
     entry.setExpirationDate(date);
+    entry.setFlagExpirable(true);
   };
 }
 

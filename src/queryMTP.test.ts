@@ -123,12 +123,12 @@ describe('test credential query MTP', async () => {
       kycNonRevQueryMTPInput,
       query1
     );
-    await circuitCheck(witness)
+    await circuitCheck(witness);
   }).timeout(100000);
   it('test query 2', async () => {
     const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
     const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
-    const signature =await signChallenge(holderPriv, BigInt(1))
+    const signature = await signChallenge(holderPriv, BigInt(1));
     witness = await holderGenerateQueryMTPWitnessWithSignature(
       claim2,
       signature,
@@ -138,6 +138,7 @@ describe('test credential query MTP', async () => {
       kycNonRevQueryMTPInput,
       query2
     );
+
     // await circuitCheck(witness)
   }).timeout(100000);
   it('benchmark proving time', async () => {
