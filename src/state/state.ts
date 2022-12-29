@@ -351,4 +351,19 @@ export class State {
       noAux: res.isOld0 ? BigInt(1) : BigInt(0),
     };
   }
+
+  async CheckAuthProof(authHi: BigInt): Promise<AuthExistsProof> {
+    const F = getZidenParams().F;
+    const res = await this._authsTree.find(F.e(authHi));
+    if (!res.found) {
+      throw new Error('auth is not inserted to the auth tree');
+    }
+    let siblings = [];
+    for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
+    while (siblings.length < this._authDepth * 4) siblings.push(BigInt(0));
+    return {
+      authMTP: siblings,
+      authsRoot: F.toObject(this._authsTree.root),
+    };
+  }
 }

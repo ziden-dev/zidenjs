@@ -2,12 +2,12 @@
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
 import { createMask, shiftValue, setBits } from '../utils.js';
-import { createMerkleQueryInput, MerkleQueryInput, OPERATOR } from './query.js';
+import { createMerkleQueryInput, MerkleQueryInput } from './query.js';
+import { OPERATOR } from '../index.js';
 import { expect } from 'chai';
 import { setupParams } from '../global.js';
 
 describe('Test and benchmark query circuit', () => {
-
   it('setup params', async () => {
     await setupParams();
   });
@@ -33,11 +33,11 @@ describe('Test and benchmark query circuit', () => {
     mask0 = createMask(0, 10);
     mask1 = createMask(10, 40);
     mask2 = createMask(40, 167);
-    
+
     value0 = valuePart0;
     value1 = shiftValue(valuePart1, 10);
     value2 = shiftValue(valuePart2, 40);
-
+    //console.log('mask0 = ', mask0);
     const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'masking.circom'));
 
     const w0 = await circuit.calculateWitness(

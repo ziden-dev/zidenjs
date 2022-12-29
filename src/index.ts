@@ -149,6 +149,60 @@ export interface QueryMTPWitness
   readonly userID: BigInt;
 }
 
+//khanh
+
+export interface KYCQuerySigInput {
+  readonly issuerClaimSignatureR8x: BigInt;
+  readonly issuerClaimSignatureR8y: BigInt;
+  readonly issuerClaimSignatureS: BigInt;
+
+  readonly issuerID: BigInt;
+  readonly issuerAuthState: BigInt;
+
+  readonly issuerAuthsRoot: BigInt;
+  readonly issuerAuthMtp: Array<BigInt>;
+  readonly issuerAuthHi: BigInt;
+  readonly issuerAuthPubX: BigInt;
+  readonly issuerAuthPubY: BigInt;
+
+  readonly issuerAuthRevRoot: BigInt;
+  readonly issuerAuthNonRevMtp: Array<BigInt>;
+  readonly issuerAuthNonRevMtpNoAux: BigInt;
+  readonly issuerAuthNonRevMtpAuxHi: BigInt;
+  readonly issuerAuthNonRevMtpAuxHv: BigInt;
+
+  readonly issuerClaimsRoot: BigInt;
+  readonly issuerClaimRevRoot: BigInt;
+}
+
+export interface KYCNonRevQuerySigInput {
+  readonly issuerClaimNonRevMtp: Array<BigInt>;
+  readonly issuerClaimNonRevMtpNoAux: BigInt;
+  readonly issuerClaimNonRevMtpAuxHi: BigInt;
+  readonly issuerClaimNonRevMtpAuxHv: BigInt;
+
+  readonly issuerClaimNonRevAuthsRoot: BigInt;
+  readonly issuerClaimNonRevClaimsRoot: BigInt;
+  readonly issuerClaimNonRevAuthRevRoot: BigInt;
+  readonly issuerClaimNonRevClaimRevRoot: BigInt;
+  readonly issuerClaimNonRevState: BigInt;
+}
+
+export interface QuerySigWitness
+  extends KYCQuerySigInput,
+    KYCNonRevQuerySigInput,
+    IdOwnershipBySignatureWitness,
+    MerkleQueryInput {
+  readonly timestamp: number;
+  readonly claimSchema: BigInt;
+  readonly slotIndex: number;
+  readonly operator: OPERATOR;
+  readonly mask: BigInt;
+  readonly issuerClaim: Array<BigInt>;
+  readonly userID: BigInt;
+}
+//khanh
+
 export * as params from './global.js';
 export * as utils from './utils.js';
 export * as claim from './claim/entry.js';

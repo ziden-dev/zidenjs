@@ -99,9 +99,10 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     signal input claimSchema;
     signal input slotIndex;
     signal input operator;
-    
-    signal input determinisiticValue;
     signal input mask;
+
+    //Merkle Query Input
+    signal input determinisiticValue;
     signal input leaf0;
     signal input leaf1;
     signal input elemsPath0[valueTreeDepth];
@@ -193,9 +194,13 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     issuerIdOwnership.userClaimRevRoot <== issuerClaimRevRoot;
 
     issuerIdOwnership.challenge <== claimHash.hash;
-    issuerIdOwnership.challengeSignatureR8x <== challengeSignatureR8x;
-    issuerIdOwnership.challengeSignatureR8y <== challengeSignatureR8y;
-    issuerIdOwnership.challengeSignatureS <== challengeSignatureS;
+   // issuerIdOwnership.challengeSignatureR8x <== challengeSignatureR8x;
+   // issuerIdOwnership.challengeSignatureR8y <== challengeSignatureR8y;
+   // issuerIdOwnership.challengeSignatureS <== challengeSignatureS;
+
+    issuerIdOwnership.challengeSignatureR8x <== issuerClaimSignatureR8x;
+    issuerIdOwnership.challengeSignatureR8y <== issuerClaimSignatureR8y;
+    issuerIdOwnership.challengeSignatureS <== issuerClaimSignatureS;
 
     issuerIdOwnership.userState <== issuerAuthState;
 
@@ -209,7 +214,9 @@ template CredentialAtomicQuerySig(IdOwnershipLevels, IssuerLevels, valueTreeDept
     issuerClaimNotRevoked.noAux <== issuerAuthNonRevMtpNoAux;
     issuerClaimNotRevoked.auxHi <== issuerAuthNonRevMtpAuxHi;
     issuerClaimNotRevoked.auxHv <== issuerAuthNonRevMtpAuxHv;
-    issuerClaimNotRevoked.treeRoot <== issuerClaimNonRevClaimsRoot;
+    //issuerClaimNotRevoked.treeRoot <== issuerClaimNonRevClaimsRoot; 
+    issuerClaimNotRevoked.treeRoot <== issuerClaimNonRevClaimRevRoot; 
+                                       
 
     component checkNonRevState = checkIdenStateMatchesRoots();
     checkNonRevState.authsRoot <== issuerClaimNonRevAuthsRoot;
