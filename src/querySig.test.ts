@@ -127,7 +127,7 @@ describe('test query sig', async () => {
     await circuitCheck(witness);
   }).timeout(10000);
 
-  it('test query 2', async () => {
+  it('test query with Signature', async () => {
     const kycQuerySigInput = await kycGenerateQuerySigInput(issuerPriv, issuerAuth, claim2, issuerState);
     const kycQueryNonRevQuerySigInput = await kycGenerateNonRevQuerySigInput(claim2.getRevocationNonce(), issuerState);
     const signature = await signChallenge(holderPriv, BigInt(1));

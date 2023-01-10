@@ -69,6 +69,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     signal input issuerClaimNonRevMtpNoAux;
     signal input issuerClaimNonRevMtpAuxHi;
     signal input issuerClaimNonRevMtpAuxHv;
+    
     signal input issuerClaimNonRevAuthsRoot;
     signal input issuerClaimNonRevClaimsRoot;
     signal input issuerClaimNonRevAuthRevRoot;

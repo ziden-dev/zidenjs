@@ -213,3 +213,4 @@ export * as db from './db/index.js';
 export * as idOwnership from './witnesses/authentication.js';
 export * as stateTransition from './witnesses/stateTransition.js';
 export * as queryMTP from './witnesses/queryMTP.js';
+export * as querySig from './witnesses/querySig.js';

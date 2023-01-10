@@ -104,6 +104,7 @@ describe('test state', async () => {
   it('test inserting a claim multiple times', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861772'));
     const claim = newClaim(schemaHash, withIndexData(Buffer.alloc(30, 1), Buffer.alloc(30, 9)));
+    //console.log('claim = ', claim);
     for (let i = 0; i < 100; i++) {
       await state.insertClaim(claim);
     }
