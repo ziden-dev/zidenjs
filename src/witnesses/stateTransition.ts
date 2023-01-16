@@ -21,7 +21,6 @@ export async function stateTransitionWitnessWithPrivateKey(
   const oldUserState = state.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
-  const authNotRevokedProof = await state.generateAuthNotRevokedProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
 
   for (let i = 0; i < insertingAuths.length; i++) {
@@ -50,11 +49,6 @@ export async function stateTransitionWitnessWithPrivateKey(
     userAuthHi: auth.authHi,
     userAuthPubX: auth.pubKey.X,
     userAuthPubY: auth.pubKey.Y,
-    userAuthRevRoot: rootsMatchProof.authRevRoot,
-    userAuthNonRevMtp: authNotRevokedProof.authNonRevMTP,
-    userAuthNonRevMtpNoAux: authNotRevokedProof.noAux,
-    userAuthNonRevMtpAuxHi: authNotRevokedProof.auxHi,
-    userAuthNonRevMtpAuxHv: authNotRevokedProof.auxHv,
     userClaimsRoot: rootsMatchProof.claimsRoot,
     userClaimRevRoot: rootsMatchProof.claimRevRoot,
     challengeSignatureR8x: signature.challengeSignatureR8x,
@@ -79,7 +73,6 @@ export async function stateTransitionWitnessWithSignature(
   const oldUserState = state.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
-  const authNotRevokedProof = await state.generateAuthNotRevokedProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
   for (let i = 0; i < insertingAuths.length; i++) {
     await state.insertAuth(insertingAuths[i]);
@@ -105,11 +98,6 @@ export async function stateTransitionWitnessWithSignature(
     userAuthHi: auth.authHi,
     userAuthPubX: auth.pubKey.X,
     userAuthPubY: auth.pubKey.Y,
-    userAuthRevRoot: rootsMatchProof.authRevRoot,
-    userAuthNonRevMtp: authNotRevokedProof.authNonRevMTP,
-    userAuthNonRevMtpNoAux: authNotRevokedProof.noAux,
-    userAuthNonRevMtpAuxHi: authNotRevokedProof.auxHi,
-    userAuthNonRevMtpAuxHv: authNotRevokedProof.auxHv,
     userClaimsRoot: rootsMatchProof.claimsRoot,
     userClaimRevRoot: rootsMatchProof.claimRevRoot,
     challengeSignatureR8x: signature.challengeSignatureR8x,
@@ -134,7 +122,6 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
   const oldUserState = state.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
-  const authNotRevokedProof = await state.generateAuthNotRevokedProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
   for (let i = 0; i < insertingAuths.length; i++) {
     await state.insertAuth(insertingAuths[i]);
@@ -160,11 +147,6 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
     userAuthHi: auth.authHi,
     userAuthPubX: auth.pubKey.X,
     userAuthPubY: auth.pubKey.Y,
-    userAuthRevRoot: rootsMatchProof.authRevRoot,
-    userAuthNonRevMtp: authNotRevokedProof.authNonRevMTP,
-    userAuthNonRevMtpNoAux: authNotRevokedProof.noAux,
-    userAuthNonRevMtpAuxHi: authNotRevokedProof.auxHi,
-    userAuthNonRevMtpAuxHv: authNotRevokedProof.auxHv,
     userClaimsRoot: rootsMatchProof.claimsRoot,
     userClaimRevRoot: rootsMatchProof.claimRevRoot,
     challengeSignatureR8x: signature.challengeSignatureR8x,
@@ -189,7 +171,6 @@ export async function stateTransitionWitnessWithSignatureAndHiHvs(
   const oldUserState = state.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
-  const authNotRevokedProof = await state.generateAuthNotRevokedProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
   for (let i = 0; i < insertingAuths.length; i++) {
     await state.insertAuth(insertingAuths[i]);
@@ -213,11 +194,6 @@ export async function stateTransitionWitnessWithSignatureAndHiHvs(
     userAuthHi: auth.authHi,
     userAuthPubX: auth.pubKey.X,
     userAuthPubY: auth.pubKey.Y,
-    userAuthRevRoot: rootsMatchProof.authRevRoot,
-    userAuthNonRevMtp: authNotRevokedProof.authNonRevMTP,
-    userAuthNonRevMtpNoAux: authNotRevokedProof.noAux,
-    userAuthNonRevMtpAuxHi: authNotRevokedProof.auxHi,
-    userAuthNonRevMtpAuxHv: authNotRevokedProof.auxHv,
     userClaimsRoot: rootsMatchProof.claimsRoot,
     userClaimRevRoot: rootsMatchProof.claimRevRoot,
     challengeSignatureR8x: signature.challengeSignatureR8x,
@@ -225,5 +201,3 @@ export async function stateTransitionWitnessWithSignatureAndHiHvs(
     challengeSignatureS: signature.challengeSignatureS,
   };
 }
-
-

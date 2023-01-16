@@ -22,7 +22,7 @@ export async function kycGenerateQueryMTPInput(
     issuerClaimMtp: claimExistProof.claimMTP,
     issuerClaimAuthsRoot: rootsMatchProof.authsRoot,
     issuerClaimClaimsRoot: rootsMatchProof.claimsRoot,
-    issuerClaimAuthRevRoot: rootsMatchProof.authRevRoot,
+
     issuerClaimClaimRevRoot: rootsMatchProof.claimRevRoot,
     issuerClaimIdenState: rootsMatchProof.expectedState,
     issuerID: bitsToNum(issuerState.userID),
@@ -46,7 +46,6 @@ export async function kycGenerateNonRevQueryMTPInput(
     issuerClaimNonRevMtpAuxHv: claimNotRevokedProof.auxHv,
     issuerClaimNonRevAuthsRoot: rootsMatchProof.authsRoot,
     issuerClaimNonRevClaimsRoot: rootsMatchProof.claimsRoot,
-    issuerClaimNonRevAuthRevRoot: rootsMatchProof.authRevRoot,
     issuerClaimNonRevClaimRevRoot: rootsMatchProof.claimRevRoot,
     issuerClaimNonRevState: rootsMatchProof.expectedState,
   };

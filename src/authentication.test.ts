@@ -21,7 +21,6 @@ describe('test authentication', async () => {
   let state: State;
   let authsDb: SMTLevelDb;
   let claimsDb: SMTLevelDb;
-  let authRevDb: SMTLevelDb;
   let claimRevDb: SMTLevelDb;
 
   it('set up trees', async () => {
@@ -31,9 +30,8 @@ describe('test authentication', async () => {
 
     authsDb = new SMTLevelDb('src/db_test/auths');
     claimsDb = new SMTLevelDb('src/db_test/claims');
-    authRevDb = new SMTLevelDb('src/db_test/authRev');
     claimRevDb = new SMTLevelDb('src/trees/claimRev');
-    state = await State.generateState([auth], authsDb, claimsDb, authRevDb, claimRevDb);
+    state = await State.generateState([auth], authsDb, claimsDb, claimRevDb);
   }).timeout(10000);
 
   let idOwnershipWitness: IdOwnershipBySignatureWitness;
@@ -55,9 +53,7 @@ describe('test authentication', async () => {
     await state.insertAuth(auth1);
 
     idOwnershipWitness = await idOwnershipBySignatureWitnessWithPrivateKey(privateKey, auth, challenge, state);
-    const circuit = await wasm_tester(
-      path.join('src', 'circom_test', 'idOwnershipBySignature.circom')
-    );
+    const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignature.circom'));
     const w0 = await circuit.calculateWitness(idOwnershipWitness, true);
     await circuit.checkConstraints(w0);
   }).timeout(20000);
@@ -66,9 +62,7 @@ describe('test authentication', async () => {
     const challenge = BigInt('1234565');
     const signature = await signChallenge(privateKey, challenge);
     idOwnershipWitness = await idOwnershipBySignatureWitnessWithSignature(signature, auth, state);
-    const circuit = await wasm_tester(
-      path.join('src', 'circom_test', 'idOwnershipBySignature.circom')
-    );
+    const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignature.circom'));
     const w1 = await circuit.calculateWitness(idOwnershipWitness, true);
     await circuit.checkConstraints(w1);
   }).timeout(20000);

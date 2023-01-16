@@ -13,7 +13,6 @@ export async function idOwnershipBySignatureWitnessWithPrivateKey(
 ): Promise<IdOwnershipBySignatureWitness> {
   const signature = await signChallenge(privateKey, challenge);
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
-  const authNotRevokedProof = await state.generateAuthNotRevokedProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
   return {
     ...signature,
@@ -23,11 +22,6 @@ export async function idOwnershipBySignatureWitnessWithPrivateKey(
     userAuthHi: auth.authHi,
     userAuthPubX: auth.pubKey.X,
     userAuthPubY: auth.pubKey.Y,
-    userAuthRevRoot: rootsMatchProof.authRevRoot,
-    userAuthNonRevMtp: authNotRevokedProof.authNonRevMTP,
-    userAuthNonRevMtpNoAux: authNotRevokedProof.noAux,
-    userAuthNonRevMtpAuxHi: authNotRevokedProof.auxHi,
-    userAuthNonRevMtpAuxHv: authNotRevokedProof.auxHv,
     userClaimsRoot: rootsMatchProof.claimsRoot,
     userClaimRevRoot: rootsMatchProof.claimRevRoot,
   };
@@ -42,7 +36,6 @@ export async function idOwnershipBySignatureWitnessWithSignature(
   state: State
 ): Promise<IdOwnershipBySignatureWitness> {
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
-  const authNotRevokedProof = await state.generateAuthNotRevokedProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
   return {
     ...signature,
@@ -52,11 +45,6 @@ export async function idOwnershipBySignatureWitnessWithSignature(
     userAuthHi: auth.authHi,
     userAuthPubX: auth.pubKey.X,
     userAuthPubY: auth.pubKey.Y,
-    userAuthRevRoot: rootsMatchProof.authRevRoot,
-    userAuthNonRevMtp: authNotRevokedProof.authNonRevMTP,
-    userAuthNonRevMtpNoAux: authNotRevokedProof.noAux,
-    userAuthNonRevMtpAuxHi: authNotRevokedProof.auxHi,
-    userAuthNonRevMtpAuxHv: authNotRevokedProof.auxHv,
     userClaimsRoot: rootsMatchProof.claimsRoot,
     userClaimRevRoot: rootsMatchProof.claimRevRoot,
   };

@@ -77,8 +77,8 @@ export function IDGenesisFromIdenState(idenState: Buffer, type: Buffer): Buffer 
 export function idenState(
   authsRoot: BigInt,
   claimsRoot: BigInt,
-  authRevRoot: BigInt,
+  //authRevRoot: BigInt,
   claimRevRoot: BigInt
 ): ArrayLike<number> {
-  return getZidenParams().hasher([authsRoot, claimsRoot, authRevRoot, claimRevRoot]);
+  return getZidenParams().hasher([authsRoot, claimsRoot, claimRevRoot]);
 }

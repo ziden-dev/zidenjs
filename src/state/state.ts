@@ -19,18 +19,8 @@ interface ClaimExistsProof {
 interface RootsMatchProof {
   readonly authsRoot: BigInt;
   readonly claimsRoot: BigInt;
-  readonly authRevRoot: BigInt;
   readonly claimRevRoot: BigInt;
   readonly expectedState: BigInt;
-}
-
-interface AuthNotRevokedProof {
-  readonly authHi: BigInt;
-  readonly authNonRevMTP: Array<BigInt>;
-  readonly authRevRoot: BigInt;
-  readonly auxHi: BigInt;
-  readonly auxHv: BigInt;
-  readonly noAux: BigInt;
 }
 
 interface ClaimNotRevokedProof {
@@ -45,7 +35,6 @@ export class State {
   private _userID: Buffer;
   private _authsTree: QuinSMT;
   private _claimsTree: QuinSMT;
-  private _authRevTree: QuinSMT;
   private _claimRevTree: QuinSMT;
   private _authRevNonce: number;
   private _claimRevNonce: number;
@@ -55,7 +44,6 @@ export class State {
   constructor(
     authsTree: QuinSMT,
     claimsTree: QuinSMT,
-    authRevTree: QuinSMT,
     claimRevTree: QuinSMT,
     authRevNonce: number,
     claimRevNonce: number,
@@ -64,7 +52,6 @@ export class State {
   ) {
     this._authsTree = authsTree;
     this._claimsTree = claimsTree;
-    this._authRevTree = authRevTree;
     this._claimRevTree = claimRevTree;
     this._authRevNonce = authRevNonce;
     this._claimRevNonce = claimRevNonce;
@@ -84,10 +71,6 @@ export class State {
 
   get claimsTree() {
     return this._claimsTree;
-  }
-
-  get authRevTree() {
-    return this._authRevTree;
   }
 
   get claimRevTree() {
@@ -117,7 +100,6 @@ export class State {
         idenState(
           F.toObject(this._authsTree.root),
           F.toObject(this._claimsTree.root),
-          F.toObject(this._authRevTree.root),
           F.toObject(this._claimRevTree.root)
         )
       ),
@@ -129,7 +111,6 @@ export class State {
    * @param {Array<Auth>} auths list of public keys to add to claim tree
    * @param {SMTDb} authsDb database for auths tree
    * @param {SMTDb} claimsDb database for claims tree
-   * @param {SMTDb} authRevDb database for auth revocation tree
    * @param {SMTDb} claimRevDb database for claim revocation tree
    * @param {number} authDepth the depth of auth and auth rev trees
    * @param {number} claimDepth the depth of claim and claim rev trees
@@ -139,17 +120,15 @@ export class State {
     auths: Array<Auth>,
     authsDb: SMTDb,
     claimsDb: SMTDb,
-    authRevDb: SMTDb,
     claimRevDb: SMTDb,
     authDepth: number = 4,
     claimDepth: number = 14
   ): Promise<State> {
     const F = getZidenParams().F;
-    let authsTree: QuinSMT, claimsTree: QuinSMT, authRevTree: QuinSMT, claimRevTree: QuinSMT;
+    let authsTree: QuinSMT, claimsTree: QuinSMT, claimRevTree: QuinSMT;
 
     authsTree = new QuinSMT(authsDb, F.zero, authDepth);
     claimsTree = new QuinSMT(claimsDb, F.zero, claimDepth);
-    authRevTree = new QuinSMT(authRevDb, F.zero, authDepth);
     claimRevTree = new QuinSMT(claimRevDb, F.zero, claimDepth);
 
     for (let i = 0; i < auths.length; i++) {
@@ -159,7 +138,7 @@ export class State {
       await authsTree.insert(i, authHash);
     }
 
-    return new State(authsTree, claimsTree, authRevTree, claimRevTree, auths.length, 0, authDepth, claimDepth);
+    return new State(authsTree, claimsTree, claimRevTree, auths.length, 0, authDepth, claimDepth);
   }
 
   /**
@@ -174,6 +153,7 @@ export class State {
     this._authRevNonce++;
     return auth;
   }
+
   /**
    * Insert new claim to claim tree
    * @param {Entry} claim claim to insert
@@ -252,10 +232,13 @@ export class State {
 
   async revokeClaim(revNonce: BigInt) {
     await this._claimRevTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.zero);
+    //
+
+    //
   }
 
   async revokeAuth(authHi: BigInt) {
-    await this._authRevTree.insert(getZidenParams().F.e(authHi), getZidenParams().F.zero);
+    await this._authsTree.delete(authHi);
   }
 
   /**
@@ -300,32 +283,8 @@ export class State {
     return {
       authsRoot: F.toObject(this._authsTree.root),
       claimsRoot: F.toObject(this._claimsTree.root),
-      authRevRoot: F.toObject(this._authRevTree.root),
       claimRevRoot: F.toObject(this._claimRevTree.root),
       expectedState: bitsToNum(this.getIdenState()),
-    };
-  }
-  /**
-   * Generate Claim Not Revoked Proof for a claim in revocation tree
-   * @param {BigInt} authHi
-   * @returns {Promise<ClaimNotRevokedProof>} claim not revoked proof
-   */
-  async generateAuthNotRevokedProof(authHi: BigInt): Promise<AuthNotRevokedProof> {
-    const F = getZidenParams().F;
-    const res = await this._authRevTree.find(F.e(authHi));
-    if (res.found) {
-      throw new Error('auth is revoked');
-    }
-    let siblings = [];
-    for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
-    while (siblings.length < this._authDepth * 4) siblings.push(BigInt(0));
-    return {
-      authHi,
-      authNonRevMTP: siblings,
-      authRevRoot: F.toObject(this._authRevTree.root),
-      auxHi: F.toObject(res.notFoundKey!),
-      auxHv: F.toObject(res.notFoundValue!),
-      noAux: res.isOld0 ? BigInt(1) : BigInt(0),
     };
   }
 
@@ -349,21 +308,6 @@ export class State {
       auxHi: F.toObject(res.notFoundKey!),
       auxHv: F.toObject(res.notFoundValue!),
       noAux: res.isOld0 ? BigInt(1) : BigInt(0),
-    };
-  }
-
-  async CheckAuthProof(authHi: BigInt): Promise<AuthExistsProof> {
-    const F = getZidenParams().F;
-    const res = await this._authsTree.find(F.e(authHi));
-    if (!res.found) {
-      throw new Error('auth is not inserted to the auth tree');
-    }
-    let siblings = [];
-    for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
-    while (siblings.length < this._authDepth * 4) siblings.push(BigInt(0));
-    return {
-      authMTP: siblings,
-      authsRoot: F.toObject(this._authsTree.root),
     };
   }
 }

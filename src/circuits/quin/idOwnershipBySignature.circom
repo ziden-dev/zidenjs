@@ -20,12 +20,6 @@ template IdOwnershipBySignature(nLevels) {
     signal input userAuthPubX;
     signal input userAuthPubY;
 
-	signal input userAuthRevRoot;
-    signal input userAuthNonRevMtp[nLevels * 4];
-    signal input userAuthNonRevMtpNoAux;
-    signal input userAuthNonRevMtpAuxHi;
-    signal input userAuthNonRevMtpAuxHv;
-
 	signal input userClaimsRoot;
     signal input userClaimRevRoot;
 
@@ -42,11 +36,6 @@ template IdOwnershipBySignature(nLevels) {
     verifyAuth.authPubY <== userAuthPubY;
 	for (var i=0; i<nLevels * 4; i++) { verifyAuth.authMtp[i] <== userAuthMtp[i]; }
 	verifyAuth.authsRoot <== userAuthsRoot;
-	verifyAuth.authRevRoot <== userAuthRevRoot;
-	for (var i=0; i<nLevels * 4; i++) { verifyAuth.authNonRevMtp[i] <== userAuthNonRevMtp[i]; }
-	verifyAuth.authNonRevMtpNoAux <== userAuthNonRevMtpNoAux;
-	verifyAuth.authNonRevMtpAuxHv <== userAuthNonRevMtpAuxHv;
-	verifyAuth.authNonRevMtpAuxHi <== userAuthNonRevMtpAuxHi;
 
     verifyAuth.challengeSignatureS <== challengeSignatureS;
     verifyAuth.challengeSignatureR8x <== challengeSignatureR8x;
@@ -56,7 +45,6 @@ template IdOwnershipBySignature(nLevels) {
     component checkUserState = checkIdenStateMatchesRoots();
     checkUserState.authsRoot <== userAuthsRoot;
     checkUserState.claimsRoot <== userClaimsRoot;
-    checkUserState.authRevRoot <== userAuthRevRoot;
     checkUserState.claimRevRoot <== userClaimRevRoot;
     checkUserState.expectedState <== userState;
 }

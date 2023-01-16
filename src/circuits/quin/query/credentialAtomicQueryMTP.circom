@@ -40,12 +40,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     signal input userAuthPubX;
     signal input userAuthPubY;
 
-	signal input userAuthRevRoot;
-    signal input userAuthNonRevMtp[IdOwnershipLevels * 4];
-    signal input userAuthNonRevMtpNoAux;
-    signal input userAuthNonRevMtpAuxHi;
-    signal input userAuthNonRevMtpAuxHv;
-
+	
 	signal input userClaimsRoot;
     signal input userClaimRevRoot;
 
@@ -59,7 +54,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     signal input issuerClaimMtp[IssuerLevels * 4];
     signal input issuerClaimAuthsRoot;
     signal input issuerClaimClaimsRoot;
-    signal input issuerClaimAuthRevRoot;
+    //signal input issuerClaimAuthRevRoot;
     signal input issuerClaimClaimRevRoot;
     signal input issuerClaimIdenState;
     signal input issuerID;
@@ -72,7 +67,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     
     signal input issuerClaimNonRevAuthsRoot;
     signal input issuerClaimNonRevClaimsRoot;
-    signal input issuerClaimNonRevAuthRevRoot;
+   // signal input issuerClaimNonRevAuthRevRoot; 
     signal input issuerClaimNonRevClaimRevRoot;
     signal input issuerClaimNonRevState;
 
@@ -107,11 +102,11 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthMtp[i] <== userAuthMtp[i]; }
     
 
-    userIdOwnership.userAuthRevRoot <== userAuthRevRoot; 
-    for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthNonRevMtp[i] <== userAuthNonRevMtp[i]; }
-    userIdOwnership.userAuthNonRevMtpNoAux <== userAuthNonRevMtpNoAux;
-    userIdOwnership.userAuthNonRevMtpAuxHv <== userAuthNonRevMtpAuxHv;
-    userIdOwnership.userAuthNonRevMtpAuxHi <== userAuthNonRevMtpAuxHi;
+    // userIdOwnership.userAuthRevRoot <== userAuthRevRoot; 
+    // for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthNonRevMtp[i] <== userAuthNonRevMtp[i]; }
+    // userIdOwnership.userAuthNonRevMtpNoAux <== userAuthNonRevMtpNoAux;
+    // userIdOwnership.userAuthNonRevMtpAuxHv <== userAuthNonRevMtpAuxHv;
+    // userIdOwnership.userAuthNonRevMtpAuxHi <== userAuthNonRevMtpAuxHi;
 
     userIdOwnership.userClaimsRoot <== userClaimsRoot;
     userIdOwnership.userClaimRevRoot <== userClaimRevRoot;
@@ -129,7 +124,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     for (var i=0; i<IssuerLevels * 4; i++) { vci.claimIssuanceMtp[i] <== issuerClaimMtp[i]; }
     vci.claimIssuanceAuthsRoot <== issuerClaimAuthsRoot;
     vci.claimIssuanceClaimsRoot <== issuerClaimClaimsRoot;
-    vci.claimIssuanceAuthRevRoot <== issuerClaimAuthRevRoot;
+    //vci.claimIssuanceAuthRevRoot <== issuerClaimAuthRevRoot;
     vci.claimIssuanceClaimRevRoot <== issuerClaimClaimRevRoot;
     vci.claimIssuanceIdenState <== issuerClaimIdenState;
 
@@ -141,7 +136,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
 
     vci.claimNonRevIssuerAuthsRoot <== issuerClaimNonRevAuthsRoot;
     vci.claimNonRevIssuerClaimsRoot <== issuerClaimNonRevClaimsRoot;
-    vci.claimNonRevIssuerAuthRevRoot <== issuerClaimNonRevAuthRevRoot;
+   // vci.claimNonRevIssuerAuthRevRoot <== issuerClaimNonRevAuthRevRoot;
     vci.claimNonRevIssuerClaimRevRoot <== issuerClaimNonRevClaimRevRoot;
     vci.claimNonRevIssuerState <== issuerClaimNonRevState;
 

@@ -31,12 +31,10 @@ describe('test credential query MTP', async () => {
 
   let authsDb: SMTLevelDb;
   let claimsDb: SMTLevelDb;
-  let authRevDb: SMTLevelDb;
   let claimRevDb: SMTLevelDb;
 
   let authsDb1: SMTLevelDb;
   let claimsDb1: SMTLevelDb;
-  let authRevDb1: SMTLevelDb;
   let claimRevDb1: SMTLevelDb;
 
   let query1: Query;
@@ -53,16 +51,14 @@ describe('test credential query MTP', async () => {
 
     authsDb = new SMTLevelDb('src/db_test/auths');
     claimsDb = new SMTLevelDb('src/db_test/claims');
-    authRevDb = new SMTLevelDb('src/db_test/authRev');
     claimRevDb = new SMTLevelDb('src/trees/claimRev');
 
     authsDb1 = new SMTLevelDb('src/db_test/auths1');
     claimsDb1 = new SMTLevelDb('src/db_test/claims1');
-    authRevDb1 = new SMTLevelDb('src/db_test/authRev1');
     claimRevDb1 = new SMTLevelDb('src/trees/claimRev1');
 
-    holderState = await State.generateState([holderAuth], authsDb, claimsDb, authRevDb, claimRevDb);
-    issuerState = await State.generateState([issuerAuth], authsDb1, claimsDb1, authRevDb1, claimRevDb1);
+    holderState = await State.generateState([holderAuth], authsDb, claimsDb, claimRevDb);
+    issuerState = await State.generateState([issuerAuth], authsDb1, claimsDb1, claimRevDb1);
 
     query1 = {
       slotIndex: 2,
@@ -110,7 +106,7 @@ describe('test credential query MTP', async () => {
     };
   }).timeout(100000);
   let witness: QueryMTPWitness;
-  it.skip('test query 1', async () => {
+  it('test query 1', async () => {
     const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim1.hiRaw(), issuerState);
     const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim1.getRevocationNonce(), issuerState);
     witness = await holderGenerateQueryMTPWitnessWithPrivateKey(
@@ -139,13 +135,13 @@ describe('test credential query MTP', async () => {
       query2
     );
 
-    // await circuitCheck(witness)
+    await circuitCheck(witness);
   }).timeout(100000);
-  it('benchmark proving time', async () => {
-    await groth16.fullProve(
-      witness,
-      'src/circom_test/credentialAtomicQueryMTP.wasm',
-      'src/circom_test/credentialAtomicQueryMTP.zkey'
-    );
-  }).timeout(100000);
+  // it('benchmark proving time', async () => {
+  //   await groth16.fullProve(
+  //     witness,
+  //     'src/circom_test/credentialAtomicQueryMTP.wasm',
+  //     'src/circom_test/credentialAtomicQueryMTP.zkey'
+  //   );
+  // }).timeout(100000);
 });

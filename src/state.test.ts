@@ -9,12 +9,12 @@ import { setupParams } from './global.js';
 import { State } from './state/state.js';
 import { Auth } from './index.js';
 import { newAuthFromPrivateKey } from './state/auth.js';
+import assert from 'assert';
 
 describe('test state', async () => {
   let state: State;
   let authsDb: SMTLevelDb;
   let claimsDb: SMTLevelDb;
-  let authRevDb: SMTLevelDb;
   let claimRevDb: SMTLevelDb;
 
   let priv1: Buffer;
@@ -30,7 +30,6 @@ describe('test state', async () => {
   it('setup auths, dbs', async () => {
     authsDb = new SMTLevelDb('src/db_test/auths');
     claimsDb = new SMTLevelDb('src/db_test/claims');
-    authRevDb = new SMTLevelDb('src/db_test/authRev');
     claimRevDb = new SMTLevelDb('src/db_test/claimRev');
 
     priv1 = crypto.randomBytes(32);
@@ -42,7 +41,7 @@ describe('test state', async () => {
     auth3 = newAuthFromPrivateKey(priv3);
   }).timeout(10000);
   it('generate state', async () => {
-    state = await State.generateState([auth1, auth2], authsDb, claimsDb, authRevDb, claimRevDb);
+    state = await State.generateState([auth1, auth2], authsDb, claimsDb, claimRevDb);
   });
   it('test root match circuit', async () => {
     const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkIdenStateMatchesRoots.circom'));
@@ -95,7 +94,6 @@ describe('test state', async () => {
       claim: claim.getDataForCircuit(),
     };
 
-    console.log(claimNonRevProof);
     const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkClaimNotRevoked.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
@@ -134,16 +132,23 @@ describe('test state', async () => {
   }).timeout(20000);
 
   it('test auth not revoked', async () => {
-    const authNotRevokedProof = await state.generateAuthNotRevokedProof(auth1.authHi);
-
+    const authNotRevokedProof = await state.generateAuthExistsProof(auth1.authHi);
     const witness = {
       ...authNotRevokedProof,
+      authPubX: auth1.pubKey.X,
+      authPubY: auth1.pubKey.Y,
+      authHi: auth1.authHi,
     };
-
-    console.log(witness);
-
-    const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkAuthNotRevoked.circom'));
+    const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkAuthExists.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
+  }).timeout(20000);
+
+  it('test delete auth', async () => {
+    await state.revokeAuth(auth1.authHi);
+
+    await assert.rejects(state.generateAuthExistsProof(auth1.authHi), {
+      message: 'auth is not inserted to the auth tree',
+    });
   }).timeout(20000);
 });

@@ -19,14 +19,14 @@ Index:
           [1] Updatable: bool
           [27] 0
       [ 32 bits ] version (optional?)
-      [ 32 bits ] claim seed
+      [ 32 bits ] claim seed 
       [ 29 bits ] 0 - reserved for future use
  i_1: [ 248 bits] identity (case b) (optional)
       [  5 bits ] 0
  i_2: [ 253 bits] 0
  i_3: [ 253 bits] 0
 Value:
- v_0: [ 64 bits ]  revocation nonce
+ v_0: [ 32 bits ]  revocation nonce 
       [ 64 bits ]  expiration date (optional)
       [ 125 bits] 0 - reserved
  v_1: [ 248 bits] identity (case c) (optional)

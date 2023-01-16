@@ -13,16 +13,16 @@ include "claimUtils.circom";
 template getIdenState() {
 	signal input authsRoot;
 	signal input claimsRoot;
-	signal input authRevRoot;
+	//signal input authRevRoot;
 	signal input claimRevRoot;
 
 	signal output idenState;
 
-	component calcIdState = Poseidon(4);
+	component calcIdState = Poseidon(3);
 	calcIdState.inputs[0] <== authsRoot;
 	calcIdState.inputs[1] <== claimsRoot;
-	calcIdState.inputs[2] <== authRevRoot;
-	calcIdState.inputs[3] <== claimRevRoot;
+	//calcIdState.inputs[2] <== authRevRoot;
+	calcIdState.inputs[2] <== claimRevRoot;
 
 	idenState <== calcIdState.out;
 }
@@ -68,24 +68,6 @@ template checkClaimExists(IssuerLevels) {
 	smtClaimExists.value <== claimHiHv.hv;
 }
 
-template checkAuthNotRevoked(treeLevels){
-	signal input authHi;
-	signal input authNonRevMTP[treeLevels * 4];
-    signal input authRevRoot;
-    signal input noAux;
-    signal input auxHi;
-    signal input auxHv;
-
-	component smt = QuinSMTVerifier(treeLevels);
-    smt.fnc <== 1; // Non-inclusion
-    smt.root <== authRevRoot;
-    for (var i=0; i<treeLevels * 4; i++) { smt.siblings[i] <== authNonRevMTP[i]; }
-    smt.oldKey <== auxHi;
-    smt.oldValue <== auxHv;
-    smt.isOld0 <== noAux;
-    smt.key <== authHi;
-    smt.value <== 0;
-}
 
 template checkClaimNotRevoked(treeLevels) {
     signal input claim[8];
@@ -114,14 +96,14 @@ template checkClaimNotRevoked(treeLevels) {
 template checkIdenStateMatchesRoots() {
 	signal input authsRoot;
 	signal input claimsRoot;
-	signal input authRevRoot;
+	//signal input authRevRoot;
 	signal input claimRevRoot;
 	signal input expectedState;
 
 	component isProofValidIdenState = getIdenState();
 	isProofValidIdenState.authsRoot <== authsRoot;
 	isProofValidIdenState.claimsRoot <== claimsRoot;
-	isProofValidIdenState.authRevRoot <== authRevRoot;
+	//isProofValidIdenState.authRevRoot <== authRevRoot;
 	isProofValidIdenState.claimRevRoot <== claimRevRoot;
 
 	isProofValidIdenState.idenState === expectedState;
@@ -133,7 +115,7 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claimIssuanceMtp[IssuerLevels * 4];
 	signal input claimIssuanceAuthsRoot;
 	signal input claimIssuanceClaimsRoot;
-	signal input claimIssuanceAuthRevRoot;
+	//signal input claimIssuanceAuthRevRoot;
 	signal input claimIssuanceClaimRevRoot;
 	signal input claimIssuanceIdenState;
 
@@ -143,7 +125,7 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claimNonRevMtpAuxHv;
 	signal input claimNonRevIssuerAuthsRoot;
 	signal input claimNonRevIssuerClaimsRoot;
-	signal input claimNonRevIssuerAuthRevRoot;
+	//signal input claimNonRevIssuerAuthRevRoot;
 	signal input claimNonRevIssuerClaimRevRoot;
 	signal input claimNonRevIssuerState;
 
@@ -158,7 +140,7 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     component verifyClaimIssuanceIdenState = checkIdenStateMatchesRoots();
 	verifyClaimIssuanceIdenState.authsRoot <== claimIssuanceAuthsRoot;
     verifyClaimIssuanceIdenState.claimsRoot <== claimIssuanceClaimsRoot;
-    verifyClaimIssuanceIdenState.authRevRoot <== claimIssuanceAuthRevRoot;
+    //verifyClaimIssuanceIdenState.authRevRoot <== claimIssuanceAuthRevRoot;
     verifyClaimIssuanceIdenState.claimRevRoot <== claimIssuanceClaimRevRoot;
     verifyClaimIssuanceIdenState.expectedState <== claimIssuanceIdenState;
 
@@ -177,7 +159,7 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     component verifyClaimNonRevIssuerState = checkIdenStateMatchesRoots();
 	verifyClaimNonRevIssuerState.authsRoot <== claimNonRevIssuerAuthsRoot;
     verifyClaimNonRevIssuerState.claimsRoot <== claimNonRevIssuerClaimsRoot;
-    verifyClaimNonRevIssuerState.authRevRoot <== claimNonRevIssuerAuthRevRoot;
+   // verifyClaimNonRevIssuerState.authRevRoot <== claimNonRevIssuerAuthRevRoot;
     verifyClaimNonRevIssuerState.claimRevRoot <== claimNonRevIssuerClaimRevRoot;
     verifyClaimNonRevIssuerState.expectedState <== claimNonRevIssuerState;
 }
@@ -189,11 +171,11 @@ template VerifyAuthAndSignature(nLevels) {
 	signal input authPubX;
 	signal input authPubY;
 
-	signal input authRevRoot;
-    signal input authNonRevMtp[nLevels * 4];
-    signal input authNonRevMtpNoAux;
-    signal input authNonRevMtpAuxHi;
-    signal input authNonRevMtpAuxHv;
+	// signal input authRevRoot;
+    // signal input authNonRevMtp[nLevels * 4];
+    // signal input authNonRevMtpNoAux;
+    // signal input authNonRevMtpAuxHi;
+    // signal input authNonRevMtpAuxHv;
 
 	signal input challenge;
 	signal input challengeSignatureR8x;
@@ -208,16 +190,15 @@ template VerifyAuthAndSignature(nLevels) {
 	for (var i=0; i<nLevels * 4; i++) { authExists.authMTP[i] <== authMtp[i]; }
     authExists.authsRoot <== authsRoot;
 
-    component authNotRevoked = checkAuthNotRevoked(nLevels);
-    
-	authNotRevoked.authHi <== authHi;
-    for (var i=0; i<nLevels * 4; i++) {
-        authNotRevoked.authNonRevMTP[i] <== authNonRevMtp[i];
-    }
-    authNotRevoked.authRevRoot <== authRevRoot;
-    authNotRevoked.noAux <== authNonRevMtpNoAux;
-    authNotRevoked.auxHi <== authNonRevMtpAuxHi;
-    authNotRevoked.auxHv <== authNonRevMtpAuxHv;
+    // component authNotRevoked = checkAuthNotRevoked(nLevels);
+	// authNotRevoked.authHi <== authHi;
+    // for (var i=0; i<nLevels * 4; i++) {
+    //     authNotRevoked.authNonRevMTP[i] <== authNonRevMtp[i];
+    // }
+    // authNotRevoked.authRevRoot <== authRevRoot;
+    // authNotRevoked.noAux <== authNonRevMtpNoAux;
+    // authNotRevoked.auxHi <== authNonRevMtpAuxHi;
+    // authNotRevoked.auxHv <== authNonRevMtpAuxHv;
 
     // signature verification
     component sigVerifier = EdDSAPoseidonVerifier();

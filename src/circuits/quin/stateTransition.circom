@@ -23,11 +23,6 @@ template StateTransition(IdOwnershipLevels) {
     signal input userAuthPubX;
     signal input userAuthPubY;
 
-	signal input userAuthRevRoot;
-    signal input userAuthNonRevMtp[IdOwnershipLevels * 4];
-    signal input userAuthNonRevMtpNoAux;
-    signal input userAuthNonRevMtpAuxHi;
-    signal input userAuthNonRevMtpAuxHv;
 
 	signal input userClaimsRoot;
     signal input userClaimRevRoot;
@@ -79,11 +74,11 @@ template StateTransition(IdOwnershipLevels) {
     for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthMtp[i] <== userAuthMtp[i]; }
     
 
-    userIdOwnership.userAuthRevRoot <== userAuthRevRoot; 
-    for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthNonRevMtp[i] <== userAuthNonRevMtp[i]; }
-    userIdOwnership.userAuthNonRevMtpNoAux <== userAuthNonRevMtpNoAux;
-    userIdOwnership.userAuthNonRevMtpAuxHv <== userAuthNonRevMtpAuxHv;
-    userIdOwnership.userAuthNonRevMtpAuxHi <== userAuthNonRevMtpAuxHi;
+    // userIdOwnership.userAuthRevRoot <== userAuthRevRoot; 
+    // for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthNonRevMtp[i] <== userAuthNonRevMtp[i]; }
+    // userIdOwnership.userAuthNonRevMtpNoAux <== userAuthNonRevMtpNoAux;
+    // userIdOwnership.userAuthNonRevMtpAuxHv <== userAuthNonRevMtpAuxHv;
+    // userIdOwnership.userAuthNonRevMtpAuxHi <== userAuthNonRevMtpAuxHi;
 
     userIdOwnership.userClaimsRoot <== userClaimsRoot;
     userIdOwnership.userClaimRevRoot <== userClaimRevRoot;

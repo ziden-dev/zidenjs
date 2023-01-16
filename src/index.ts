@@ -59,11 +59,6 @@ export interface IdOwnershipBySignatureWitness extends SignedChallenge {
   readonly userAuthHi: BigInt;
   readonly userAuthPubX: BigInt;
   readonly userAuthPubY: BigInt;
-  readonly userAuthRevRoot: BigInt;
-  readonly userAuthNonRevMtp: Array<BigInt>;
-  readonly userAuthNonRevMtpNoAux: BigInt;
-  readonly userAuthNonRevMtpAuxHi: BigInt;
-  readonly userAuthNonRevMtpAuxHv: BigInt;
   readonly userClaimsRoot: BigInt;
   readonly userClaimRevRoot: BigInt;
 }
@@ -79,11 +74,6 @@ export interface StateTransitionWitness {
   readonly userAuthHi: BigInt;
   readonly userAuthPubX: BigInt;
   readonly userAuthPubY: BigInt;
-  readonly userAuthRevRoot: BigInt;
-  readonly userAuthNonRevMtp: Array<BigInt>;
-  readonly userAuthNonRevMtpNoAux: BigInt;
-  readonly userAuthNonRevMtpAuxHi: BigInt;
-  readonly userAuthNonRevMtpAuxHv: BigInt;
   readonly userClaimsRoot: BigInt;
   readonly userClaimRevRoot: BigInt;
 
@@ -96,7 +86,6 @@ export interface KYCQueryMTPInput {
   readonly issuerClaimMtp: Array<BigInt>;
   readonly issuerClaimAuthsRoot: BigInt;
   readonly issuerClaimClaimsRoot: BigInt;
-  readonly issuerClaimAuthRevRoot: BigInt;
   readonly issuerClaimClaimRevRoot: BigInt;
   readonly issuerClaimIdenState: BigInt;
   readonly issuerID: BigInt;
@@ -109,7 +98,6 @@ export interface KYCNonRevQueryMTPInput {
   readonly issuerClaimNonRevMtpAuxHv: BigInt;
   readonly issuerClaimNonRevAuthsRoot: BigInt;
   readonly issuerClaimNonRevClaimsRoot: BigInt;
-  readonly issuerClaimNonRevAuthRevRoot: BigInt;
   readonly issuerClaimNonRevClaimRevRoot: BigInt;
   readonly issuerClaimNonRevState: BigInt;
 }
@@ -213,4 +201,3 @@ export * as db from './db/index.js';
 export * as idOwnership from './witnesses/authentication.js';
 export * as stateTransition from './witnesses/stateTransition.js';
 export * as queryMTP from './witnesses/queryMTP.js';
-export * as querySig from './witnesses/querySig.js';
