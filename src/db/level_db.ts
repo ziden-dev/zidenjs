@@ -1,5 +1,5 @@
 import { Level } from 'level';
-import { Primitive } from '../trees/sparse-merkle-tree/index.js';
+import { Primitive } from '../state/sparse-merkle-tree/index.js';
 import { getZidenParams } from '../global.js';
 import { SMTDb } from './index.js';
 

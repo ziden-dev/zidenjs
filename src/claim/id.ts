@@ -68,11 +68,17 @@ export function IDGenesisFromIdenState(idenState: Buffer, type: Buffer): Buffer 
 
 /**
  * Generate Iden State from claim tree root, revocation root, root of roots
- * @param {BigInt} clr claim tree root
- * @param {BigInt} rer revocation root
- * @param {BigInt} ror root of roots
+ * @param {BigInt} authsRoot auths tree root
+ * @param {BigInt} claimsRoot claims tree root
+ * @param {BigInt} authRevRoot auth rev root
+ * @param {BigInt} claimRevRoot claim rev roots
  * @returns {ArrayLike<number>} idenState
  */
-export function idenState(clr: BigInt, rer: BigInt, ror: BigInt): ArrayLike<number> {
-  return getZidenParams().hasher([clr, rer, ror]);
+export function idenState(
+  authsRoot: BigInt,
+  claimsRoot: BigInt,
+  //authRevRoot: BigInt,
+  claimRevRoot: BigInt
+): ArrayLike<number> {
+  return getZidenParams().hasher([authsRoot, claimsRoot, claimRevRoot]);
 }

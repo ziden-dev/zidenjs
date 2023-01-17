@@ -1,239 +1,203 @@
-import { Trees } from '../trees/trees.js';
-import { signChallenge, SignedChallenge } from '../claim/auth-claim.js';
 import { Entry } from '../claim/entry.js';
-import { numToBits } from '../utils.js';
 import { getZidenParams } from '../global.js';
-
-export interface StateTransitionWitness {
-  readonly userID: BigInt;
-  readonly oldUserState: BigInt;
-  readonly newUserState: BigInt;
-  readonly isOldStateGenesis: number;
-  readonly claimsTreeRoot: BigInt;
-  readonly authClaimMtp: Array<BigInt>;
-  readonly authClaim: Array<BigInt>;
-
-  readonly revTreeRoot: BigInt;
-  readonly authClaimNonRevMtp: Array<BigInt>;
-  readonly authClaimNonRevMtpNoAux: number | BigInt;
-  readonly authClaimNonRevMtpAuxHv: number | BigInt;
-  readonly authClaimNonRevMtpAuxHi: number | BigInt;
-
-  readonly rootsTreeRoot: BigInt;
-  readonly signatureR8x: BigInt;
-  readonly signatureR8y: BigInt;
-  readonly signatureS: BigInt;
-}
+import { Auth, SignedChallenge, StateTransitionWitness } from 'src/index.js';
+import { State } from '../state/state.js';
+import { signChallenge } from '../state/auth.js';
+import { bitsToNum } from '../utils.js';
 
 /**
- * Update trees state through insert claims into claims tree and revoke claims
- * @param {Buffer} privateKey
- * @param {Entry} authClaim
- * @param {Trees} trees
- * @param {Array<Entry>} insertingClaims claims inserted to claims tree
- * @param {Array<BigInt>} revokingClaimsRevNonce revoked claims
- * @returns {Promise<StateTransitionWitness>} state transition witness
+ * Update user state with private key
  */
-export async function stateTransitionWitness(
+export async function stateTransitionWitnessWithPrivateKey(
   privateKey: Buffer,
-  authClaim: Entry,
-  trees: Trees,
+  auth: Auth,
+  state: State,
+  insertingAuths: Array<Auth>,
   insertingClaims: Array<Entry>,
-  revokingClaimsRevNonce: Array<BigInt>,
+  revokingAuthHis: Array<BigInt>,
+  revokingClaimRevNonces: Array<BigInt>
 ): Promise<StateTransitionWitness> {
-  const userID = trees.userID;
-  const oldUserState = trees.getIdenState();
-  const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
-  );
+  const userID = state.userID;
+  const oldUserState = state.getIdenState();
+  const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
+  const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
+  const rootsMatchProof = await state.generateRootsMatchProof();
+
+  for (let i = 0; i < insertingAuths.length; i++) {
+    await state.insertAuth(insertingAuths[i]);
+  }
   for (let i = 0; i < insertingClaims.length; i++) {
-    await trees.insertClaim(insertingClaims[i]);
+    await state.insertClaim(insertingClaims[i]);
   }
-  for (let i = 0; i < revokingClaimsRevNonce.length; i++) {
-    await trees.revokeClaim(revokingClaimsRevNonce[i]);
+  for (let i = 0; i < revokingAuthHis.length; i++) {
+    await state.revokeAuth(revokingAuthHis[i]);
   }
-
-  const newUserState = trees.getIdenState();
-  const challenge = getZidenParams().hasher([oldUserState, newUserState]);
+  for (let i = 0; i < revokingClaimRevNonces.length; i++) {
+    await state.revokeClaim(revokingClaimRevNonces[i]);
+  }
+  const newUserState = state.getIdenState();
+  const challenge = getZidenParams().hasher([bitsToNum(oldUserState), bitsToNum(newUserState)]);
   const signature = await signChallenge(privateKey, challenge);
+
   return {
-    userID: authClaimProof.id,
-    oldUserState,
-    newUserState,
+    userID: bitsToNum(userID),
+    oldUserState: bitsToNum(oldUserState),
+    newUserState: bitsToNum(newUserState),
     isOldStateGenesis,
-    claimsTreeRoot: authClaimProof.claimsTreeRoot,
-    authClaimMtp: authClaimProof.claimMTP,
-    authClaim: authClaim.getDataForCircuit(),
-
-    revTreeRoot: authClaimProof.revTreeRoot,
-    authClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    authClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    authClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    authClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-
-    rootsTreeRoot: authClaimProof.rootsTreeRoot,
-
-    signatureR8x: signature.challengeSignatureR8x,
-    signatureR8y: signature.challengeSignatureR8y,
-    signatureS: signature.challengeSignatureS,
+    userAuthsRoot: rootsMatchProof.authsRoot,
+    userAuthMtp: authExistsProof.authMTP,
+    userAuthHi: auth.authHi,
+    userAuthPubX: auth.pubKey.X,
+    userAuthPubY: auth.pubKey.Y,
+    userClaimsRoot: rootsMatchProof.claimsRoot,
+    userClaimRevRoot: rootsMatchProof.claimRevRoot,
+    challengeSignatureR8x: signature.challengeSignatureR8x,
+    challengeSignatureR8y: signature.challengeSignatureR8y,
+    challengeSignatureS: signature.challengeSignatureS,
   };
 }
 
 /**
- * Update trees state through insert claims by hi, hv into claims tree and revoke claims
- * @param {Buffer} privateKey
- * @param {Entry} authClaim
- * @param {Trees} trees
- * @param {Array<[ArrayLike<number>, ArrayLike<number>]>} insertingClaimHiHvs claims inserted to claims tree
- * @param {Array<BigInt>} revokingClaimsRevNonce revoked claims
- * @returns {Promise<StateTransitionWitness>} state transition witness
+ * Update user state with signature
  */
-export async function stateTransitionWitnessWithHiHv(
+export async function stateTransitionWitnessWithSignature(
+  signature: SignedChallenge,
+  auth: Auth,
+  state: State,
+  insertingAuths: Array<Auth>,
+  insertingClaims: Array<Entry>,
+  revokingAuthHis: Array<BigInt>,
+  revokingClaimRevNonces: Array<BigInt>
+): Promise<StateTransitionWitness> {
+  const userID = state.userID;
+  const oldUserState = state.getIdenState();
+  const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
+  const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
+  const rootsMatchProof = await state.generateRootsMatchProof();
+  for (let i = 0; i < insertingAuths.length; i++) {
+    await state.insertAuth(insertingAuths[i]);
+  }
+  for (let i = 0; i < insertingClaims.length; i++) {
+    await state.insertClaim(insertingClaims[i]);
+  }
+  for (let i = 0; i < revokingAuthHis.length; i++) {
+    await state.revokeAuth(revokingAuthHis[i]);
+  }
+  for (let i = 0; i < revokingClaimRevNonces.length; i++) {
+    await state.revokeClaim(revokingClaimRevNonces[i]);
+  }
+  const newUserState = state.getIdenState();
+
+  return {
+    userID: bitsToNum(userID),
+    oldUserState: bitsToNum(oldUserState),
+    newUserState: bitsToNum(newUserState),
+    isOldStateGenesis,
+    userAuthsRoot: rootsMatchProof.authsRoot,
+    userAuthMtp: authExistsProof.authMTP,
+    userAuthHi: auth.authHi,
+    userAuthPubX: auth.pubKey.X,
+    userAuthPubY: auth.pubKey.Y,
+    userClaimsRoot: rootsMatchProof.claimsRoot,
+    userClaimRevRoot: rootsMatchProof.claimRevRoot,
+    challengeSignatureR8x: signature.challengeSignatureR8x,
+    challengeSignatureR8y: signature.challengeSignatureR8y,
+    challengeSignatureS: signature.challengeSignatureS,
+  };
+}
+
+/**
+ * Update user state with private key and claim hi, hvs
+ */
+export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
   privateKey: Buffer,
-  authClaim: Entry,
-  trees: Trees,
+  auth: Auth,
+  state: State,
+  insertingAuths: Array<Auth>,
   insertingClaimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>,
-  revokingClaimsRevNonce: Array<BigInt>
+  revokingAuthHis: Array<BigInt>,
+  revokingClaimRevNonces: Array<BigInt>
 ): Promise<StateTransitionWitness> {
-  const userID = trees.userID;
-  const oldUserState = trees.getIdenState();
-  const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
-  );
-  await trees.batchInsertClaimByHiHv(insertingClaimHiHvs);
-  await trees.batchRevokeClaim(revokingClaimsRevNonce);
-
-  const newUserState = trees.getIdenState();
-  const challenge = getZidenParams().hasher([oldUserState, newUserState]);
+  const userID = state.userID;
+  const oldUserState = state.getIdenState();
+  const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
+  const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
+  const rootsMatchProof = await state.generateRootsMatchProof();
+  for (let i = 0; i < insertingAuths.length; i++) {
+    await state.insertAuth(insertingAuths[i]);
+  }
+  await state.batchInsertClaimByHiHv(insertingClaimHiHvs);
+  for (let i = 0; i < revokingAuthHis.length; i++) {
+    await state.revokeAuth(revokingAuthHis[i]);
+  }
+  for (let i = 0; i < revokingClaimRevNonces.length; i++) {
+    await state.revokeClaim(revokingClaimRevNonces[i]);
+  }
+  const newUserState = state.getIdenState();
+  const challenge = getZidenParams().hasher([bitsToNum(oldUserState), bitsToNum(newUserState)]);
   const signature = await signChallenge(privateKey, challenge);
+
   return {
-    userID: authClaimProof.id,
-    oldUserState,
-    newUserState,
+    userID: bitsToNum(userID),
+    oldUserState: bitsToNum(oldUserState),
+    newUserState: bitsToNum(newUserState),
     isOldStateGenesis,
-    claimsTreeRoot: authClaimProof.claimsTreeRoot,
-    authClaimMtp: authClaimProof.claimMTP,
-    authClaim: authClaim.getDataForCircuit(),
-
-    revTreeRoot: authClaimProof.revTreeRoot,
-    authClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    authClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    authClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    authClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-
-    rootsTreeRoot: authClaimProof.rootsTreeRoot,
-
-    signatureR8x: signature.challengeSignatureR8x,
-    signatureR8y: signature.challengeSignatureR8y,
-    signatureS: signature.challengeSignatureS,
+    userAuthsRoot: rootsMatchProof.authsRoot,
+    userAuthMtp: authExistsProof.authMTP,
+    userAuthHi: auth.authHi,
+    userAuthPubX: auth.pubKey.X,
+    userAuthPubY: auth.pubKey.Y,
+    userClaimsRoot: rootsMatchProof.claimsRoot,
+    userClaimRevRoot: rootsMatchProof.claimRevRoot,
+    challengeSignatureR8x: signature.challengeSignatureR8x,
+    challengeSignatureR8y: signature.challengeSignatureR8y,
+    challengeSignatureS: signature.challengeSignatureS,
   };
 }
 
 /**
- * Update trees state through insert claims into claims tree and revoke claims
- * @param {SignedChallenge} signature
- * @param {Entry} authClaim
- * @param {Trees} trees
- * @param {Array<Entry>} insertingClaims claims inserted to claims tree
- * @param {Array<BigInt>} revokingClaimsRevNonce revoked claims
- * @returns {Promise<StateTransitionWitness>} state transition witness
+ * Update user state with signature
  */
- export async function stateTransitionWitnessWithSignature(
+export async function stateTransitionWitnessWithSignatureAndHiHvs(
   signature: SignedChallenge,
-  authClaim: Entry,
-  trees: Trees,
-  insertingClaims: Array<Entry>,
-  revokingClaimsRevNonce: Array<BigInt>,
-): Promise<StateTransitionWitness> {
-  const userID = trees.userID;
-  const oldUserState = trees.getIdenState();
-  const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
-  );
-  for (let i = 0; i < insertingClaims.length; i++) {
-    await trees.insertClaim(insertingClaims[i]);
-  }
-  for (let i = 0; i < revokingClaimsRevNonce.length; i++) {
-    await trees.revokeClaim(revokingClaimsRevNonce[i]);
-  }
-
-  const newUserState = trees.getIdenState();
-  return {
-    userID: authClaimProof.id,
-    oldUserState,
-    newUserState,
-    isOldStateGenesis,
-    claimsTreeRoot: authClaimProof.claimsTreeRoot,
-    authClaimMtp: authClaimProof.claimMTP,
-    authClaim: authClaim.getDataForCircuit(),
-
-    revTreeRoot: authClaimProof.revTreeRoot,
-    authClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    authClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    authClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    authClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-
-    rootsTreeRoot: authClaimProof.rootsTreeRoot,
-
-    signatureR8x: signature.challengeSignatureR8x,
-    signatureR8y: signature.challengeSignatureR8y,
-    signatureS: signature.challengeSignatureS,
-  };
-}
-
-/**
- * Update trees state through insert claims by hi, hv into claims tree and revoke claims with signature
- * @param {SignedChallenge} signature
- * @param {Entry} authClaim
- * @param {Trees} trees
- * @param {Array<[ArrayLike<number>, ArrayLike<number>]>} insertingClaimHiHvs claims inserted to claims tree
- * @param {Array<BigInt>} revokingClaimsRevNonce revoked claims
- * @returns {Promise<StateTransitionWitness>} state transition witness
- */
- export async function stateTransitionWitnessWithHiHvWithSignature(
-  signature: SignedChallenge,
-  authClaim: Entry,
-  trees: Trees,
+  auth: Auth,
+  state: State,
+  insertingAuths: Array<Auth>,
   insertingClaimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>,
-  revokingClaimsRevNonce: Array<BigInt>,
+  revokingAuthHis: Array<BigInt>,
+  revokingClaimRevNonces: Array<BigInt>
 ): Promise<StateTransitionWitness> {
-  const userID = trees.userID;
-  const oldUserState = trees.getIdenState();
-  const isOldStateGenesis = userID.subarray(2, 31).equals(numToBits(oldUserState, 32).subarray(-29)) ? 1 : 0;
-  const authClaimProof = await trees.generateProofForClaim(
-    authClaim.hiRaw(),
-    authClaim.getRevocationNonce()
-  );
-  await trees.batchInsertClaimByHiHv(insertingClaimHiHvs);
-  await trees.batchRevokeClaim(revokingClaimsRevNonce);
-
-  const newUserState = trees.getIdenState();
+  const userID = state.userID;
+  const oldUserState = state.getIdenState();
+  const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
+  const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
+  const rootsMatchProof = await state.generateRootsMatchProof();
+  for (let i = 0; i < insertingAuths.length; i++) {
+    await state.insertAuth(insertingAuths[i]);
+  }
+  await state.batchInsertClaimByHiHv(insertingClaimHiHvs);
+  for (let i = 0; i < revokingAuthHis.length; i++) {
+    await state.revokeAuth(revokingAuthHis[i]);
+  }
+  for (let i = 0; i < revokingClaimRevNonces.length; i++) {
+    await state.revokeClaim(revokingClaimRevNonces[i]);
+  }
+  const newUserState = state.getIdenState();
 
   return {
-    userID: authClaimProof.id,
-    oldUserState,
-    newUserState,
+    userID: bitsToNum(userID),
+    oldUserState: bitsToNum(oldUserState),
+    newUserState: bitsToNum(newUserState),
     isOldStateGenesis,
-    claimsTreeRoot: authClaimProof.claimsTreeRoot,
-    authClaimMtp: authClaimProof.claimMTP,
-    authClaim: authClaim.getDataForCircuit(),
-
-    revTreeRoot: authClaimProof.revTreeRoot,
-    authClaimNonRevMtp: authClaimProof.claimNonRevMTP,
-    authClaimNonRevMtpNoAux: authClaimProof.claimNonRevNoAux,
-    authClaimNonRevMtpAuxHv: authClaimProof.claimNonRevAuxHv,
-    authClaimNonRevMtpAuxHi: authClaimProof.claimNonRevAuxHi,
-
-    rootsTreeRoot: authClaimProof.rootsTreeRoot,
-
-    signatureR8x: signature.challengeSignatureR8x,
-    signatureR8y: signature.challengeSignatureR8y,
-    signatureS: signature.challengeSignatureS,
+    userAuthsRoot: rootsMatchProof.authsRoot,
+    userAuthMtp: authExistsProof.authMTP,
+    userAuthHi: auth.authHi,
+    userAuthPubX: auth.pubKey.X,
+    userAuthPubY: auth.pubKey.Y,
+    userClaimsRoot: rootsMatchProof.claimsRoot,
+    userClaimRevRoot: rootsMatchProof.claimRevRoot,
+    challengeSignatureR8x: signature.challengeSignatureR8x,
+    challengeSignatureR8y: signature.challengeSignatureR8y,
+    challengeSignatureS: signature.challengeSignatureS,
   };
 }

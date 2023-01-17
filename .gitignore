@@ -104,7 +104,7 @@ dist
 .tern-port
 
 # Level DB files
-**/db_test/*
+**/db_test
 *.zkey
 *.wasm
 *.r1cs
@@ -116,3 +116,5 @@ dist
 *.wasm
 
 build
+
+buildCircom/

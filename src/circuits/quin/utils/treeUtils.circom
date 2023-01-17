@@ -2,6 +2,7 @@ pragma circom 2.0.0;
 
 include "../../../../node_modules/circomlib/circuits/bitify.circom";
 include "../../../../node_modules/circomlib/circuits/eddsaposeidon.circom";
+include "../../../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../../../node_modules/circomlib/circuits/mux3.circom";
 include "../../../../node_modules/circomlib/circuits/mux1.circom";
 include "../quinarySmt/quinSmtVerifier.circom";
@@ -10,20 +11,43 @@ include "claimUtils.circom";
 // getIdenState caclulates the Identity state out of the claims tree root,
 // revocations tree root and roots tree root.
 template getIdenState() {
-	signal input claimsTreeRoot;
-	signal input revTreeRoot;
-	signal input rootsTreeRoot;
+	signal input authsRoot;
+	signal input claimsRoot;
+	//signal input authRevRoot;
+	signal input claimRevRoot;
 
 	signal output idenState;
 
 	component calcIdState = Poseidon(3);
-	calcIdState.inputs[0] <== claimsTreeRoot;
-	calcIdState.inputs[1] <== revTreeRoot;
-	calcIdState.inputs[2] <== rootsTreeRoot;
+	calcIdState.inputs[0] <== authsRoot;
+	calcIdState.inputs[1] <== claimsRoot;
+	//calcIdState.inputs[2] <== authRevRoot;
+	calcIdState.inputs[2] <== claimRevRoot;
 
 	idenState <== calcIdState.out;
 }
+template checkAuthExists(nLevels) {
+	signal input authHi;
+	signal input authPubX;
+	signal input authPubY;
 
+	signal input authMTP[nLevels * 4];
+	signal input authsRoot;
+
+	component hasher = Poseidon(2);
+	hasher.inputs[0] <== authPubX;
+	hasher.inputs[1] <== authPubY;
+	
+	component smt = QuinSMTVerifier(nLevels);
+	smt.fnc <== 0; // Inclusion
+	smt.root <== authsRoot;
+	for (var i=0; i<nLevels * 4; i++) { smt.siblings[i] <== authMTP[i]; }
+	smt.oldKey <== 0;
+	smt.oldValue <== 0;
+	smt.isOld0 <== 0;
+	smt.key <== authHi;
+	smt.value <== hasher.out;
+}
 // checkClaimExists verifies that claim is included into the claim tree root
 template checkClaimExists(IssuerLevels) {
 	signal input claim[8];
@@ -43,6 +67,7 @@ template checkClaimExists(IssuerLevels) {
 	smtClaimExists.key <== claimHiHv.hi;
 	smtClaimExists.value <== claimHiHv.hv;
 }
+
 
 template checkClaimNotRevoked(treeLevels) {
     signal input claim[8];
@@ -69,15 +94,17 @@ template checkClaimNotRevoked(treeLevels) {
 // checkIdenStateMatchesRoots checks that a hash of 3 tree
 // roots is equal to expected identity state
 template checkIdenStateMatchesRoots() {
-	signal input claimsTreeRoot;
-	signal input revTreeRoot;
-	signal input rootsTreeRoot;
+	signal input authsRoot;
+	signal input claimsRoot;
+	//signal input authRevRoot;
+	signal input claimRevRoot;
 	signal input expectedState;
 
 	component isProofValidIdenState = getIdenState();
-	isProofValidIdenState.claimsTreeRoot <== claimsTreeRoot;
-	isProofValidIdenState.revTreeRoot <== revTreeRoot;
-	isProofValidIdenState.rootsTreeRoot <== rootsTreeRoot;
+	isProofValidIdenState.authsRoot <== authsRoot;
+	isProofValidIdenState.claimsRoot <== claimsRoot;
+	//isProofValidIdenState.authRevRoot <== authRevRoot;
+	isProofValidIdenState.claimRevRoot <== claimRevRoot;
 
 	isProofValidIdenState.idenState === expectedState;
 }
@@ -86,31 +113,35 @@ template checkIdenStateMatchesRoots() {
 template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claim[8];
 	signal input claimIssuanceMtp[IssuerLevels * 4];
-	signal input claimIssuanceClaimsTreeRoot;
-	signal input claimIssuanceRevTreeRoot;
-	signal input claimIssuanceRootsTreeRoot;
+	signal input claimIssuanceAuthsRoot;
+	signal input claimIssuanceClaimsRoot;
+	//signal input claimIssuanceAuthRevRoot;
+	signal input claimIssuanceClaimRevRoot;
 	signal input claimIssuanceIdenState;
 
 	signal input claimNonRevMtp[IssuerLevels * 4];
 	signal input claimNonRevMtpNoAux;
 	signal input claimNonRevMtpAuxHi;
 	signal input claimNonRevMtpAuxHv;
-	signal input claimNonRevIssuerClaimsTreeRoot;
-	signal input claimNonRevIssuerRevTreeRoot;
-	signal input claimNonRevIssuerRootsTreeRoot;
+	signal input claimNonRevIssuerAuthsRoot;
+	signal input claimNonRevIssuerClaimsRoot;
+	//signal input claimNonRevIssuerAuthRevRoot;
+	signal input claimNonRevIssuerClaimRevRoot;
 	signal input claimNonRevIssuerState;
+
 
     // verify country claim is included in claims tree root
     component claimIssuanceCheck = checkClaimExists(IssuerLevels);
     for (var i=0; i<8; i++) { claimIssuanceCheck.claim[i] <== claim[i]; }
     for (var i=0; i<IssuerLevels * 4; i++) { claimIssuanceCheck.claimMTP[i] <== claimIssuanceMtp[i]; }
-    claimIssuanceCheck.treeRoot <== claimIssuanceClaimsTreeRoot;
+    claimIssuanceCheck.treeRoot <== claimIssuanceClaimsRoot;
 
     // verify issuer state includes country claim
     component verifyClaimIssuanceIdenState = checkIdenStateMatchesRoots();
-    verifyClaimIssuanceIdenState.claimsTreeRoot <== claimIssuanceClaimsTreeRoot;
-    verifyClaimIssuanceIdenState.revTreeRoot <== claimIssuanceRevTreeRoot;
-    verifyClaimIssuanceIdenState.rootsTreeRoot <== claimIssuanceRootsTreeRoot;
+	verifyClaimIssuanceIdenState.authsRoot <== claimIssuanceAuthsRoot;
+    verifyClaimIssuanceIdenState.claimsRoot <== claimIssuanceClaimsRoot;
+    //verifyClaimIssuanceIdenState.authRevRoot <== claimIssuanceAuthRevRoot;
+    verifyClaimIssuanceIdenState.claimRevRoot <== claimIssuanceClaimRevRoot;
     verifyClaimIssuanceIdenState.expectedState <== claimIssuanceIdenState;
 
     // check non-revocation proof for claim
@@ -122,62 +153,65 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     verifyClaimNotRevoked.noAux <== claimNonRevMtpNoAux;
     verifyClaimNotRevoked.auxHi <== claimNonRevMtpAuxHi;
     verifyClaimNotRevoked.auxHv <== claimNonRevMtpAuxHv;
-    verifyClaimNotRevoked.treeRoot <== claimNonRevIssuerRevTreeRoot;
+    verifyClaimNotRevoked.treeRoot <== claimNonRevIssuerClaimRevRoot;
 
     // check issuer state matches for non-revocation proof
     component verifyClaimNonRevIssuerState = checkIdenStateMatchesRoots();
-    verifyClaimNonRevIssuerState.claimsTreeRoot <== claimNonRevIssuerClaimsTreeRoot;
-    verifyClaimNonRevIssuerState.revTreeRoot <== claimNonRevIssuerRevTreeRoot;
-    verifyClaimNonRevIssuerState.rootsTreeRoot <== claimNonRevIssuerRootsTreeRoot;
+	verifyClaimNonRevIssuerState.authsRoot <== claimNonRevIssuerAuthsRoot;
+    verifyClaimNonRevIssuerState.claimsRoot <== claimNonRevIssuerClaimsRoot;
+   // verifyClaimNonRevIssuerState.authRevRoot <== claimNonRevIssuerAuthRevRoot;
+    verifyClaimNonRevIssuerState.claimRevRoot <== claimNonRevIssuerClaimRevRoot;
     verifyClaimNonRevIssuerState.expectedState <== claimNonRevIssuerState;
 }
 
-template VerifyAuthClaimAndSignature(nLevels) {
-	signal input claimsTreeRoot;
-	signal input authClaimMtp[nLevels * 4];
-	signal input authClaim[8];
+template VerifyAuthAndSignature(nLevels) {
+	signal input authsRoot;
+	signal input authMtp[nLevels * 4];
+	signal input authHi;
+	signal input authPubX;
+	signal input authPubY;
 
-	signal input revTreeRoot;
-    signal input authClaimNonRevMtp[nLevels * 4];
-    signal input authClaimNonRevMtpNoAux;
-    signal input authClaimNonRevMtpAuxHi;
-    signal input authClaimNonRevMtpAuxHv;
+	// signal input authRevRoot;
+    // signal input authNonRevMtp[nLevels * 4];
+    // signal input authNonRevMtpNoAux;
+    // signal input authNonRevMtpAuxHi;
+    // signal input authNonRevMtpAuxHv;
 
 	signal input challenge;
 	signal input challengeSignatureR8x;
 	signal input challengeSignatureR8y;
 	signal input challengeSignatureS;
 
-    var AUTH_SCHEMA_HASH  = 304427537360709784173770334266246861770;
-    component verifyAuthSchema  = verifyCredentialSchema();
-    for (var i=0; i<8; i++) {
-            verifyAuthSchema.claim[i] <== authClaim[i];
-    }
-    verifyAuthSchema.schema <== AUTH_SCHEMA_HASH;
+    component authExists = checkAuthExists(nLevels);
+    
+	authExists.authHi <== authHi;
+	authExists.authPubX <== authPubX;
+	authExists.authPubY <== authPubY;
+	for (var i=0; i<nLevels * 4; i++) { authExists.authMTP[i] <== authMtp[i]; }
+    authExists.authsRoot <== authsRoot;
 
-    component claimExists = checkClaimExists(nLevels);
-    for (var i=0; i<8; i++) { claimExists.claim[i] <== authClaim[i]; }
-	for (var i=0; i<nLevels * 4; i++) { claimExists.claimMTP[i] <== authClaimMtp[i]; }
-    claimExists.treeRoot <== claimsTreeRoot;
+    // component authNotRevoked = checkAuthNotRevoked(nLevels);
+	// authNotRevoked.authHi <== authHi;
+    // for (var i=0; i<nLevels * 4; i++) {
+    //     authNotRevoked.authNonRevMTP[i] <== authNonRevMtp[i];
+    // }
+    // authNotRevoked.authRevRoot <== authRevRoot;
+    // authNotRevoked.noAux <== authNonRevMtpNoAux;
+    // authNotRevoked.auxHi <== authNonRevMtpAuxHi;
+    // authNotRevoked.auxHv <== authNonRevMtpAuxHv;
 
-    component smtClaimNotRevoked = checkClaimNotRevoked(nLevels);
-    for (var i=0; i<8; i++) { smtClaimNotRevoked.claim[i] <== authClaim[i]; }
-    for (var i=0; i<nLevels * 4; i++) {
-        smtClaimNotRevoked.claimNonRevMTP[i] <== authClaimNonRevMtp[i];
-    }
-    smtClaimNotRevoked.treeRoot <== revTreeRoot;
-    smtClaimNotRevoked.noAux <== authClaimNonRevMtpNoAux;
-    smtClaimNotRevoked.auxHi <== authClaimNonRevMtpAuxHi;
-    smtClaimNotRevoked.auxHv <== authClaimNonRevMtpAuxHv;
+    // signature verification
+    component sigVerifier = EdDSAPoseidonVerifier();
+    sigVerifier.enabled <== 1;
 
-    component sigVerifier = checkDataSignatureWithPubKeyInClaim();
-    for (var i=0; i<8; i++) {
-        sigVerifier.claim[i] <== authClaim[i];
-    }
-    sigVerifier.signatureS <== challengeSignatureS;
-    sigVerifier.signatureR8X <== challengeSignatureR8x;
-    sigVerifier.signatureR8Y <== challengeSignatureR8y;
-    sigVerifier.data <== challenge;
+    sigVerifier.Ax <== authPubX;
+    sigVerifier.Ay <== authPubY;
+
+    sigVerifier.S <== challengeSignatureS;
+    sigVerifier.R8x <== challengeSignatureR8x;
+    sigVerifier.R8y <== challengeSignatureR8y;
+
+    sigVerifier.M <== challenge;
 }
 
 template cutId() {

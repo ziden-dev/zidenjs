@@ -1,6 +1,6 @@
-import { createMask, shiftValue } from '../utils.js';
 import { getZidenParams } from '../global.js';
 import MerkleTree from './fixed-merkle-tree/index.js';
+import { OPERATOR } from '../index.js';
 
 export interface MerkleQueryInput {
   readonly determinisiticValue: BigInt;
@@ -10,16 +10,6 @@ export interface MerkleQueryInput {
   readonly pos0: BigInt;
   readonly elemsPath1: Array<BigInt>;
   readonly pos1: BigInt;
-}
-
-export enum OPERATOR {
-  NOOP,
-  EQUAL,
-  LESS_THAN,
-  GREATER_THAN,
-  IN,
-  NOT_IN,
-  IN_RANGE,
 }
 
 const ErrInvalidValues = new Error('Invalid values');
@@ -201,65 +191,4 @@ export function calculateDeterministicValue(values: Array<BigInt>, valueTreeDept
   );
 
   return fmt.root;
-}
-
-/**
- * Compress timestamp (64 bits), claimSchema (128 bits), slotIndex (3 bits), operator (3 bits) into 1 input
- * @param {number} timestamp
- * @param {BigInt} claimSchema
- * @param {number} slotIndex
- * @param {number} operator
- * @returns {BigInt} compressed input
- */
-export function compressInputs(timestamp: number, claimSchema: BigInt, slotIndex: number, operator: number): BigInt {
-  let compactInput =
-    timestamp.toString(2).padStart(64, '0') +
-    claimSchema.toString(2).padStart(128, '0') +
-    slotIndex.toString(2).padStart(3, '0') +
-    operator.toString(2).padStart(3, '0');
-  return BigInt('0b' + compactInput);
-}
-
-export interface RawQuery {
-  slotIndex: number;
-  operator: OPERATOR;
-  values: Array<BigInt>;
-  valueTreeDepth: number;
-  from: number;
-  to: number;
-  timestamp: number;
-  claimSchema: BigInt;
-}
-
-export interface CompactedQuery {
-  determinisiticValue?: BigInt;
-  compactInput: BigInt;
-  mask: BigInt;
-}
-
-/**
- * Compact raw query into Compacted Query to pass in circuit
- * @param {RawQuery} rawQuery
- * @param {boolean} withDeterminisiticValue
- * @returns {CompactedQuery}
- */
-export function compactQuery(rawQuery: RawQuery, withDeterminisiticValue: boolean): CompactedQuery {
-  const compactInput = compressInputs(rawQuery.timestamp, rawQuery.claimSchema, rawQuery.slotIndex, rawQuery.operator);
-  const mask = createMask(rawQuery.from, rawQuery.to);
-  if (!withDeterminisiticValue) {
-    return {
-      compactInput,
-      mask,
-    };
-  }
-  const determinisiticValue = calculateDeterministicValue(
-    rawQuery.values.map((value) => shiftValue(value, rawQuery.from)),
-    rawQuery.valueTreeDepth,
-    rawQuery.operator
-  );
-  return {
-    compactInput,
-    mask,
-    determinisiticValue,
-  };
 }

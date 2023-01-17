@@ -1,4 +1,4 @@
-# Rules from: /media/oem/DATA/Lab/ZK/Ziden-dev/zidenjs/.gitignore
+# Rules from: /Users/admin/CODE/Blockchain/Zidenjs/zidenjs/.gitignore
 # Logs
 logs
 *.log
@@ -105,7 +105,7 @@ dist
 .tern-port
 
 # Level DB files
-**/db_test/*
+**/db_test
 *.zkey
 *.wasm
 *.r1cs
@@ -117,6 +117,8 @@ dist
 *.wasm
 
 build
+
+buildCircom/
 
 # npmignore - content above this line is automatically generated and modifications may be omitted
 # see npmjs.com/npmignore for more details.
