@@ -121,7 +121,7 @@ export class State {
     authsDb: SMTDb,
     claimsDb: SMTDb,
     claimRevDb: SMTDb,
-    authDepth: number = 4,
+    authDepth: number = 8,
     claimDepth: number = 14
   ): Promise<State> {
     const F = getZidenParams().F;

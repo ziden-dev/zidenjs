@@ -13,4 +13,4 @@ component main{public [challenge,
                         slotIndex,
                         timestamp,
                         operator,
-                        mask]} = CredentialAtomicQuerySig(4, 14, 6);
+                        mask]} = CredentialAtomicQuerySig(8, 14, 6);

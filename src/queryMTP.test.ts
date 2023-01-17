@@ -51,11 +51,11 @@ describe('test credential query MTP', async () => {
 
     authsDb = new SMTLevelDb('src/db_test/auths');
     claimsDb = new SMTLevelDb('src/db_test/claims');
-    claimRevDb = new SMTLevelDb('src/trees/claimRev');
+    claimRevDb = new SMTLevelDb('src/db_test/claimRev');
 
     authsDb1 = new SMTLevelDb('src/db_test/auths1');
     claimsDb1 = new SMTLevelDb('src/db_test/claims1');
-    claimRevDb1 = new SMTLevelDb('src/trees/claimRev1');
+    claimRevDb1 = new SMTLevelDb('src/db_test/claimRev1');
 
     holderState = await State.generateState([holderAuth], authsDb, claimsDb, claimRevDb);
     issuerState = await State.generateState([issuerAuth], authsDb1, claimsDb1, claimRevDb1);
