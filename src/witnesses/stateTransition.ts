@@ -33,7 +33,7 @@ export async function stateTransitionWitnessWithPrivateKey(
     await state.revokeAuth(revokingAuthHis[i]);
   }
   for (let i = 0; i < revokingClaimRevNonces.length; i++) {
-    await state.revokeClaim(revokingClaimRevNonces[i]);
+    await state.revokeClaim(revokingClaimRevNonces[i], BigInt(10000));
   }
   const newUserState = state.getIdenState();
   const challenge = getZidenParams().hasher([bitsToNum(oldUserState), bitsToNum(newUserState)]);
@@ -84,7 +84,7 @@ export async function stateTransitionWitnessWithSignature(
     await state.revokeAuth(revokingAuthHis[i]);
   }
   for (let i = 0; i < revokingClaimRevNonces.length; i++) {
-    await state.revokeClaim(revokingClaimRevNonces[i]);
+    await state.revokeClaim(revokingClaimRevNonces[i], BigInt(10000));
   }
   const newUserState = state.getIdenState();
 
@@ -131,7 +131,7 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
     await state.revokeAuth(revokingAuthHis[i]);
   }
   for (let i = 0; i < revokingClaimRevNonces.length; i++) {
-    await state.revokeClaim(revokingClaimRevNonces[i]);
+    await state.revokeClaim(revokingClaimRevNonces[i], BigInt(10000));
   }
   const newUserState = state.getIdenState();
   const challenge = getZidenParams().hasher([bitsToNum(oldUserState), bitsToNum(newUserState)]);
@@ -180,7 +180,7 @@ export async function stateTransitionWitnessWithSignatureAndHiHvs(
     await state.revokeAuth(revokingAuthHis[i]);
   }
   for (let i = 0; i < revokingClaimRevNonces.length; i++) {
-    await state.revokeClaim(revokingClaimRevNonces[i]);
+    await state.revokeClaim(revokingClaimRevNonces[i], BigInt(10000));
   }
   const newUserState = state.getIdenState();
 

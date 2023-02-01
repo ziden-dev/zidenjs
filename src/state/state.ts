@@ -161,6 +161,7 @@ export class State {
    * @returns {Promise<Entry>} inserted claim
    */
   async insertClaim(claim: Entry, maxAttempTimes: number = 100): Promise<Entry> {
+    claim.setVersion(BigInt(2));
     claim.setRevocationNonce(BigInt(this._claimRevNonce));
     let triedCount = 0;
     let seed = BigInt(0);
@@ -179,6 +180,8 @@ export class State {
         triedCount++;
       }
     }
+
+    await this.revokeClaim(claim.getRevocationNonce(), BigInt(1));
     this._claimRevNonce++;
     return claim;
   }
@@ -230,11 +233,39 @@ export class State {
     }
   }
 
-  async revokeClaim(revNonce: BigInt) {
-    await this._claimRevTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.zero);
-    //
+  async revokeClaim(revNonce: BigInt, version: BigInt) {
+    const resFind = await this._claimRevTree.find(getZidenParams().F.e(revNonce));
+    if (!resFind.found) {
+      //console.log(' Insert revNonce = ', revNonce, ' version = ', version);
+      await this._claimRevTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.e(version));
+    } else {
+      //console.log(' Uppdate revNonce = ', revNonce, ' version = ', version);
+      await this._claimRevTree.update(getZidenParams().F.e(revNonce), getZidenParams().F.e(version));
+    }
+  }
 
-    //
+  async updateClaim(claimNew: Entry, maxAttempTimes: number = 100) {
+    await this.revokeClaim(claimNew.getRevocationNonce(), claimNew.getVersion());
+    await claimNew.setRevocationNonce(claimNew.getRevocationNonce());
+    await claimNew.setVersion(claimNew.getVersion().valueOf() + BigInt(1));
+    let triedCount = 0;
+    let seed = BigInt(0);
+    while (true) {
+      try {
+        claimNew.setClaimSeed(seed);
+        const hi = claimNew.hiRaw();
+        const hv = claimNew.hvRaw();
+        await this._claimsTree.insert(hi, hv);
+        break;
+      } catch (err) {
+        if (triedCount >= maxAttempTimes - 1) {
+          throw new Error('Failed inserting caused by collision');
+        }
+        seed += BigInt(1);
+        triedCount++;
+      }
+    }
+    return claimNew;
   }
 
   async revokeAuth(authHi: BigInt) {
@@ -296,8 +327,8 @@ export class State {
   async generateClaimNotRevokedProof(revocationNonce: BigInt): Promise<ClaimNotRevokedProof> {
     const F = getZidenParams().F;
     const res = await this._claimRevTree.find(F.e(revocationNonce));
-    if (res.found) {
-      throw new Error('claim is revoked');
+    if (!res.found) {
+      throw new Error('claim is not exist');
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
@@ -305,8 +336,8 @@ export class State {
     return {
       claimNonRevMTP: siblings,
       treeRoot: F.toObject(this._claimRevTree.root),
-      auxHi: F.toObject(res.notFoundKey!),
-      auxHv: F.toObject(res.notFoundValue!),
+      auxHi: F.toObject(F.e(revocationNonce)),
+      auxHv: F.toObject(res.foundValue!),
       noAux: res.isOld0 ? BigInt(1) : BigInt(0),
     };
   }

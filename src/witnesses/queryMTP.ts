@@ -38,7 +38,6 @@ export async function kycGenerateNonRevQueryMTPInput(
 ): Promise<KYCNonRevQueryMTPInput> {
   const claimNotRevokedProof = await issuerState.generateClaimNotRevokedProof(issuerClaimRevNonce);
   const rootsMatchProof = await issuerState.generateRootsMatchProof();
-
   return {
     issuerClaimNonRevMtp: claimNotRevokedProof.claimNonRevMTP,
     issuerClaimNonRevMtpNoAux: claimNotRevokedProof.noAux,
@@ -75,6 +74,7 @@ export async function holderGenerateQueryMTPWitnessWithPrivateKey(
   );
 
   return {
+    claimVersion: issuerClaim.getVersion(),
     ...idOwnershipProof,
     ...merkleQueryInput,
     ...kycQueryMTPInput,
@@ -110,8 +110,11 @@ export async function holderGenerateQueryMTPWitnessWithSignature(
     getPartialValue(slotValue, query.from, query.to),
     query.operator
   );
-
+  if (kycQueryNonRevMTPInput.issuerClaimNonRevMtpAuxHv === issuerClaim.getVersion()) {
+    throw new Error('claim is revoke');
+  }
   return {
+    claimVersion: issuerClaim.getVersion(),
     ...idOwnershipProof,
     ...merkleQueryInput,
     ...kycQueryMTPInput,

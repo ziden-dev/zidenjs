@@ -737,5 +737,6 @@ export function newClaim(schemaHash: Buffer, ...options: Option[]): Entry {
   const entry = Entry.newEmpty();
   options.map((option) => option(entry));
   entry.setSchemaHash(schemaHash);
+  entry.setVersion(BigInt(1));
   return entry;
 }

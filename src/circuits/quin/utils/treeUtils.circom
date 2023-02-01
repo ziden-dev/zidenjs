@@ -5,6 +5,7 @@ include "../../../../node_modules/circomlib/circuits/eddsaposeidon.circom";
 include "../../../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../../../node_modules/circomlib/circuits/mux3.circom";
 include "../../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../../../node_modules/circomlib/circuits/comparators.circom";
 include "../quinarySmt/quinSmtVerifier.circom";
 include "claimUtils.circom";
 
@@ -76,19 +77,27 @@ template checkClaimNotRevoked(treeLevels) {
     signal input noAux;
     signal input auxHi;
     signal input auxHv;
+	signal input claimVersion;
+
+	
+	component lessThan = LessThan(250);
+	lessThan.in[0] <== auxHv;
+	lessThan.in[1] <== claimVersion;
+	lessThan.out === 1;
+	
 
 	component claimRevNonce = getClaimRevNonce();
 	for (var i=0; i<8; i++) { claimRevNonce.claim[i] <== claim[i]; }
 
-    component smtClaimNotExists = QuinSMTVerifier(treeLevels);
-    smtClaimNotExists.fnc <== 1; // Non-inclusion
-    smtClaimNotExists.root <== treeRoot;
-    for (var i=0; i<treeLevels * 4; i++) { smtClaimNotExists.siblings[i] <== claimNonRevMTP[i]; }
-    smtClaimNotExists.oldKey <== auxHi;
-    smtClaimNotExists.oldValue <== auxHv;
-    smtClaimNotExists.isOld0 <== noAux;
-    smtClaimNotExists.key <== claimRevNonce.revNonce;
-    smtClaimNotExists.value <== 0;
+    component smtClaimExists2 = QuinSMTVerifier(treeLevels);
+    smtClaimExists2.fnc <== 0; // inclusion
+    smtClaimExists2.root <== treeRoot;
+    for (var i=0; i<treeLevels * 4; i++) { smtClaimExists2.siblings[i] <== claimNonRevMTP[i]; }
+    smtClaimExists2.oldKey <== 0;
+    smtClaimExists2.oldValue <== 0;
+    smtClaimExists2.isOld0 <== 0;
+    smtClaimExists2.key <== auxHi;
+    smtClaimExists2.value <== auxHv;
 }
 
 // checkIdenStateMatchesRoots checks that a hash of 3 tree
@@ -115,7 +124,6 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claimIssuanceMtp[IssuerLevels * 4];
 	signal input claimIssuanceAuthsRoot;
 	signal input claimIssuanceClaimsRoot;
-	//signal input claimIssuanceAuthRevRoot;
 	signal input claimIssuanceClaimRevRoot;
 	signal input claimIssuanceIdenState;
 
@@ -125,10 +133,9 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claimNonRevMtpAuxHv;
 	signal input claimNonRevIssuerAuthsRoot;
 	signal input claimNonRevIssuerClaimsRoot;
-	//signal input claimNonRevIssuerAuthRevRoot;
 	signal input claimNonRevIssuerClaimRevRoot;
 	signal input claimNonRevIssuerState;
-
+	signal input claimVersion;
 
     // verify country claim is included in claims tree root
     component claimIssuanceCheck = checkClaimExists(IssuerLevels);
@@ -154,7 +161,7 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     verifyClaimNotRevoked.auxHi <== claimNonRevMtpAuxHi;
     verifyClaimNotRevoked.auxHv <== claimNonRevMtpAuxHv;
     verifyClaimNotRevoked.treeRoot <== claimNonRevIssuerClaimRevRoot;
-
+	verifyClaimNotRevoked.claimVersion <== claimVersion;
     // check issuer state matches for non-revocation proof
     component verifyClaimNonRevIssuerState = checkIdenStateMatchesRoots();
 	verifyClaimNonRevIssuerState.authsRoot <== claimNonRevIssuerAuthsRoot;
