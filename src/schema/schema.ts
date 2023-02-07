@@ -1,305 +1,13 @@
+import { newClaim, schemaHashFromBigInt, withIndexData, withValueData } from 'src/claim/entry.js';
 import { getZidenParams } from '../global.js';
 import {
-  Entry,
-  newClaim,
-  schemaHashFromBigInt,
-  withExpirationDate,
-  withFlagExpirable,
-  withFlagUpdatable,
-  withID,
-  withIndexData,
-  withValueData,
-} from '../claim/entry.js';
-import {
   bitsToNum,
-  bufferToFloat,
-  bufferToHex,
   floatToBuffer,
-  getPartialValue,
   hexToBuffer,
   numToBits,
   setBits,
   stringToHex,
 } from '../utils.js';
-
-export type Registry = {
-  schemaHash?: string;
-  issuerId?: string;
-  description?: string;
-  expiration?: number;
-  updatable?: boolean;
-  idPosition?: number;
-  proofType?: string;
-};
-
-export type Schema = {
-  title: string;
-  properties: any;
-  index: Array<string>;
-  value: Array<string>;
-  required: Array<string>;
-};
-
-/**
- * Generate entry from data, schema and registry
- * @param {any} data raw data of user
- * @param {Schema} schema schema form
- * @param {Registry} registry registry of issuer
- * @returns {Entry} Claim of data
- */
-export function generateEntry(data: any, schema: Schema, registry: Registry): Entry {
-  let id = data['userId'];
-  if (id == undefined) {
-    throw 'Required userId';
-  }
-
-  schema.index.forEach((element) => {
-    let val = data[element];
-    if (val == undefined) {
-      throw 'Required ' + element;
-    }
-  });
-
-  // userId
-  let userId = hexToBuffer(id.toString(), 31);
-
-  let indexSlot: Array<BigInt> = dataSlot(data, schema.index, schema.properties);
-  let valueSlot: Array<BigInt> = dataSlot(data, schema.value, schema.properties);
-
-  let claim = newClaim(
-    schemaHashFromBigInt(BigInt(registry?.schemaHash ?? '123456')),
-    withID(userId, registry?.idPosition ?? 1),
-    withIndexData(numToBits(indexSlot[0], 32), numToBits(indexSlot[1], 32)),
-    withValueData(numToBits(valueSlot[0], 32), numToBits(valueSlot[1], 32)),
-    withFlagExpirable(true),
-    withExpirationDate(BigInt(Date.now() + (registry?.expiration ?? 2592000000))),
-    withFlagUpdatable(registry?.updatable ?? false)
-  );
-
-  return claim;
-}
-
-/**
- * convert entry to data
- * @param {Entry} entry Claim
- * @param {Schema} schema Schema form
- * @returns {any} object of raw data
- */
-export function generateDataFromEntry(entry: Entry, schema: Schema): any {
-  let data: any = {};
-  data['userId'] = bufferToHex(entry.getID());
-  let indexData: Array<BigInt> = [bitsToNum(entry.getSlotData(3)), bitsToNum(entry.getSlotData(4))];
-  let valueData: Array<BigInt> = [bitsToNum(entry.getSlotData(6)), bitsToNum(entry.getSlotData(7))];
-  let index = entryToData(indexData, schema.index, schema.properties);
-  let value = entryToData(valueData, schema.value, schema.properties);
-
-  for (let i in index) {
-    data[i] = index[i];
-  }
-
-  for (let i in value) {
-    data[i] = value[i];
-  }
-
-  return data;
-}
-
-function dataSlot(data: any, index: Array<string>, properties: any) {
-  let ans: Array<BigInt> = [BigInt(0), BigInt(0)];
-  let slotNumber = 0;
-  let bitStart = 0;
-  let bitEnd = 0;
-  index.forEach((element) => {
-    let property = properties[element];
-    let value: BigInt = BigInt(0);
-    switch (property['type']) {
-      case 'string': // 128 bit
-        bitEnd = bitStart + 127;
-        let hashData = getZidenParams()
-          .F.toObject(getZidenParams().hasher([BigInt(stringToHex(data[element] ?? ''))]))
-          .toString(2);
-        let bitRemove = hashData.length < 128 ? 0 : hashData.length - 128;
-        let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
-        value = BigInt(hashDataFixed);
-        break;
-      case 'float': // 64 bit
-        bitEnd = bitStart + 63;
-        value = bitsToNum(floatToBuffer(data[element] ?? 0));
-        break;
-      case 'boolean': // 4 bit
-        bitEnd = bitStart + 3;
-        if (data[element]) {
-          value = BigInt(1);
-        } else {
-          value = BigInt(0);
-        }
-        break;
-      case 'date': // 32bit
-        bitEnd = bitStart + 31;
-        value = BigInt((data[element] ?? 0).toString());
-        break;
-      case 'datetime': // 48 bit
-        bitEnd = bitStart + 47;
-        value = BigInt((data[element] ?? 0).toString());
-        break;
-      case 'integer':
-        let length = Math.ceil(Math.log2(property['maximum'] ?? 1));
-        length = length + 8 - (length % 8);
-        bitEnd = bitEnd + length - 1;
-        value = BigInt((data[element] ?? 0).toString());
-        break;
-      default:
-        throw 'Not have type: ' + property['type'] + ' in ' + element;
-    }
-
-    if (bitEnd > 253) {
-      bitEnd = bitEnd - bitStart;
-      bitStart = 0;
-      slotNumber = 1;
-    }
-    ans[slotNumber] = setBits(ans[slotNumber], bitStart, value);
-    bitStart = bitEnd + 1;
-  });
-
-  return ans;
-}
-
-function entryToData(slotData: Array<BigInt>, index: Array<string>, properties: any) {
-  let ans: any = {};
-  let slotNumber = 0;
-  let bitStart = 0;
-  let bitEnd = 0;
-  index.forEach((element) => {
-    let property = properties[element];
-    switch (property['type']) {
-      case 'string': // 128 bit
-        bitEnd = bitStart + 127;
-        break;
-      case 'float': // 64 bit
-        bitEnd = bitStart + 63;
-        break;
-      case 'boolean': // 4 bit
-        bitEnd = bitStart + 3;
-        break;
-      case 'date': // 32bit
-        bitEnd = bitStart + 31;
-        break;
-      case 'datetime': // 48 bit
-        bitEnd = bitStart + 47;
-        break;
-      case 'integer':
-        let length = Math.ceil(Math.log2(property['maximum'] ?? 1));
-        length = length + 8 - (length % 8);
-        bitEnd = bitEnd + length - 1;
-        break;
-      default:
-        throw 'Not have type: ' + property['type'] + ' in ' + element;
-    }
-
-    if (bitEnd > 253) {
-      bitEnd = bitEnd - bitStart;
-      bitStart = 0;
-      slotNumber = 1;
-    }
-    ans[element] = getPartialValue(slotData[slotNumber], bitStart, bitEnd);
-    switch (property['type']) {
-      case 'string': // 128 bit
-        ans[element] = ans[element].toString();
-        break;
-      case 'float': // 64 bit
-        ans[element] = bufferToFloat(numToBits(ans[element], 8));
-        break;
-      case 'boolean': // 4 bit
-        ans[element] = ans[element] ? true : false;
-        break;
-      case 'date': // 32bit
-        ans[element] = parseInt(ans[element].toString());
-        break;
-      case 'datetime': // 48 bit
-        ans[element] = parseInt(ans[element].toString());
-        break;
-      case 'integer':
-        ans[element] = parseInt(ans[element].toString());
-        break;
-      default:
-        throw 'Not have type: ' + property['type'] + ' in ' + element;
-    }
-
-    bitStart = bitEnd + 1;
-  });
-  return ans;
-}
-
-/**
- *
- * @param {Schema} schema form schema
- * @returns {Array<any>} return properti slot of schema
- */
-export function schemaPropertiesSlot(schema: Schema): Array<any> {
-  let propertiesSlot: Array<any> = [];
-  let indexSlot = propertiesToSlot(3, schema.index, schema.properties);
-  let valueSlot = propertiesToSlot(6, schema.value, schema.properties);
-  indexSlot.forEach((element) => {
-    propertiesSlot.push(element);
-  });
-
-  valueSlot.forEach((element) => {
-    propertiesSlot.push(element);
-  });
-
-  return propertiesSlot;
-}
-
-function propertiesToSlot(pos: number, index: Array<string>, properties: any) {
-  let ans: Array<any> = [];
-  let bitStart = 0;
-  let bitEnd = 0;
-  index.forEach((element) => {
-    let property = properties[element];
-    switch (property['type']) {
-      case 'string': // 128 bit
-        bitEnd = bitStart + 127;
-        break;
-      case 'float': // 64 bit
-        bitEnd = bitStart + 63;
-        break;
-      case 'boolean': // 4 bit
-        bitEnd = bitStart + 3;
-        break;
-      case 'date': // 32bit
-        bitEnd = bitStart + 31;
-        break;
-      case 'datetime': // 48 bit
-        bitEnd = bitStart + 47;
-        break;
-      case 'integer':
-        let length = Math.ceil(Math.log2(property['maximum'] ?? 1));
-        length = length + 8 - (length % 8);
-        bitEnd = bitEnd + length - 1;
-        break;
-      default:
-        throw 'Not have type: ' + property['type'] + ' in ' + element;
-    }
-
-    if (bitEnd > 253) {
-      bitEnd = bitEnd - bitStart;
-      bitStart = 0;
-      pos = pos + 1;
-    }
-
-    ans.push({
-      propertyName: element,
-      propertyType: property['type'],
-      slot: pos,
-      begin: bitStart,
-      end: bitEnd,
-    });
-
-    bitStart = bitEnd + 1;
-  });
-
-  return ans;
-}
 
 export function getSchemaHashFromSchema(schema: any): string {
   let hashData = getZidenParams()
@@ -309,4 +17,318 @@ export function getSchemaHashFromSchema(schema: any): string {
   let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
   let value = BigInt(hashDataFixed);
   return value.toString();
+}
+
+enum Type {
+  str = "std:str",
+  int =  "std:int",
+  double = "std:double",
+  obj = "std:obj",
+  bool = "std:bool",
+  date = "std:date"
+}
+
+enum Slot {
+  val1 = "std-pos:val-1",
+  val2 = "std-pos:val-2",
+  idx1 = "std-pos:idx-1",
+  idx2 = "std-pos:idx-2",
+}
+
+function checkInEnum(x: any, y: any) {
+  return Object.values(y).includes(x as typeof y);
+}
+
+export function getInputSchema(schema: any) {
+  try {
+    let primitiveSchema: any = {
+      "@name": schema["@name"],
+      "@id": schema["@id"],
+      "@hash": schema["@hash"],
+      "@required": schema["@required"]
+    };
+
+    const schemaRaw: any = schema;
+
+    const listContext = schema["@context"];
+    let map: any = {};
+
+    listContext.forEach((context: any) => {
+        const keys = Object.keys(context);
+        const id = context["@id"];
+        if (!id) {
+            return;
+        }
+        keys.forEach((key: string) => {
+            if (!key || key[0] == '@') {
+                return;
+            }
+            map[id + ":" + key] = context[key];
+        });
+    });
+
+    const keys = Object.keys(schemaRaw);
+
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        if (key[0] == '@' || key == "_doc") {
+            continue;
+        }
+        let obj = schemaRaw[key];
+        let type = obj["@type"];
+        let id = obj["@id"];
+        if (!type || !id) {
+            continue;
+        }
+
+        while (!checkInEnum(type, Type)) {
+            const context = map[type];
+            if (!context || !context["@type"]) {
+                break;
+            }
+            type = context["@type"];
+            obj = context;
+        }
+        obj["@id"] = id;
+        if (checkInEnum(type, Type)) {
+            if (type != Type.obj) {
+                primitiveSchema[key] = obj;
+            } else {
+                let objValue: any = {};
+                objValue["@id"] = id;
+                const keys = Object.keys(obj);
+                keys.forEach((key) => {
+                    if (key[0] == '@') {
+                        objValue[key] = obj[key];
+                    } else {
+                        let typeValue = obj[key]["@type"];
+                        if (!typeValue) {
+                            return;
+                        }
+                        if (checkInEnum(typeValue, Type)) {
+                            objValue[key] = obj[key];
+                        } else {
+                            let objValProperty: any = {};
+                            while(!checkInEnum(typeValue, Type)) {
+                                const subContext = map[typeValue];
+                                if (!subContext["@type"]) {
+                                    break;
+                                }
+                                typeValue = subContext["@type"];
+                                objValProperty = subContext;
+                            }
+
+                            if (checkInEnum(typeValue, Type)) {
+                                objValue[key] = objValProperty;
+                            }
+                        }
+                    }
+                });
+                primitiveSchema[key] = objValue;
+            }
+        }
+    }
+    return primitiveSchema;
+  } catch (err) {
+    throw("Invalid schema!");
+  }
+}
+
+export function schemaPropertiesSlot(schemaRaw: any) {
+  try {
+    let propertiesSlot: any = {};
+
+    const schema = getInputSchema(schemaRaw);
+    const propertiesKey = Object.keys(schema);
+
+    let bitStart = [0, 0, 0, 0, 0, 0, 0, 0];
+
+    propertiesKey.forEach(key => {
+      if (key[0] == '@') {
+        return;        
+      }
+
+      const property = schema[key];
+      const propertyType = property["@type"];
+      const propertyId = property["@id"];
+
+      if (!propertyType || !propertyId || !checkInEnum(propertyId, Slot) || !checkInEnum(propertyType, Type)) {
+        return;
+      }
+
+      let slot = 0;
+      switch(propertyId) {
+        case Slot.idx1:
+          slot = 2;
+          break;
+        case Slot.idx2:
+          slot = 3;
+          break;
+        case Slot.val1:
+          slot = 6;
+          break;
+        case Slot.val2:
+          slot = 7;
+          break;
+      }
+
+      if (propertyType == Type.obj) {
+        propertiesSlot[key] = {};
+        const keysProp = Object.keys(property);
+        keysProp.forEach(keyProp => {
+          let type = property[keyProp]["@type"];
+          if (!type || keyProp[0] == '@') {
+            return
+          }
+          let size = getBitFromType(type);
+          if (size > 0) {
+            if (bitStart[slot] + size > 253) {
+              throw("Schema too large!");
+            }
+            propertiesSlot[key][keyProp] = {
+              "type": type,
+              "slot": slot,
+              "begin": bitStart[slot],
+              "end": bitStart[slot] + size - 1
+            };
+            bitStart[slot] += size;
+          }
+        })
+      }
+      else {
+        let size = getBitFromType(propertyType);
+        if (size > 0) {
+          if (bitStart[slot] + size > 253) {
+            throw("Schema too large!");
+          }
+          propertiesSlot[key] = {
+            "type": propertyType,
+            "slot": slot,
+            "begin": bitStart[slot],
+            "end": bitStart[slot] + size - 1
+          };
+          bitStart[slot] += size;
+        }
+      }
+    });
+
+    return propertiesSlot;
+
+  } catch (err) {
+    throw(err);
+  }
+}
+
+function getBitFromType(type: string) {
+  switch(type) {
+    case Type.str:
+      return 125;
+    case Type.bool:
+      return 4;
+    case Type.date:
+      return 32;
+    case Type.int:
+      return 32;
+    case Type.double:
+      return 64;
+  }
+  return 0;
+}
+
+function getBigIntValue(type: string,  data: any) {
+  let value: BigInt = BigInt(0);
+  switch(type) {
+    case Type.str:
+      let hashData = getZidenParams()
+          .F.toObject(getZidenParams().hasher([BigInt(stringToHex(data ?? ''))]))
+          .toString(2);
+      let bitRemove = hashData.length < 125 ? 0 : hashData.length - 125;
+      let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
+      value = BigInt(hashDataFixed);
+      break;
+    case Type.bool:
+      value = data ? BigInt(1): BigInt(0);
+      break;
+    case Type.date:
+      value = BigInt((data?? 0).toString());
+      break;
+    case Type.int:
+      value = BigInt((data?? 0).toString());
+      break;
+    case Type.double:
+      value = bitsToNum(floatToBuffer(data ?? 0));
+      break;
+    }
+  return value;
+}
+
+export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: any, registry: any) {
+  try {
+    const propertySlot = schemaPropertiesSlot(schemaRaw);
+    const schema = getInputSchema(schemaRaw);
+    let entry: Array<BigInt> = [ BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0) ];
+    const keys = Object.keys(propertySlot);
+    keys.forEach(key => {
+      const type = propertySlot[key]["type"];
+      const slot = propertySlot[key]["slot"];
+      const begin = propertySlot[key]["begin"];
+      const end = propertySlot[key]["end"];
+
+      if (type != Type.obj) {
+        const data = userData[key];
+        if (!data) {
+          if (schema["@required"].includes(key))
+            throw("Invalid data, required " + key);
+        }
+        else {
+          let value = getBigIntValue(type, data);
+          entry[slot] = setBits(entry[slot], begin, value);
+        }
+
+      } else {
+        const propsKeys = Object.keys(propertySlot[key]);
+        propsKeys.forEach(propKey => {
+          const typeProp = propertySlot[key][propKey]["type"];
+          const beginProp = propertySlot[key][propKey]["begin"];
+          const endProp = propertySlot[key][propKey]["end"];
+          const data = userData[key];
+          if (!data) {
+            if (schema["@required"].includes(key))
+              throw("Invalid data, required " + key);
+          }
+          else {
+            let dataValue = data[propKey];
+            if (!dataValue) {
+              return;
+            }
+            
+            let value = getBigIntValue(typeProp, data);
+            entry[slot] = setBits(entry[slot], beginProp, value);
+          }
+        })
+      }
+    })
+
+    const claim = newClaim(
+      schemaHashFromBigInt(BigInt(registry.schemaHash?? '123456789')),
+      withIndexData(numToBits(entry[2], 32), numToBits(entry[3], 32)),
+      withValueData(numToBits(entry[6], 32), numToBits(entry[7], 32))
+    );
+
+    if (userId) {
+      claim.setIndexID(hexToBuffer(userId, 31));
+    }
+    if (registry.expiration && registry.expiration > 0) {
+      claim.setFlagExpirable(true);
+      claim.setExpirationDate(BigInt(Date.now() + registry.expiration));
+    }
+
+    if (registry.updatable) {
+      claim.setFlagUpdatable(true);
+    }
+
+    return claim;
+  } catch (err) {
+    throw(err)
+  }
 }
