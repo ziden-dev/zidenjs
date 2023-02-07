@@ -272,7 +272,6 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
       const type = propertySlot[key]["type"];
       const slot = propertySlot[key]["slot"];
       const begin = propertySlot[key]["begin"];
-      const end = propertySlot[key]["end"];
 
       if (type != Type.obj) {
         const data = userData[key];
@@ -290,7 +289,6 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
         propsKeys.forEach(propKey => {
           const typeProp = propertySlot[key][propKey]["type"];
           const beginProp = propertySlot[key][propKey]["begin"];
-          const endProp = propertySlot[key][propKey]["end"];
           const data = userData[key];
           if (!data) {
             if (schema["@required"].includes(key))
