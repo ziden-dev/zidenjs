@@ -56,11 +56,11 @@ export function getInputSchema(schema: any) {
     listContext.forEach((context: any) => {
         const keys = Object.keys(context);
         const id = context["@id"];
-        if (!id) {
+        if (id == undefined) {
             return;
         }
         keys.forEach((key: string) => {
-            if (!key || key[0] == '@') {
+            if (key == undefined || key[0] == '@') {
                 return;
             }
             map[id + ":" + key] = context[key];
@@ -77,13 +77,13 @@ export function getInputSchema(schema: any) {
         let obj = schemaRaw[key];
         let type = obj["@type"];
         let id = obj["@id"];
-        if (!type || !id) {
+        if (type == undefined || id == undefined) {
             continue;
         }
 
         while (!checkInEnum(type, Type)) {
             const context = map[type];
-            if (!context || !context["@type"]) {
+            if (context == undefined || !context["@type"]) {
                 break;
             }
             type = context["@type"];
@@ -102,7 +102,7 @@ export function getInputSchema(schema: any) {
                         objValue[key] = obj[key];
                     } else {
                         let typeValue = obj[key]["@type"];
-                        if (!typeValue) {
+                        if (typeValue == undefined) {
                             return;
                         }
                         if (checkInEnum(typeValue, Type)) {
@@ -111,7 +111,7 @@ export function getInputSchema(schema: any) {
                             let objValProperty: any = {};
                             while(!checkInEnum(typeValue, Type)) {
                                 const subContext = map[typeValue];
-                                if (!subContext["@type"]) {
+                                if (subContext["@type"] == undefined) {
                                     break;
                                 }
                                 typeValue = subContext["@type"];
@@ -152,7 +152,7 @@ export function schemaPropertiesSlot(schemaRaw: any) {
       const propertyType = property["@type"];
       const propertyId = property["@id"];
 
-      if (!propertyType || !propertyId || !checkInEnum(propertyId, Slot) || !checkInEnum(propertyType, Type)) {
+      if (propertyType == undefined || propertyId == undefined || !checkInEnum(propertyId, Slot) || !checkInEnum(propertyType, Type)) {
         return;
       }
 
@@ -177,7 +177,7 @@ export function schemaPropertiesSlot(schemaRaw: any) {
         const keysProp = Object.keys(property);
         keysProp.forEach(keyProp => {
           let type = property[keyProp]["@type"];
-          if (!type || keyProp[0] == '@') {
+          if (type == undefined || keyProp[0] == '@') {
             return
           }
           let size = getBitFromType(type);
@@ -275,7 +275,7 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
 
       if (type != Type.obj) {
         const data = userData[key];
-        if (!data) {
+        if (data == undefined) {
           if (schema["@required"].includes(key))
             throw("Invalid data, required " + key);
         }
@@ -290,13 +290,13 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
           const typeProp = propertySlot[key][propKey]["type"];
           const beginProp = propertySlot[key][propKey]["begin"];
           const data = userData[key];
-          if (!data) {
+          if (data == undefined) {
             if (schema["@required"].includes(key))
               throw("Invalid data, required " + key);
           }
           else {
             let dataValue = data[propKey];
-            if (!dataValue) {
+            if (dataValue == undefined) {
               return;
             }
             
