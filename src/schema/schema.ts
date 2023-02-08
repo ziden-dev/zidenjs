@@ -1,4 +1,4 @@
-import { newClaim, schemaHashFromBigInt, withIndexData, withValueData } from 'src/claim/entry.js';
+import { newClaim, schemaHashFromBigInt, withIndexData, withValueData } from '../claim/entry.js';
 import { getZidenParams } from '../global.js';
 import {
   bitsToNum,
