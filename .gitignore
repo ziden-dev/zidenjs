@@ -21,7 +21,6 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 *.lcov
-
 # nyc test coverage
 .nyc_output
 
@@ -115,6 +114,9 @@ dist
 *.r1cs
 *.wasm
 
+
 build
 
 buildCircom/
+
+src/consoleCommand.sh

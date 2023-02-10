@@ -74,7 +74,6 @@ export async function holderGenerateQueryMTPWitnessWithPrivateKey(
   );
 
   return {
-    claimVersion: issuerClaim.getVersion(),
     ...idOwnershipProof,
     ...merkleQueryInput,
     ...kycQueryMTPInput,
@@ -114,7 +113,6 @@ export async function holderGenerateQueryMTPWitnessWithSignature(
     throw new Error('claim is revoke');
   }
   return {
-    claimVersion: issuerClaim.getVersion(),
     ...idOwnershipProof,
     ...merkleQueryInput,
     ...kycQueryMTPInput,

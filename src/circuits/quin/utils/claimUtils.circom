@@ -228,6 +228,20 @@ template verifyExpirationTime() {
     res.out === 1;
 }
 
+// verify that the claim has version is more than version in RevokeTree
+template verifyVersion() {
+	signal input claim[8];
+	signal input versionRevok;
+	
+	component versionComp = getClaimVersion();
+	for (var i=0; i<8; i++) { versionComp.claim[i] <== claim[i]; }
+
+	component lt = LessThan(252);
+	lt.in[0] <== versionRevok;
+	lt.in[1] <== versionComp.version;
+
+}
+
 // getClaimExpiration extract expiration date from claim
 template getClaimExpiration() {
 	signal input claim[8];
@@ -242,6 +256,20 @@ template getClaimExpiration() {
 		expirationBits.in[i] <== v0Bits.out[i+64];
 	}
 	expiration <== expirationBits.out;
+}
+
+template getClaimVersion() {
+	signal input claim[8];
+	signal output version;
+
+	component versionBit = Bits2Num(32);
+
+	component i0Bits = Num2Bits(256);
+	i0Bits.in <== claim[0];
+	for (var i=0; i<32; i++) {
+		versionBit.in[i] <== i0Bits.out[i+160];
+	}
+	version <== versionBit.out;
 }
 
 // getSubjectLocation extract subject from claim flags.

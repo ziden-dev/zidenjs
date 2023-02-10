@@ -29,7 +29,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     /*
     >>>>>>>>>>>>>>>>>>>>>>>>>>> Inputs <<<<<<<<<<<<<<<<<<<<<<<<<<<<
     */
-    signal input claimVersion;
+   // signal input claimVersion;
     /* userID ownership signals */
     signal input userID;
     signal input userState;
@@ -117,10 +117,15 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     for (var i=0; i<IssuerLevels * 4; i++) { vci.claimIssuanceMtp[i] <== issuerClaimMtp[i]; }
     vci.claimIssuanceAuthsRoot <== issuerClaimAuthsRoot;
     vci.claimIssuanceClaimsRoot <== issuerClaimClaimsRoot;
-    //vci.claimIssuanceAuthRevRoot <== issuerClaimAuthRevRoot;
     vci.claimIssuanceClaimRevRoot <== issuerClaimClaimRevRoot;
     vci.claimIssuanceIdenState <== issuerClaimIdenState;
-    vci.claimVersion <== claimVersion;
+   // vci.claimVersion <== claimVersion;
+
+    // verify ClaimVersionSignal equal value in IssuerClaim and not revoked
+    component vV = verifyVersion();
+    for (var i=0; i<8; i++) { vV.claim[i] <== issuerClaim[i]; }
+    vV.versionRevok <== issuerClaimNonRevMtpAuxHv;
+
     // non revocation status
     for (var i=0; i<IssuerLevels * 4; i++) { vci.claimNonRevMtp[i] <== issuerClaimNonRevMtp[i]; }
     vci.claimNonRevMtpNoAux <== issuerClaimNonRevMtpNoAux;

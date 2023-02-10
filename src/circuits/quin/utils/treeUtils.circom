@@ -77,14 +77,16 @@ template checkClaimNotRevoked(treeLevels) {
     signal input noAux;
     signal input auxHi;
     signal input auxHv;
-	signal input claimVersion;
+	//signal input claimVersion;
 
 	
-	component lessThan = LessThan(250);
-	lessThan.in[0] <== auxHv;
-	lessThan.in[1] <== claimVersion;
-	lessThan.out === 1;
-	
+	// component lessThan = LessThan(250);
+	// lessThan.in[0] <== auxHv;
+	// lessThan.in[1] <== claimVersion;
+	// lessThan.out === 1;	
+	// log("claimversion ======== ",claimVersion);
+	// log("claimRevok ========", auxHv);
+
 
 	component claimRevNonce = getClaimRevNonce();
 	for (var i=0; i<8; i++) { claimRevNonce.claim[i] <== claim[i]; }
@@ -135,7 +137,7 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claimNonRevIssuerClaimsRoot;
 	signal input claimNonRevIssuerClaimRevRoot;
 	signal input claimNonRevIssuerState;
-	signal input claimVersion;
+	//signal input claimVersion;
 
     // verify country claim is included in claims tree root
     component claimIssuanceCheck = checkClaimExists(IssuerLevels);
@@ -161,7 +163,8 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     verifyClaimNotRevoked.auxHi <== claimNonRevMtpAuxHi;
     verifyClaimNotRevoked.auxHv <== claimNonRevMtpAuxHv;
     verifyClaimNotRevoked.treeRoot <== claimNonRevIssuerClaimRevRoot;
-	verifyClaimNotRevoked.claimVersion <== claimVersion;
+	//verifyClaimNotRevoked.claimVersion <== claimVersion;
+
     // check issuer state matches for non-revocation proof
     component verifyClaimNonRevIssuerState = checkIdenStateMatchesRoots();
 	verifyClaimNonRevIssuerState.authsRoot <== claimNonRevIssuerAuthsRoot;

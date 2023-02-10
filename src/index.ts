@@ -128,7 +128,6 @@ export interface QueryMTPWitness
     KYCNonRevQueryMTPInput,
     IdOwnershipBySignatureWitness,
     MerkleQueryInput {
-  readonly claimVersion: BigInt;
   readonly timestamp: number;
   readonly claimSchema: BigInt;
   readonly slotIndex: number;
