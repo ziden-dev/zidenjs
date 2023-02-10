@@ -289,6 +289,7 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
         propsKeys.forEach(propKey => {
           const typeProp = propertySlot[key][propKey]["type"];
           const beginProp = propertySlot[key][propKey]["begin"];
+          const slot = propertySlot[key][propKey]["slot"];
           const data = userData[key];
           if (data == undefined) {
             if (schema["@required"].includes(key))
