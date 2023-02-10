@@ -301,7 +301,7 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
               return;
             }
             
-            let value = getBigIntValue(typeProp, data);
+            let value = getBigIntValue(typeProp, dataValue);
             entry[slot] = setBits(entry[slot], beginProp, value);
           }
         })
