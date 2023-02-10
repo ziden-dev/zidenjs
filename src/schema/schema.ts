@@ -173,7 +173,7 @@ export function schemaPropertiesSlot(schemaRaw: any) {
       }
 
       if (propertyType == Type.obj) {
-        propertiesSlot[key] = {};
+        propertiesSlot[key] = {"type": propertyType};
         const keysProp = Object.keys(property);
         keysProp.forEach(keyProp => {
           let type = property[keyProp]["@type"];
