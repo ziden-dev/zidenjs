@@ -22,7 +22,6 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 *.lcov
-
 # nyc test coverage
 .nyc_output
 
@@ -116,10 +115,13 @@ dist
 *.r1cs
 *.wasm
 
+
 build
 
 buildCircom/
-*.sh
+
+src/consoleCommand.sh
+
 # npmignore - content above this line is automatically generated and modifications may be omitted
 # see npmjs.com/npmignore for more details.
 src

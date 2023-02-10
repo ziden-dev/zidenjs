@@ -223,6 +223,8 @@ export class State {
         triedCount++;
       }
     }
+    claim.setVersion(BigInt(1));
+    await this.revokeClaim(claim.getRevocationNonce(), BigInt(1));
     this._claimRevNonce += 1;
     return claim;
   }
@@ -233,7 +235,7 @@ export class State {
     }
   }
 
-  async revokeClaim(revNonce: BigInt, version: BigInt) {
+  async revokeClaim(revNonce: BigInt, version: BigInt = BigInt(100000)) {
     const resFind = await this._claimRevTree.find(getZidenParams().F.e(revNonce));
     if (!resFind.found) {
       //console.log(' Insert revNonce = ', revNonce, ' version = ', version);

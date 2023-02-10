@@ -30,7 +30,7 @@ describe('test authentication', async () => {
 
     authsDb = new SMTLevelDb('src/db_test/auths');
     claimsDb = new SMTLevelDb('src/db_test/claims');
-    claimRevDb = new SMTLevelDb('src/trees/claimRev');
+    claimRevDb = new SMTLevelDb('src/db_test/claimRev');
     state = await State.generateState([auth], authsDb, claimsDb, claimRevDb);
   }).timeout(10000);
 
