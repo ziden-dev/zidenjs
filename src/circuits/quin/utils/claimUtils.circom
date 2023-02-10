@@ -239,7 +239,7 @@ template verifyVersion() {
 	component lt = LessThan(252);
 	lt.in[0] <== versionRevok;
 	lt.in[1] <== versionComp.version;
-
+	lt.out === 1;
 }
 
 // getClaimExpiration extract expiration date from claim
