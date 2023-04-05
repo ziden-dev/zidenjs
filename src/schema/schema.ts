@@ -1,8 +1,9 @@
-import { newClaim, schemaHashFromBigInt, withIndexData, withValueData } from '../claim/entry.js';
+import { Entry, newClaim, schemaHashFromBigInt, withIndexData, withValueData } from '../claim/entry.js';
 import { getZidenParams } from '../global.js';
 import {
   bitsToNum,
   floatToBuffer,
+  getPartialValue,
   hexToBuffer,
   numToBits,
   setBits,
@@ -17,6 +18,22 @@ export function getSchemaHashFromSchema(schema: any): string {
   let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
   let value = BigInt(hashDataFixed);
   return value.toString();
+}
+
+export function getHashString(data: string): BigInt {
+  let hashData = getZidenParams()
+          .F.toObject(getZidenParams().hasher([BigInt(stringToHex(data ?? ''))]))
+          .toString(2);
+  let bitRemove = hashData.length < 125 ? 0 : hashData.length - 125;
+  let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
+  let value = BigInt(hashDataFixed);
+  return value;
+}
+
+export function getIndexClaim(claim: Entry): BigInt {
+  const val = getPartialValue(bitsToNum(claim.elements[0]), 224, 253);
+  let index = val.valueOf() >> BigInt(224);
+  return index;
 }
 
 enum Type {
@@ -141,7 +158,9 @@ export function schemaPropertiesSlot(schemaRaw: any) {
     const schema = getInputSchema(schemaRaw);
     const propertiesKey = Object.keys(schema);
 
-    let bitStart = [0, 0, 0, 0, 0, 0, 0, 0];
+    let bitStart: Array<Array<number>> = [[0, 0, 0, 0, 0, 0, 0, 0]];
+    let claimIndex = [0, 0, 0, 0, 0, 0, 0, 0];
+    // let bitStart = [0, 0, 0, 0, 0, 0, 0, 0];
 
     propertiesKey.forEach(key => {
       if (key[0] == '@') {
@@ -182,32 +201,42 @@ export function schemaPropertiesSlot(schemaRaw: any) {
           }
           let size = getBitFromType(type);
           if (size > 0) {
-            if (bitStart[slot] + size > 253) {
-              throw("Schema too large!");
+            if (bitStart[claimIndex[slot]][slot] + size > 253) {
+              // throw("Schema too large!");
+              claimIndex[slot]++;
+              if (bitStart.length <= claimIndex[slot]) {
+                bitStart.push([0, 0, 0, 0, 0, 0, 0, 0]);
+              }
             }
             propertiesSlot[key][keyProp] = {
               "type": type,
               "slot": slot,
-              "begin": bitStart[slot],
-              "end": bitStart[slot] + size - 1
+              "begin": bitStart[claimIndex[slot]][slot],
+              "end": bitStart[claimIndex[slot]][slot] + size - 1,
+              "claimIndex": claimIndex[slot]
             };
-            bitStart[slot] += size;
+            bitStart[claimIndex[slot]][slot] += size;
           }
         })
       }
       else {
         let size = getBitFromType(propertyType);
         if (size > 0) {
-          if (bitStart[slot] + size > 253) {
-            throw("Schema too large!");
+          if (bitStart[claimIndex[slot]][slot] + size > 253) {
+            // throw("Schema too large!");
+            claimIndex[slot]++;
+            if (bitStart.length <= claimIndex[slot]) {
+              bitStart.push([0, 0, 0, 0, 0, 0, 0, 0]);
+            }
           }
           propertiesSlot[key] = {
             "type": propertyType,
             "slot": slot,
-            "begin": bitStart[slot],
-            "end": bitStart[slot] + size - 1
+            "begin": bitStart[claimIndex[slot]][slot],
+            "end": bitStart[claimIndex[slot]][slot] + size - 1,
+            "claimIndex": claimIndex[slot]
           };
-          bitStart[slot] += size;
+          bitStart[claimIndex[slot]][slot] += size;
         }
       }
     });
@@ -266,12 +295,30 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
   try {
     const propertySlot = schemaPropertiesSlot(schemaRaw);
     const schema = getInputSchema(schemaRaw);
-    let entry: Array<BigInt> = [ BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0) ];
+    let entry: Array<Array<BigInt>> = [];
+
+    let maxClaim = 0;
+
     const keys = Object.keys(propertySlot);
+    keys.forEach(key => {
+      const claimIndex = propertySlot[key]["claimIndex"];
+      if (claimIndex != undefined) {
+        if (claimIndex > maxClaim) {
+          maxClaim = claimIndex;
+        }
+      }
+    });
+
+    for (let i = 0; i < maxClaim + 1; i++) {
+      entry.push([ BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0) ]);
+      entry[i][0] = setBits(entry[i][0], 224, BigInt(i));
+    }
+
     keys.forEach(key => {
       const type = propertySlot[key]["type"];
       const slot = propertySlot[key]["slot"];
       const begin = propertySlot[key]["begin"];
+      const claimIndex = propertySlot[key]["claimIndex"];
 
       if (type != Type.obj) {
         const data = userData[key];
@@ -281,7 +328,7 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
         }
         else {
           let value = getBigIntValue(type, data);
-          entry[slot] = setBits(entry[slot], begin, value);
+          entry[claimIndex][slot] = setBits(entry[claimIndex][slot], begin, value);
         }
 
       } else {
@@ -302,31 +349,42 @@ export function buildEntryFromSchema(userData: any, userId: string, schemaRaw: a
             }
             
             let value = getBigIntValue(typeProp, dataValue);
-            entry[slot] = setBits(entry[slot], beginProp, value);
+            entry[claimIndex][slot] = setBits(entry[claimIndex][slot], beginProp, value);
           }
         })
       }
     })
 
-    const claim = newClaim(
-      schemaHashFromBigInt(BigInt(registry.schemaHash?? '123456789')),
-      withIndexData(numToBits(entry[2], 32), numToBits(entry[3], 32)),
-      withValueData(numToBits(entry[6], 32), numToBits(entry[7], 32))
-    );
+    let claims: Array<Entry> = [];
+    for (let i = 0; i < maxClaim + 1; i ++) {
+      const claim = newClaim(
+        schemaHashFromBigInt(BigInt(registry.schemaHash?? '123456789')),
+        withIndexData(numToBits(entry[i][2], 32), numToBits(entry[i][3], 32)),
+        withValueData(numToBits(entry[i][6], 32), numToBits(entry[i][7], 32))
+      );
 
-    if (userId) {
-      claim.setIndexID(hexToBuffer(userId, 31));
-    }
-    if (registry.expiration && registry.expiration > 0) {
-      claim.setFlagExpirable(true);
-      claim.setExpirationDate(BigInt(Date.now() + registry.expiration));
+      let slot0Buff = claim.elements[0];
+      let slot0Num = bitsToNum(slot0Buff);
+      slot0Num = setBits(slot0Num, 224, BigInt(i));
+      slot0Buff = numToBits(slot0Num, 32);  
+      claim.elements[0] = slot0Buff;
+
+      if (userId) {
+        claim.setIndexID(hexToBuffer(userId, 31));
+      }
+      if (registry.expiration && registry.expiration > 0) {
+        claim.setFlagExpirable(true);
+        claim.setExpirationDate(BigInt(Date.now() + registry.expiration));
+      }
+  
+      if (registry.updatable) {
+        claim.setFlagUpdatable(true);
+      }
+
+      claims.push(claim);
     }
 
-    if (registry.updatable) {
-      claim.setFlagUpdatable(true);
-    }
-
-    return claim;
+    return claims;
   } catch (err) {
     throw(err)
   }
