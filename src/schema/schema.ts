@@ -271,7 +271,7 @@ function getBigIntValue(type: string,  data: any) {
       let hashData = getZidenParams()
           .F.toObject(getZidenParams().hasher([BigInt(stringToHex(data ?? ''))]))
           .toString(2);
-      let bitRemove = hashData.length < 125 ? 0 : hashData.length - 125;
+      let bitRemove = hashData.length < 124 ? 0 : hashData.length - 124;
       let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
       value = BigInt(hashDataFixed);
       break;
