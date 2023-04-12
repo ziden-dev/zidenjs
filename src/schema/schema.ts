@@ -14,7 +14,7 @@ export function getSchemaHashFromSchema(schema: any): string {
   let hashData = getZidenParams()
     .F.toObject(getZidenParams().hasher([BigInt(stringToHex(JSON.stringify(schema)))]))
     .toString(2);
-  let bitRemove = hashData.length < 128 ? 0 : hashData.length - 128;
+  let bitRemove = hashData.length < 127 ? 0 : hashData.length - 127;
   let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
   let value = BigInt(hashDataFixed);
   return value.toString();
@@ -24,7 +24,7 @@ export function getHashString(data: string): BigInt {
   let hashData = getZidenParams()
           .F.toObject(getZidenParams().hasher([BigInt(stringToHex(data ?? ''))]))
           .toString(2);
-  let bitRemove = hashData.length < 125 ? 0 : hashData.length - 125;
+  let bitRemove = hashData.length < 124 ? 0 : hashData.length - 124;
   let hashDataFixed = BigInt('0b' + hashData.slice(0, hashData.length - bitRemove));
   let value = BigInt(hashDataFixed);
   return value;
