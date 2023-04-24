@@ -1,8 +1,8 @@
 pragma circom 2.0.0;
-include "../../../../node_modules/circomlib/circuits/mux1.circom";
-include "../../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../../node_modules/circomlib/circuits/comparators.circom";
-include "../idOwnershipBySignature.circom";
+include "../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/comparators.circom";
+include "../idOwnershipBySignatureV2.circom";
 include "query.circom";
 include "decompressors.circom";
 
@@ -24,14 +24,18 @@ valueLevels - Number of elements in comparison array for in/notin operation if l
 comparison ["1", "2", "3"]
 
 */
-template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDepth) {
+template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, valueTreeDepth) {
 
     /*
     >>>>>>>>>>>>>>>>>>>>>>>>>>> Inputs <<<<<<<<<<<<<<<<<<<<<<<<<<<<
     */
 
+    signal output userID;
+
     /* userID ownership signals */
-    signal input userID;
+    signal input userGenesisID;
+    signal input profileNonce; /* random number */
+
     signal input userState;
 
 	signal input userAuthsRoot;
@@ -48,6 +52,15 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
 	signal input challengeSignatureR8x;
 	signal input challengeSignatureR8y;
 	signal input challengeSignatureS;
+
+    signal input gistRoot;
+    signal input gistMtp[gistLevel];
+    signal input gistMtpAuxHi;
+    signal input gistMtpAuxHv;
+    signal input gistMtpNoAux;
+
+    /* issuerClaim signals */
+    signal input claimSubjectProfileNonce; // nonce of the profile that claim is issued to, 0 if claim is issued to genesisID
 
     /* issuerClaim signals */
     signal input issuerClaim[8];
@@ -88,12 +101,10 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     /*
     >>>>>>>>>>>>>>>>>>>>>>>>>>> End Inputs <<<<<<<<<<<<<<<<<<<<<<<<<<<<
     */
-
-    userID * 0 === 0;
     issuerID * 0 === 0;
 
     /* Id ownership check*/
-    component userIdOwnership = IdOwnershipBySignature(IdOwnershipLevels);
+    component userIdOwnership = idOwnershipBySignatureV2(IdOwnershipLevels, gistLevel);
 
     userIdOwnership.userAuthsRoot <== userAuthsRoot;
     userIdOwnership.userAuthHi <== userAuthHi;
@@ -117,6 +128,22 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
     userIdOwnership.challengeSignatureS <== challengeSignatureS;
 
     userIdOwnership.userState <== userState;
+
+
+    userIdOwnership.genesisID <== userGenesisID;
+    userIdOwnership.profileNonce <== profileNonce;
+
+        // global identity state tree on chain
+    userIdOwnership.gistRoot <== gistRoot;
+
+    // proof of inclusion or exclusion of the user in the global state
+    for (var i = 0; i < gistLevel; i++) { userIdOwnership.gistMtp[i] <== gistMtp[i]; }
+    
+    userIdOwnership.gistMtpAuxHi <== gistMtpAuxHi;
+    userIdOwnership.gistMtpAuxHv <== gistMtpAuxHv;
+    userIdOwnership.gistMtpNoAux <== gistMtpNoAux;
+
+    userID <== userIdOwnership.userID;
 
     // verify issuerClaim issued and not revoked
     component vci = verifyClaimIssuanceNonRev(IssuerLevels);
@@ -142,9 +169,10 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, valueTreeDept
 
 
     // Check issuerClaim is issued to provided identity
-    component claimIdCheck = verifyCredentialSubject();
+    component claimIdCheck = verifyCredentialSubjectProfile();
     for (var i=0; i<8; i++) { claimIdCheck.claim[i] <== issuerClaim[i]; }
     claimIdCheck.id <== userID;
+    claimIdCheck.nonce <== claimSubjectProfileNonce;
 
     // Verify issuerClaim schema
     component claimSchemaCheck = verifyCredentialSchema();

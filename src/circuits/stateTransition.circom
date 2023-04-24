@@ -1,18 +1,16 @@
 
 pragma circom 2.0.0;
 
-include "../../../node_modules/circomlib/circuits/babyjub.circom";
-include "../../../node_modules/circomlib/circuits/comparators.circom";
-include "../../../node_modules/circomlib/circuits/poseidon.circom";
-include "../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../node_modules/circomlib/circuits/smt/smtverifier.circom";
-include "../../../node_modules/circomlib/circuits/smt/smtprocessor.circom";
+include "../../node_modules/circomlib/circuits/babyjub.circom";
+include "../../node_modules/circomlib/circuits/comparators.circom";
+include "../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom";
 include "idOwnershipBySignature.circom";
 
 template StateTransition(IdOwnershipLevels) {
     // we have no constraints for "id" in this circuit, however we introduce "id" input here
     // as it serves as public input which should be the same for prover and verifier
-    signal input userID;
+    signal input genesisID;
     signal input oldUserState;
     signal input newUserState;
     signal input isOldStateGenesis;
@@ -33,7 +31,7 @@ template StateTransition(IdOwnershipLevels) {
 
 
     component cutId = cutId();
-    cutId.in <== userID;
+    cutId.in <== genesisID;
 
     component cutState = cutState();
     cutState.in <== oldUserState;

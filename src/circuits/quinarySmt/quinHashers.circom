@@ -1,9 +1,9 @@
 pragma circom 2.0.0;
-include "../../../../node_modules/circomlib/circuits/poseidon.circom";
-include "../../../../node_modules/circomlib/circuits/mux3.circom";
-include "../../../../node_modules/circomlib/circuits/mux1.circom";
-include "../../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/mux3.circom";
+include "../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/comparators.circom";
 include "calculateTotal.circom";
 
 /*
@@ -167,4 +167,97 @@ template Splicer(numItems) {
 
         out[i] <== muxes[i].out;
     }
+}
+
+template Splicer2(numItems){
+    var NUM_OUTPUT_ITEMS = numItems + 2;
+
+    signal input in[numItems];
+    signal input leaf0;
+    signal input index0;
+    signal input leaf1;
+    signal input index1;
+
+    signal output out[NUM_OUTPUT_ITEMS];
+
+    component eq = IsEqual();
+    eq.in[0] <== index0;
+    eq.in[1] <== index1;
+    eq.out === 0;
+
+    component lt = LessThan(3);
+    lt.in[0] <== index0;
+    lt.in[1] <== index1;
+
+    /* 
+    lt == 1
+    index0 < index1
+    sp1.index <== index0
+
+
+    lt == 0
+    index0 > index1
+    sp1.index <== index0 - 1
+
+    sp1.index <== lt.out * index0 + (1 - lt.out) * (index0 - 1)
+    */ 
+
+    signal aux[2];
+    component sp1 = Splicer(numItems);
+    for(var i = 0; i < numItems; i++){
+        sp1.in[i] <== in[i];
+    }
+    sp1.leaf <== leaf0;
+    component mux = Mux1();
+    mux.s <== lt.out;
+    mux.c[0] <== index0;
+    mux.c[1] <== index0 - 1;
+    sp1.index <== mux.out;
+
+    component sp2 = Splicer(numItems + 1);
+    /*
+    signal input in[numItems];
+    signal input leaf;
+    signal input index;
+    */
+    for(var i = 0; i < numItems + 1; i++){
+        sp2.in[i] <== sp1.out[i];
+    }
+    sp2.leaf <== leaf1;
+    sp2.index <== index1;
+
+    for(var i = 0; i < NUM_OUTPUT_ITEMS; i++){
+        out[i] <== sp2.out[2];
+    }
+}
+
+/*
+    This component is used to create the 5 nodes.
+
+    Hash5 = H(H0 | H1 | H2 | H3 | H4)
+ */
+
+template QuinSMTHash5With2Children() {
+    signal input siblings[3];
+    signal input child0;
+    signal input child1;
+    signal input index0;
+    signal input index1;
+    signal output out;
+
+    component splicer = Splicer2(3);
+    for(var i = 0; i< 3; i++){
+        splicer.in[i] <== siblings[i];
+    }
+    splicer.index0 <== index0;
+    splicer.index1 <== index1;
+    splicer.leaf0 <== child0;
+    splicer.leaf1 <== child1;
+    
+    component hasher = Poseidon(5);   // Constant
+    for (var i = 0; i < 5; i++){
+        hasher.inputs[i] <== splicer.out[i];
+    }
+
+    out <== hasher.out;
 }

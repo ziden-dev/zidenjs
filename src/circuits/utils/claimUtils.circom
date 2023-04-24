@@ -1,12 +1,13 @@
 pragma circom 2.0.0;
 
-include "../../../../node_modules/circomlib/circuits/bitify.circom";
-include "../../../../node_modules/circomlib/circuits/eddsaposeidon.circom";
-include "../../../../node_modules/circomlib/circuits/smt/smtverifier.circom";
-include "../../../../node_modules/circomlib/circuits/mux3.circom";
-include "../../../../node_modules/circomlib/circuits/mux1.circom";
-include "../../../../node_modules/circomlib/circuits/mux2.circom";
-include "../../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/eddsaposeidon.circom";
+include "../../../node_modules/circomlib/circuits/smt/smtverifier.circom";
+include "../../../node_modules/circomlib/circuits/mux3.circom";
+include "../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../../node_modules/circomlib/circuits/mux2.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "idUtils.circom";
 
 // getClaimSubjectOtherIden checks that a claim Subject is OtherIden and outputs the identity within.
 template getClaimSubjectOtherIden() {
@@ -146,6 +147,28 @@ template verifyCredentialSubject() {
 	for (var i=0; i<8; i++) { subjectOtherIden.claim[i] <== claim[i]; }
 
     subjectOtherIden.id === id;
+}
+
+// verifyCredentialSubject verifies that claim is issued to a specified identity or identity profile
+// if nonce 0 is used, the claim should be issued to the genesis identity
+template verifyCredentialSubjectProfile() {
+    signal input claim[8];
+    signal input id;
+    signal input nonce;
+
+    component header = getClaimHeader();
+    for (var i=0; i<8; i++) { header.claim[i] <== claim[i]; }
+
+    component subjectOtherIden = getClaimSubjectOtherIden();
+    for (var i=0; i<8; i++) { subjectOtherIden.claim[i] <== claim[i]; }
+
+
+    /* ProfileID calculation */
+    component profile = SelectProfile();
+    profile.in <== id;
+    profile.nonce <== nonce;
+
+    subjectOtherIden.id === profile.out;
 }
 
 // verifyCredentialSchema verifies that claim matches provided schema
