@@ -53,6 +53,9 @@ export interface SignedChallenge {
 }
 
 export interface IdOwnershipBySignatureWitness extends SignedChallenge {
+  readonly userID: BigInt;
+  readonly genesisID: BigInt;
+  readonly profileNonce: BigInt;
   readonly userState: BigInt;
   readonly userAuthsRoot: BigInt;
   readonly userAuthMtp: Array<BigInt>;
@@ -61,6 +64,12 @@ export interface IdOwnershipBySignatureWitness extends SignedChallenge {
   readonly userAuthPubY: BigInt;
   readonly userClaimsRoot: BigInt;
   readonly userClaimRevRoot: BigInt;
+
+  readonly gistRoot: BigInt;
+  readonly gistMtp: Array<BigInt>;
+  readonly gistMtpAuxHi: BigInt;
+  readonly gistMtpAuxHv: BigInt;
+  readonly gistMtpNoAux: BigInt;
 }
 
 export interface StateTransitionWitness {

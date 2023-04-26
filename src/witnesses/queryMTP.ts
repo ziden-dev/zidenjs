@@ -7,6 +7,7 @@ import {
   idOwnershipBySignatureWitnessWithSignature,
 } from './authentication.js';
 import { createMerkleQueryInput } from './query.js';
+import { Gist } from 'src/gist/gist.js';
 
 /**
  * KYC service Generate credential atomic query MTP witness for Holder
@@ -60,11 +61,12 @@ export async function holderGenerateQueryMTPWitnessWithPrivateKey(
   auth: Auth,
   challenge: BigInt,
   state: State,
+  gist: Gist,
   kycQueryMTPInput: KYCQueryMTPInput,
   kycQueryNonRevMTPInput: KYCNonRevQueryMTPInput,
   query: Query
 ): Promise<QueryMTPWitness> {
-  const idOwnershipProof = await idOwnershipBySignatureWitnessWithPrivateKey(privateKey, auth, challenge, state);
+  const idOwnershipProof = await idOwnershipBySignatureWitnessWithPrivateKey(privateKey, auth, challenge, state, gist);
   const mask = createMask(query.from, query.to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(query.slotIndex));
   const merkleQueryInput = createMerkleQueryInput(
@@ -97,11 +99,12 @@ export async function holderGenerateQueryMTPWitnessWithSignature(
   signature: SignedChallenge,
   auth: Auth,
   state: State,
+  gist: Gist,
   kycQueryMTPInput: KYCQueryMTPInput,
   kycQueryNonRevMTPInput: KYCNonRevQueryMTPInput,
   query: Query
 ): Promise<QueryMTPWitness> {
-  const idOwnershipProof = await idOwnershipBySignatureWitnessWithSignature(signature, auth, state);
+  const idOwnershipProof = await idOwnershipBySignatureWitnessWithSignature(signature, auth, state, gist);
   const mask = createMask(query.from, query.to);
   const slotValue = bitsToNum(issuerClaim.getSlotData(query.slotIndex));
   const merkleQueryInput = createMerkleQueryInput(

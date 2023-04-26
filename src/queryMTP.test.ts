@@ -16,6 +16,8 @@ import {
   kycGenerateNonRevQueryMTPInput,
   kycGenerateQueryMTPInput,
 } from './witnesses/queryMTP.js';
+import { BinSMT } from './state/sparse-merkle-tree/bin-smt.js';
+import { Gist } from './gist/gist.js';
 
 describe('test credential query MTP', async () => {
   let holderPriv: Buffer;
@@ -28,10 +30,13 @@ describe('test credential query MTP', async () => {
 
   let holderState: State;
   let issuerState: State;
+  let gist: Gist;
 
   let authsDb: SMTLevelDb;
   let claimsDb: SMTLevelDb;
   let claimRevDb: SMTLevelDb;
+
+  let gistDb: SMTLevelDb;
 
   let authsDb1: SMTLevelDb;
   let claimsDb1: SMTLevelDb;
@@ -57,8 +62,12 @@ describe('test credential query MTP', async () => {
     claimsDb1 = new SMTLevelDb('src/db_test/claims1');
     claimRevDb1 = new SMTLevelDb('src/db_test/claimRev1');
 
+    gistDb = new SMTLevelDb('src/db_test/gist');
+
     holderState = await State.generateState([holderAuth], authsDb, claimsDb, claimRevDb);
     issuerState = await State.generateState([issuerAuth], authsDb1, claimsDb1, claimRevDb1);
+
+    gist = await Gist.generateGist(gistDb);
 
     query1 = {
       slotIndex: 2,

@@ -6,14 +6,22 @@ import { bitsToNum, numToBits } from '../utils.js';
 import { QuinSMT } from './sparse-merkle-tree/index.js';
 import { Auth } from '../index.js';
 import { hashPublicKey } from './auth.js';
+import { buildPoseidon } from '../crypto/poseidon_wasm.js';
 
 interface AuthExistsProof {
   readonly authMTP: Array<BigInt>;
   readonly authsRoot: BigInt;
 }
+
 interface ClaimExistsProof {
   readonly claimMTP: Array<BigInt>;
   readonly treeRoot: BigInt;
+}
+
+interface GenesisProof {
+  readonly genesisID: BigInt;
+  readonly profileNonce: BigInt;
+  readonly userID: BigInt;
 }
 
 interface RootsMatchProof {
@@ -33,6 +41,8 @@ interface ClaimNotRevokedProof {
 
 export class State {
   private _userID: Buffer;
+  private _genesisID: Buffer;
+  private _profileNonce: BigInt;
   private _authsTree: QuinSMT;
   private _claimsTree: QuinSMT;
   private _claimRevTree: QuinSMT;
@@ -58,7 +68,17 @@ export class State {
     this._authDepth = authDepth;
     this._claimDepth = claimDepth;
     const userState = this.getIdenState();
-    this._userID = IDGenesisFromIdenState(userState, IDType.Default);
+    this._genesisID = IDGenesisFromIdenState(userState, IDType.Default);
+    this._userID = this._genesisID;
+    this._profileNonce = BigInt(0);
+  }
+
+  get profileNonce() {
+    return this._profileNonce;
+  }
+
+  get genesisID() {
+    return this._genesisID;
   }
 
   get userID() {
@@ -130,7 +150,6 @@ export class State {
     authsTree = new QuinSMT(authsDb, F.zero, authDepth);
     claimsTree = new QuinSMT(claimsDb, F.zero, claimDepth);
     claimRevTree = new QuinSMT(claimRevDb, F.zero, claimDepth);
-
     for (let i = 0; i < auths.length; i++) {
       const auth = auths[i];
       auth.authHi = BigInt(i);
@@ -152,6 +171,23 @@ export class State {
     await this._authsTree.insert(auth.authHi, authHash);
     this._authRevNonce++;
     return auth;
+  }
+
+  async insertProfileNonce(profileNonce: BigInt): Promise<Buffer> {
+    this._profileNonce = profileNonce;
+    if (profileNonce == BigInt(0)) {
+      this._userID = this._genesisID;
+    } else {
+      const poseidon = await buildPoseidon();
+      poseidon.F = getZidenParams().F;
+      const F = getZidenParams().F;
+      this._userID = poseidon([this._genesisID, this._profileNonce]);
+      this._userID = numToBits(
+        F.toObject(getZidenParams().hasher([F.toObject(this._genesisID), this._profileNonce])),
+        32
+      );
+    }
+    return this._userID;
   }
 
   /**
@@ -232,13 +268,22 @@ export class State {
 
   async revokeClaim(revNonce: BigInt) {
     await this._claimRevTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.zero);
-    //
-
-    //
   }
 
   async revokeAuth(authHi: BigInt) {
     await this._authsTree.delete(authHi);
+  }
+
+  /**
+   * Generate Genesis Proof
+   */
+  async generateGenesisProof(): Promise<GenesisProof> {
+    const F = getZidenParams().F;
+    return {
+      genesisID: F.toObject(this._genesisID),
+      profileNonce: this.profileNonce,
+      userID: F.toObject(this.userID),
+    };
   }
 
   /**
@@ -258,7 +303,6 @@ export class State {
       authsRoot: F.toObject(this._authsTree.root),
     };
   }
-
   /**
    * Generate Claim Exist Proof for a claim in claim tree
    * @param {ArrayLike<number>} claimHi
