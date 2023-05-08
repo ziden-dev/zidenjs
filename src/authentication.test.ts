@@ -14,6 +14,7 @@ import {
   idOwnershipBySignatureWitnessWithSignature,
 } from './witnesses/authentication.js';
 import { Gist } from './gist/gist.js';
+import path from 'path';
 
 describe('test authentication', async () => {
   let privateKey: Buffer;
@@ -50,26 +51,21 @@ describe('test authentication', async () => {
     await state.revokeClaim(claim1.getRevocationNonce());
     await state.revokeClaim(claim2.getRevocationNonce());
     await state.revokeClaim(claim3.getRevocationNonce());
-
     const auth1 = newAuthFromPrivateKey(Buffer.alloc(32, 2));
-
     await state.insertAuth(auth1);
     await gist.insertGist(state.genesisID, state.getIdenState());
-
     idOwnershipWitness = await idOwnershipBySignatureWitnessWithPrivateKey(privateKey, auth, challenge, state, gist);
-    // console.log(idOwnershipWitness);
-    idOwnershipWitness;
-    // const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignature.circom'));
-    // const w0 = await circuit.calculateWitness(idOwnershipWitness, true);
-    // await circuit.checkConstraints(w0);
+    const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignatureV2.circom'));
+    const w0 = await circuit.calculateWitness(idOwnershipWitness, true);
+    await circuit.checkConstraints(w0);
   }).timeout(20000);
 
   it('idOwnership with custom challenge and signature', async () => {
     const challenge = BigInt('1234565');
     const signature = await signChallenge(privateKey, challenge);
     idOwnershipWitness = await idOwnershipBySignatureWitnessWithSignature(signature, auth, state, gist);
-    //const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignature.circom'));
-    //const w1 = await circuit.calculateWitness(idOwnershipWitness, true);
-    //await circuit.checkConstraints(w1);
+    const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignatureV2.circom'));
+    const w1 = await circuit.calculateWitness(idOwnershipWitness, true);
+    await circuit.checkConstraints(w1);
   }).timeout(20000);
 }).timeout(10000);

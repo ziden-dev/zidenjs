@@ -12,4 +12,4 @@ component main{public [challenge,
                         slotIndex,
                         timestamp,
                         operator,
-                        mask, gistRoot]} = CredentialAtomicQueryMTP(8, 14, 6, 64);
+                        mask, gistRoot]} = CredentialAtomicQueryMTP(8, 14, 64, 6);

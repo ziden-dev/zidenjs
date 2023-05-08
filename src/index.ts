@@ -53,7 +53,6 @@ export interface SignedChallenge {
 }
 
 export interface IdOwnershipBySignatureWitness extends SignedChallenge {
-  readonly userID: BigInt;
   readonly genesisID: BigInt;
   readonly profileNonce: BigInt;
   readonly userState: BigInt;
@@ -73,7 +72,7 @@ export interface IdOwnershipBySignatureWitness extends SignedChallenge {
 }
 
 export interface StateTransitionWitness {
-  readonly userID: BigInt;
+  readonly genesisID: BigInt;
   readonly oldUserState: BigInt;
   readonly newUserState: BigInt;
   readonly isOldStateGenesis: number;
@@ -137,13 +136,13 @@ export interface QueryMTPWitness
     KYCNonRevQueryMTPInput,
     IdOwnershipBySignatureWitness,
     MerkleQueryInput {
+  readonly claimSubjectProfileNonce: BigInt;
   readonly timestamp: number;
   readonly claimSchema: BigInt;
   readonly slotIndex: number;
   readonly operator: OPERATOR;
   readonly mask: BigInt;
   readonly issuerClaim: Array<BigInt>;
-  readonly userID: BigInt;
 }
 
 //khanh

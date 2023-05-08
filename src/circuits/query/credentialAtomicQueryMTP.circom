@@ -33,31 +33,26 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
     signal output userID;
 
     /* userID ownership signals */
-    signal input userGenesisID;
+    signal input genesisID;
     signal input profileNonce; /* random number */
-
     signal input userState;
-
 	signal input userAuthsRoot;
 	signal input userAuthMtp[IdOwnershipLevels * 4];
 	signal input userAuthHi;
     signal input userAuthPubX;
     signal input userAuthPubY;
-
-	
 	signal input userClaimsRoot;
     signal input userClaimRevRoot;
+    signal input gistRoot;
+    signal input gistMtp[gistLevel * 2];
+    signal input gistMtpAuxHi;
+    signal input gistMtpAuxHv;
+    signal input gistMtpNoAux;
 
 	signal input challenge;
 	signal input challengeSignatureR8x;
 	signal input challengeSignatureR8y;
 	signal input challengeSignatureS;
-
-    signal input gistRoot;
-    signal input gistMtp[gistLevel];
-    signal input gistMtpAuxHi;
-    signal input gistMtpAuxHv;
-    signal input gistMtpNoAux;
 
     /* issuerClaim signals */
     signal input claimSubjectProfileNonce; // nonce of the profile that claim is issued to, 0 if claim is issued to genesisID
@@ -67,7 +62,6 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
     signal input issuerClaimMtp[IssuerLevels * 4];
     signal input issuerClaimAuthsRoot;
     signal input issuerClaimClaimsRoot;
-    //signal input issuerClaimAuthRevRoot;
     signal input issuerClaimClaimRevRoot;
     signal input issuerClaimIdenState;
     signal input issuerID;
@@ -79,8 +73,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
     signal input issuerClaimNonRevMtpAuxHv;
     
     signal input issuerClaimNonRevAuthsRoot;
-    signal input issuerClaimNonRevClaimsRoot;
-   // signal input issuerClaimNonRevAuthRevRoot; 
+    signal input issuerClaimNonRevClaimsRoot; 
     signal input issuerClaimNonRevClaimRevRoot;
     signal input issuerClaimNonRevState;
 
@@ -113,12 +106,6 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
     for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthMtp[i] <== userAuthMtp[i]; }
     
 
-    // userIdOwnership.userAuthRevRoot <== userAuthRevRoot; 
-    // for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthNonRevMtp[i] <== userAuthNonRevMtp[i]; }
-    // userIdOwnership.userAuthNonRevMtpNoAux <== userAuthNonRevMtpNoAux;
-    // userIdOwnership.userAuthNonRevMtpAuxHv <== userAuthNonRevMtpAuxHv;
-    // userIdOwnership.userAuthNonRevMtpAuxHi <== userAuthNonRevMtpAuxHi;
-
     userIdOwnership.userClaimsRoot <== userClaimsRoot;
     userIdOwnership.userClaimRevRoot <== userClaimRevRoot;
 
@@ -130,28 +117,26 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
     userIdOwnership.userState <== userState;
 
 
-    userIdOwnership.genesisID <== userGenesisID;
+    userIdOwnership.genesisID <== genesisID;
     userIdOwnership.profileNonce <== profileNonce;
 
         // global identity state tree on chain
     userIdOwnership.gistRoot <== gistRoot;
-
     // proof of inclusion or exclusion of the user in the global state
-    for (var i = 0; i < gistLevel; i++) { userIdOwnership.gistMtp[i] <== gistMtp[i]; }
+    for (var i = 0; i < gistLevel * 2; i++) { userIdOwnership.gistMtp[i] <== gistMtp[i]; }
     
     userIdOwnership.gistMtpAuxHi <== gistMtpAuxHi;
     userIdOwnership.gistMtpAuxHv <== gistMtpAuxHv;
     userIdOwnership.gistMtpNoAux <== gistMtpNoAux;
 
     userID <== userIdOwnership.userID;
-
+    
     // verify issuerClaim issued and not revoked
     component vci = verifyClaimIssuanceNonRev(IssuerLevels);
     for (var i=0; i<8; i++) { vci.claim[i] <== issuerClaim[i]; }
     for (var i=0; i<IssuerLevels * 4; i++) { vci.claimIssuanceMtp[i] <== issuerClaimMtp[i]; }
     vci.claimIssuanceAuthsRoot <== issuerClaimAuthsRoot;
     vci.claimIssuanceClaimsRoot <== issuerClaimClaimsRoot;
-    //vci.claimIssuanceAuthRevRoot <== issuerClaimAuthRevRoot;
     vci.claimIssuanceClaimRevRoot <== issuerClaimClaimRevRoot;
     vci.claimIssuanceIdenState <== issuerClaimIdenState;
 
@@ -163,16 +148,14 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
 
     vci.claimNonRevIssuerAuthsRoot <== issuerClaimNonRevAuthsRoot;
     vci.claimNonRevIssuerClaimsRoot <== issuerClaimNonRevClaimsRoot;
-   // vci.claimNonRevIssuerAuthRevRoot <== issuerClaimNonRevAuthRevRoot;
     vci.claimNonRevIssuerClaimRevRoot <== issuerClaimNonRevClaimRevRoot;
     vci.claimNonRevIssuerState <== issuerClaimNonRevState;
 
-
     // Check issuerClaim is issued to provided identity
-    component claimIdCheck = verifyCredentialSubjectProfile();
-    for (var i=0; i<8; i++) { claimIdCheck.claim[i] <== issuerClaim[i]; }
-    claimIdCheck.id <== userID;
-    claimIdCheck.nonce <== claimSubjectProfileNonce;
+    // component claimIdCheck = verifyCredentialSubjectProfile();
+    // for (var i=0; i<8; i++) { claimIdCheck.claim[i] <== issuerClaim[i]; }
+    // claimIdCheck.id <== userID;
+    // claimIdCheck.nonce <== claimSubjectProfileNonce;
 
     // Verify issuerClaim schema
     component claimSchemaCheck = verifyCredentialSchema();

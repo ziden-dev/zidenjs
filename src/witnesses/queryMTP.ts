@@ -39,7 +39,6 @@ export async function kycGenerateNonRevQueryMTPInput(
 ): Promise<KYCNonRevQueryMTPInput> {
   const claimNotRevokedProof = await issuerState.generateClaimNotRevokedProof(issuerClaimRevNonce);
   const rootsMatchProof = await issuerState.generateRootsMatchProof();
-
   return {
     issuerClaimNonRevMtp: claimNotRevokedProof.claimNonRevMTP,
     issuerClaimNonRevMtpNoAux: claimNotRevokedProof.noAux,
@@ -78,16 +77,17 @@ export async function holderGenerateQueryMTPWitnessWithPrivateKey(
 
   return {
     ...idOwnershipProof,
+
     ...merkleQueryInput,
     ...kycQueryMTPInput,
     ...kycQueryNonRevMTPInput,
+    claimSubjectProfileNonce: idOwnershipProof.profileNonce,
     claimSchema: query.claimSchema,
     slotIndex: query.slotIndex,
     operator: query.operator,
     timestamp: query.timestamp,
     mask,
     issuerClaim: issuerClaim.getDataForCircuit(),
-    userID: bitsToNum(state.userID),
   };
 }
 
@@ -119,12 +119,12 @@ export async function holderGenerateQueryMTPWitnessWithSignature(
     ...merkleQueryInput,
     ...kycQueryMTPInput,
     ...kycQueryNonRevMTPInput,
+    claimSubjectProfileNonce: idOwnershipProof.profileNonce,
     claimSchema: query.claimSchema,
     slotIndex: query.slotIndex,
     operator: query.operator,
     timestamp: query.timestamp,
     mask,
     issuerClaim: issuerClaim.getDataForCircuit(),
-    userID: bitsToNum(state.userID),
   };
 }

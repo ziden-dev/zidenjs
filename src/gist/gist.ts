@@ -1,6 +1,7 @@
 import { BinSMT } from '../state/sparse-merkle-tree/bin-smt.js';
 import { getZidenParams } from '../global.js';
 import { SMTDb } from '../db/index.js';
+import { bitsToNum } from '../utils.js';
 
 interface GistProof {
   readonly gistRoot: BigInt;
@@ -29,10 +30,9 @@ export class Gist {
 
   async insertGist(Hi: Buffer, Hv: Buffer) {
     const F = getZidenParams().F;
-    console.log('Hi= ', F.toObject(getZidenParams().hasher([Hi])));
-    console.log('Hv= ', F.toObject(Hv));
-
-    await this._gistTree.insert(F.toObject(getZidenParams().hasher([Hi])), F.toObject(Hv));
+    //await setupParams();
+    const HvNum = bitsToNum(Hv);
+    await this._gistTree.insert(F.toObject(getZidenParams().hasher([Hi])), HvNum);
   }
 
   /**
@@ -42,15 +42,14 @@ export class Gist {
    */
   async generateGistProof(gistHi: BigInt): Promise<GistProof> {
     const F = getZidenParams().F;
-
-    console.log('Get Hi =', gistHi);
     const res = await this._gistTree.find(F.e(gistHi));
     if (!res.found) {
       throw new Error('Gist is not inserted to the gist tree');
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
-    while (siblings.length < this._gistDepth * 4) siblings.push(BigInt(0));
+    this._gistDepth;
+    while (siblings.length < this._gistDepth * 2) siblings.push(BigInt(0));
     return {
       gistMtp: siblings,
       gistRoot: F.toObject(this._gistTree.root),

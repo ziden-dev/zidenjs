@@ -40,7 +40,7 @@ export async function stateTransitionWitnessWithPrivateKey(
   const signature = await signChallenge(privateKey, challenge);
 
   return {
-    userID: bitsToNum(userID),
+    genesisID: bitsToNum(userID),
     oldUserState: bitsToNum(oldUserState),
     newUserState: bitsToNum(newUserState),
     isOldStateGenesis,
@@ -89,7 +89,7 @@ export async function stateTransitionWitnessWithSignature(
   const newUserState = state.getIdenState();
 
   return {
-    userID: bitsToNum(userID),
+    genesisID: bitsToNum(userID),
     oldUserState: bitsToNum(oldUserState),
     newUserState: bitsToNum(newUserState),
     isOldStateGenesis,
@@ -138,7 +138,7 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
   const signature = await signChallenge(privateKey, challenge);
 
   return {
-    userID: bitsToNum(userID),
+    genesisID: bitsToNum(userID),
     oldUserState: bitsToNum(oldUserState),
     newUserState: bitsToNum(newUserState),
     isOldStateGenesis,
@@ -185,7 +185,7 @@ export async function stateTransitionWitnessWithSignatureAndHiHvs(
   const newUserState = state.getIdenState();
 
   return {
-    userID: bitsToNum(userID),
+    genesisID: bitsToNum(userID),
     oldUserState: bitsToNum(oldUserState),
     newUserState: bitsToNum(newUserState),
     isOldStateGenesis,

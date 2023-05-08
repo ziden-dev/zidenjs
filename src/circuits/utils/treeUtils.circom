@@ -81,14 +81,14 @@ template checkClaimNotRevoked(treeLevels) {
 	for (var i=0; i<8; i++) { claimRevNonce.claim[i] <== claim[i]; }
 
     component smtClaimNotExists = QuinSMTVerifier(treeLevels);
-    smtClaimNotExists.fnc <== 1; // Non-inclusion
+    smtClaimNotExists.fnc <== 0; //inclusion
     smtClaimNotExists.root <== treeRoot;
     for (var i=0; i<treeLevels * 4; i++) { smtClaimNotExists.siblings[i] <== claimNonRevMTP[i]; }
-    smtClaimNotExists.oldKey <== auxHi;
-    smtClaimNotExists.oldValue <== auxHv;
-    smtClaimNotExists.isOld0 <== noAux;
-    smtClaimNotExists.key <== claimRevNonce.revNonce;
-    smtClaimNotExists.value <== 0;
+   smtClaimNotExists.oldKey <== 0;
+   smtClaimNotExists.oldValue <== 0;
+   smtClaimNotExists.isOld0 <== 0;
+   smtClaimNotExists.key <== auxHi;
+   smtClaimNotExists.value <== auxHv;
 }
 
 // checkIdenStateMatchesRoots checks that a hash of 3 tree
@@ -115,7 +115,6 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claimIssuanceMtp[IssuerLevels * 4];
 	signal input claimIssuanceAuthsRoot;
 	signal input claimIssuanceClaimsRoot;
-	//signal input claimIssuanceAuthRevRoot;
 	signal input claimIssuanceClaimRevRoot;
 	signal input claimIssuanceIdenState;
 
@@ -125,10 +124,8 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
 	signal input claimNonRevMtpAuxHv;
 	signal input claimNonRevIssuerAuthsRoot;
 	signal input claimNonRevIssuerClaimsRoot;
-	//signal input claimNonRevIssuerAuthRevRoot;
 	signal input claimNonRevIssuerClaimRevRoot;
 	signal input claimNonRevIssuerState;
-
 
     // verify country claim is included in claims tree root
     component claimIssuanceCheck = checkClaimExists(IssuerLevels);
@@ -140,7 +137,6 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     component verifyClaimIssuanceIdenState = checkIdenStateMatchesRoots();
 	verifyClaimIssuanceIdenState.authsRoot <== claimIssuanceAuthsRoot;
     verifyClaimIssuanceIdenState.claimsRoot <== claimIssuanceClaimsRoot;
-    //verifyClaimIssuanceIdenState.authRevRoot <== claimIssuanceAuthRevRoot;
     verifyClaimIssuanceIdenState.claimRevRoot <== claimIssuanceClaimRevRoot;
     verifyClaimIssuanceIdenState.expectedState <== claimIssuanceIdenState;
 
@@ -159,9 +155,14 @@ template verifyClaimIssuanceNonRev(IssuerLevels) {
     component verifyClaimNonRevIssuerState = checkIdenStateMatchesRoots();
 	verifyClaimNonRevIssuerState.authsRoot <== claimNonRevIssuerAuthsRoot;
     verifyClaimNonRevIssuerState.claimsRoot <== claimNonRevIssuerClaimsRoot;
-   // verifyClaimNonRevIssuerState.authRevRoot <== claimNonRevIssuerAuthRevRoot;
     verifyClaimNonRevIssuerState.claimRevRoot <== claimNonRevIssuerClaimRevRoot;
     verifyClaimNonRevIssuerState.expectedState <== claimNonRevIssuerState;
+
+	// verify version in claim > version in revock tree
+	component verifyVer = verifyVersion();
+    for (var i=0; i<8; i++) { verifyVer.claim[i] <== claim[i]; }
+    verifyVer.versionInRevokeTree <== claimNonRevMtpAuxHv;
+
 }
 
 template VerifyAuthAndSignature(nLevels) {
@@ -170,12 +171,6 @@ template VerifyAuthAndSignature(nLevels) {
 	signal input authHi;
 	signal input authPubX;
 	signal input authPubY;
-
-	// signal input authRevRoot;
-    // signal input authNonRevMtp[nLevels * 4];
-    // signal input authNonRevMtpNoAux;
-    // signal input authNonRevMtpAuxHi;
-    // signal input authNonRevMtpAuxHv;
 
 	signal input challenge;
 	signal input challengeSignatureR8x;
@@ -189,16 +184,6 @@ template VerifyAuthAndSignature(nLevels) {
 	authExists.authPubY <== authPubY;
 	for (var i=0; i<nLevels * 4; i++) { authExists.authMTP[i] <== authMtp[i]; }
     authExists.authsRoot <== authsRoot;
-
-    // component authNotRevoked = checkAuthNotRevoked(nLevels);
-	// authNotRevoked.authHi <== authHi;
-    // for (var i=0; i<nLevels * 4; i++) {
-    //     authNotRevoked.authNonRevMTP[i] <== authNonRevMtp[i];
-    // }
-    // authNotRevoked.authRevRoot <== authRevRoot;
-    // authNotRevoked.noAux <== authNonRevMtpNoAux;
-    // authNotRevoked.auxHi <== authNonRevMtpAuxHi;
-    // authNotRevoked.auxHv <== authNonRevMtpAuxHv;
 
     // signature verification
     component sigVerifier = EdDSAPoseidonVerifier();

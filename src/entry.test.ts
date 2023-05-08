@@ -65,7 +65,6 @@ describe('test entries', async () => {
       },
       true
     );
-    console.log(w);
     await circuit.assertOut(w, { schema: bitsToNum(schemaHash) });
   });
 

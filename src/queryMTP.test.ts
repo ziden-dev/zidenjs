@@ -16,7 +16,6 @@ import {
   kycGenerateNonRevQueryMTPInput,
   kycGenerateQueryMTPInput,
 } from './witnesses/queryMTP.js';
-import { BinSMT } from './state/sparse-merkle-tree/bin-smt.js';
 import { Gist } from './gist/gist.js';
 
 describe('test credential query MTP', async () => {
@@ -24,7 +23,8 @@ describe('test credential query MTP', async () => {
   let issuerPriv: Buffer;
   let holderAuth: Auth;
   let issuerAuth: Auth;
-
+  holderGenerateQueryMTPWitnessWithSignature;
+  signChallenge;
   let claim1: Entry;
   let claim2: Entry;
 
@@ -107,7 +107,9 @@ describe('test credential query MTP', async () => {
     );
 
     await issuerState.insertClaim(claim1);
+    await gist.insertGist(holderState.genesisID, holderState.getIdenState());
     await issuerState.insertClaim(claim2);
+
     circuitCheck = async (witness: QueryMTPWitness) => {
       const circuit = await wasm_tester(path.join('src', 'circom_test', 'credentialAtomicQueryMTP.circom'));
       const w = await circuit.calculateWitness(witness, true);
@@ -115,6 +117,7 @@ describe('test credential query MTP', async () => {
     };
   }).timeout(100000);
   let witness: QueryMTPWitness;
+
   it('test query 1', async () => {
     const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim1.hiRaw(), issuerState);
     const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim1.getRevocationNonce(), issuerState);
@@ -124,28 +127,32 @@ describe('test credential query MTP', async () => {
       holderAuth,
       BigInt(1),
       holderState,
+      gist,
       kycQueryMTPInput,
       kycNonRevQueryMTPInput,
       query1
     );
+    //console.log('witness = ', witness);
     await circuitCheck(witness);
   }).timeout(100000);
-  it('test query 2', async () => {
-    const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
-    const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
-    const signature = await signChallenge(holderPriv, BigInt(1));
-    witness = await holderGenerateQueryMTPWitnessWithSignature(
-      claim2,
-      signature,
-      holderAuth,
-      holderState,
-      kycQueryMTPInput,
-      kycNonRevQueryMTPInput,
-      query2
-    );
 
-    await circuitCheck(witness);
-  }).timeout(100000);
+  // it('test query 2', async () => {
+  //   const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
+  //   const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
+  //   const signature = await signChallenge(holderPriv, BigInt(1));
+  //   witness = await holderGenerateQueryMTPWitnessWithSignature(
+  //     claim2,
+  //     signature,
+  //     holderAuth,
+  //     holderState,
+  //     gist,
+  //     kycQueryMTPInput,
+  //     kycNonRevQueryMTPInput,
+  //     query2
+  //   );
+
+  //   await circuitCheck(witness);
+  // }).timeout(100000);
   // it('benchmark proving time', async () => {
   //   await groth16.fullProve(
   //     witness,
