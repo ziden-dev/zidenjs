@@ -16,7 +16,7 @@ const IDLength = 31;
  * Generate ID from type, genesis
  * @param {Buffer} type
  * @param {Buffer} genesis
- * @returns {Buffer} id
+ * @returns {Buffer} id.
  */
 export function newID(type: Buffer, genesis: Buffer): Buffer {
   const id = Buffer.alloc(31);

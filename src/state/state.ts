@@ -222,9 +222,9 @@ export class State {
 
   /**
    * Insert a batch of claims by their his and hvs
-   * @param {Array<[ArrayLike<number>, ArrayLike<number>]>} claimHiHvs claim to insert
+   * @param {Array<Array<ArrayLike<number>>>} claimHiHvs claim to insert
    */
-  async batchInsertClaimByHiHv(claimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>) {
+  async batchInsertClaimByHiHv(claimHiHvs: Array<Array<ArrayLike<number>>>) {
     for (let i = 0; i < claimHiHvs.length; i++) {
       await this._claimsTree.insert(claimHiHvs[i][0], claimHiHvs[i][1]);
     }

@@ -114,7 +114,7 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
   auth: Auth,
   state: State,
   insertingAuths: Array<Auth>,
-  insertingClaimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>,
+  insertingClaimHiHvs: Array<Array<ArrayLike<number>>>,
   revokingAuthHis: Array<BigInt>,
   revokingClaimRevNonces: Array<BigInt>
 ): Promise<StateTransitionWitness> {
@@ -163,7 +163,7 @@ export async function stateTransitionWitnessWithSignatureAndHiHvs(
   auth: Auth,
   state: State,
   insertingAuths: Array<Auth>,
-  insertingClaimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>,
+  insertingClaimHiHvs: Array<Array<ArrayLike<number>>>,
   revokingAuthHis: Array<BigInt>,
   revokingClaimRevNonces: Array<BigInt>
 ): Promise<StateTransitionWitness> {

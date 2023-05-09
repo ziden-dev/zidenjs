@@ -114,6 +114,7 @@ dist
 *.ptau
 *.r1cs
 *.wasm
+docs
 
 build
 
