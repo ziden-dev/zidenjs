@@ -152,10 +152,10 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
     vci.claimNonRevIssuerState <== issuerClaimNonRevState;
 
     // Check issuerClaim is issued to provided identity
-    // component claimIdCheck = verifyCredentialSubjectProfile();
-    // for (var i=0; i<8; i++) { claimIdCheck.claim[i] <== issuerClaim[i]; }
-    // claimIdCheck.id <== userID;
-    // claimIdCheck.nonce <== claimSubjectProfileNonce;
+     component claimIdCheck = verifyCredentialSubjectProfile();
+     for (var i=0; i<8; i++) { claimIdCheck.claim[i] <== issuerClaim[i]; }
+     claimIdCheck.id <== userID;
+     claimIdCheck.nonce <== claimSubjectProfileNonce;
 
     // Verify issuerClaim schema
     component claimSchemaCheck = verifyCredentialSchema();

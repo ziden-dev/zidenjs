@@ -4,10 +4,10 @@ import { Auth, IdOwnershipBySignatureWitness, SignedChallenge } from '../index.j
 import { signChallenge } from '../state/auth.js';
 import { State } from '../state/state.js';
 import { setupParams } from '../global.js';
+
 /**
  * Generate authentication witness from private key
  */
-
 export async function idOwnershipBySignatureWitnessWithPrivateKey(
   privateKey: Buffer,
   auth: Auth,
@@ -51,7 +51,7 @@ export async function idOwnershipBySignatureWitnessWithSignature(
   const genesis = await state.generateGenesisProof();
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
-  const gistProof = await gist.generateGistProof(F.toObject(zidenParams.hasher([genesis.genesisID])));
+  const gistProof = await gist.generateGistProof(F.toObject(zidenParams.hasher([state.genesisID])));
   return {
     ...gistProof,
     ...genesis,

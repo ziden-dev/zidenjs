@@ -168,9 +168,6 @@ template verifyCredentialSubjectProfile() {
     profile.in <== id;
     profile.nonce <== nonce;
 
-	log("user ID ", subjectOtherIden.id);
-	log("profile out ", profile.out);
-
     subjectOtherIden.id === profile.out;
 }
 
@@ -328,5 +325,4 @@ template isUpdatable() {
 
         out <== claimFlags[4];
 }
-
 

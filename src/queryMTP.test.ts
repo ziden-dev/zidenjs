@@ -107,8 +107,10 @@ describe('test credential query MTP', async () => {
     );
 
     await issuerState.insertClaim(claim1);
-    await gist.insertGist(holderState.genesisID, holderState.getIdenState());
+
     await issuerState.insertClaim(claim2);
+
+    await gist.insertGist(holderState.genesisID, holderState.getIdenState());
 
     circuitCheck = async (witness: QueryMTPWitness) => {
       const circuit = await wasm_tester(path.join('src', 'circom_test', 'credentialAtomicQueryMTP.circom'));
@@ -132,27 +134,26 @@ describe('test credential query MTP', async () => {
       kycNonRevQueryMTPInput,
       query1
     );
-    //console.log('witness = ', witness);
     await circuitCheck(witness);
   }).timeout(100000);
 
-  // it('test query 2', async () => {
-  //   const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
-  //   const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
-  //   const signature = await signChallenge(holderPriv, BigInt(1));
-  //   witness = await holderGenerateQueryMTPWitnessWithSignature(
-  //     claim2,
-  //     signature,
-  //     holderAuth,
-  //     holderState,
-  //     gist,
-  //     kycQueryMTPInput,
-  //     kycNonRevQueryMTPInput,
-  //     query2
-  //   );
+  it('test query 2', async () => {
+    const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
+    const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
+    const signature = await signChallenge(holderPriv, BigInt(1));
+    witness = await holderGenerateQueryMTPWitnessWithSignature(
+      claim2,
+      signature,
+      holderAuth,
+      holderState,
+      gist,
+      kycQueryMTPInput,
+      kycNonRevQueryMTPInput,
+      query2
+    );
 
-  //   await circuitCheck(witness);
-  // }).timeout(100000);
+    await circuitCheck(witness);
+  }).timeout(100000);
   // it('benchmark proving time', async () => {
   //   await groth16.fullProve(
   //     witness,

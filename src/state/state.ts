@@ -263,13 +263,21 @@ export class State {
     return claim;
   }
 
+  /**
+   * Revoke a batch of claims
+   * @param {BigInt[]} revNonces revNonces to revoke
+   */
   async batchRevokeClaim(revNonces: BigInt[]) {
     for (let i = 0; i < revNonces.length; i++) {
       //await this._claimRevTree.insert(getZidenParams().F.e(revNonces[i]), getZidenParams().F.zero);
       await this.revokeClaim(revNonces[i]);
     }
   }
-
+  /**
+   * Revoke a claims by using revNonce
+   * @param {BigInt} revNonce revNonces to revoke
+   * @param {BigInt} version custom version in revoke tree, default = 100000
+   */
   async revokeClaim(revNonce: BigInt, version: BigInt = BigInt(100000)) {
     const resFind = await this._claimRevTree.find(getZidenParams().F.e(revNonce));
     if (!resFind.found) {
@@ -279,6 +287,11 @@ export class State {
     }
   }
 
+  /**
+   * UpdateClaim a claims, revoke oldClaim corresponding with new Claim, insert new Claim
+   * @param {Entry} claimNew newClaim
+   * @param {number} maxAttempTimes custom max Apptemp Times
+   */
   async updateClaim(claimNew: Entry, maxAttempTimes: number = 100) {
     await this.revokeClaim(claimNew.getRevocationNonce(), claimNew.getVersion());
     await claimNew.setRevocationNonce(claimNew.getRevocationNonce());
@@ -303,6 +316,10 @@ export class State {
     return claimNew;
   }
 
+  /**
+   * Revoke Auth Claim using authHi
+   * @param {BigInt} authHi authHi correspond Auth Claim wanted revoke
+   */
   async revokeAuth(authHi: BigInt) {
     await this._authsTree.delete(authHi);
   }
@@ -311,9 +328,8 @@ export class State {
    * Generate Genesis Proof
    */
   async generateGenesisProof(): Promise<GenesisProof> {
-    const F = getZidenParams().F;
     return {
-      genesisID: F.toObject(this._genesisID),
+      genesisID: bitsToNum(this._genesisID),
       profileNonce: this.profileNonce,
     };
   }
@@ -353,7 +369,9 @@ export class State {
       treeRoot: getZidenParams().F.toObject(this._claimsTree.root),
     };
   }
-
+  /**
+   * Generate Roots Maych Proof  in State
+   */
   async generateRootsMatchProof(): Promise<RootsMatchProof> {
     const F = getZidenParams().F;
     return {

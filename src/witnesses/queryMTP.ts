@@ -74,10 +74,8 @@ export async function holderGenerateQueryMTPWitnessWithPrivateKey(
     getPartialValue(slotValue, query.from, query.to),
     query.operator
   );
-
   return {
     ...idOwnershipProof,
-
     ...merkleQueryInput,
     ...kycQueryMTPInput,
     ...kycQueryNonRevMTPInput,
