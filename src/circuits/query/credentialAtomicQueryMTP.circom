@@ -44,7 +44,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
 	signal input userClaimsRoot;
     signal input userClaimRevRoot;
     signal input gistRoot;
-    signal input gistMtp[gistLevel * 2];
+    signal input gistMtp[gistLevel];
     signal input gistMtpAuxHi;
     signal input gistMtpAuxHv;
     signal input gistMtpNoAux;
@@ -123,7 +123,7 @@ template CredentialAtomicQueryMTP(IdOwnershipLevels, IssuerLevels, gistLevel, va
         // global identity state tree on chain
     userIdOwnership.gistRoot <== gistRoot;
     // proof of inclusion or exclusion of the user in the global state
-    for (var i = 0; i < gistLevel * 2; i++) { userIdOwnership.gistMtp[i] <== gistMtp[i]; }
+    for (var i = 0; i < gistLevel; i++) { userIdOwnership.gistMtp[i] <== gistMtp[i]; }
     
     userIdOwnership.gistMtpAuxHi <== gistMtpAuxHi;
     userIdOwnership.gistMtpAuxHv <== gistMtpAuxHv;

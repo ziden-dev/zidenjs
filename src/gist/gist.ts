@@ -30,12 +30,10 @@ export class Gist {
 
   async insertGist(Hi: Buffer, Hv: Buffer) {
     const F = getZidenParams().F;
-
-    console.log(' Inser Gist Hi = ', F.toObject(getZidenParams().hasher([Hi])), ' Gv = ', bitsToNum(Hv));
-
     //await setupParams();
     const HvNum = bitsToNum(Hv);
     await this._gistTree.insert(F.toObject(getZidenParams().hasher([Hi])), HvNum);
+    // console.log(" Root = ", F.toObject(this._gistTree.root));
   }
 
   /**
@@ -44,8 +42,6 @@ export class Gist {
    * @returns {Promise<GistProof>} claim exist proof
    */
   async generateGistProof(gistHi: BigInt): Promise<GistProof> {
-    console.log(' Get gistProof from ', gistHi);
-
     const F = getZidenParams().F;
     const res = await this._gistTree.find(F.e(gistHi));
     if (!res.found) {
@@ -54,7 +50,7 @@ export class Gist {
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
     this._gistDepth;
-    while (siblings.length < this._gistDepth * 2) siblings.push(BigInt(0));
+    while (siblings.length < this._gistDepth ) siblings.push(BigInt(0));
     return {
       gistMtp: siblings,
       gistRoot: F.toObject(this._gistTree.root),

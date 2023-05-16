@@ -38,7 +38,7 @@ template idOwnershipBySignatureV2(nLevels, gistLevel) {
 	signal input challengeSignatureS;
 
     signal input gistRoot;
-    signal input gistMtp[gistLevel * 2];
+    signal input gistMtp[gistLevel];
     signal input gistMtpAuxHi;
     signal input gistMtpAuxHv;
     signal input gistMtpNoAux;
@@ -75,18 +75,18 @@ template idOwnershipBySignatureV2(nLevels, gistLevel) {
 
     component genesisIDhash = Poseidon(1);
     genesisIDhash.inputs[0] <== genesisID;
-
     component gistCheck = SMTVerifier(gistLevel);
     gistCheck.enabled <== 1;
-    gistCheck.fnc <== isStateGenesis.out; // non-inclusion in case if genesis state, otherwise inclusion
+   // gistCheck.fnc <== isStateGenesis.out; // non-inclusion in case if genesis state, otherwise inclusion
+    gistCheck.fnc <== 1; 
 	gistCheck.root <== gistRoot;
+    
 	for (var i=0; i<gistLevel ; i++) { gistCheck.siblings[i] <== gistMtp[i]; }
 	gistCheck.oldKey <== gistMtpAuxHi;
 	gistCheck.oldValue <== gistMtpAuxHv;
 	gistCheck.isOld0 <== gistMtpNoAux;
 	gistCheck.key <== genesisIDhash.out;
 	gistCheck.value <== userState;
-
     /* ProfileID calculation */
     component calcProfile = SelectProfile();
     calcProfile.in <== genesisID;
