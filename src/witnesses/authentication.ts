@@ -4,7 +4,7 @@ import { Auth, IdOwnershipBySignatureWitness, SignedChallenge } from '../index.j
 import { signChallenge } from '../state/auth.js';
 import { State } from '../state/state.js';
 import { setupParams } from '../global.js';
-
+import { bitsToNum } from '../utils.js';
 /**
  * Generate authentication witness from private key
  */
@@ -21,7 +21,7 @@ export async function idOwnershipBySignatureWitnessWithPrivateKey(
   const signature = await signChallenge(privateKey, challenge);
   const authExistsProof = await state.generateAuthExistsProof(auth.authHi);
   const rootsMatchProof = await state.generateRootsMatchProof();
-  const gistProof = await gist.generateGistProof(F.toObject(zidenParams.hasher([state.genesisID])));
+  const gistProof = await gist.generateGistProof(F.toObject(zidenParams.hasher([bitsToNum(state.genesisID)])));
   return {
     ...gistProof,
     ...genesis,

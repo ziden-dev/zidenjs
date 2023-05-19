@@ -97,20 +97,17 @@ describe('test credential query MTP', async () => {
     claim1 = newClaim(
       schemaHashFromBigInt(query1.claimSchema),
       withSlotData(query1.slotIndex, numToBits(slot1, 32)),
-      withIndexID(holderState.userID)
+      withIndexID(holderState.genesisID)
     );
 
     claim2 = newClaim(
       schemaHashFromBigInt(query2.claimSchema),
       withSlotData(query2.slotIndex, numToBits(slot2, 32)),
-      withIndexID(holderState.userID)
+      withIndexID(holderState.genesisID )
     );
 
     await issuerState.insertClaim(claim1);
-
     await issuerState.insertClaim(claim2);
-
-    await gist.insertGist(holderState.genesisID, holderState.getIdenState());
 
     circuitCheck = async (witness: QueryMTPWitness) => {
       const circuit = await wasm_tester(path.join('src', 'circom_test', 'credentialAtomicQueryMTP.circom'));

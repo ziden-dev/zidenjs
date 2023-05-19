@@ -73,6 +73,8 @@ export interface IdOwnershipBySignatureWitness extends SignedChallenge {
 
 export interface StateTransitionWitness {
   readonly genesisID: BigInt;
+  readonly profileNonce: BigInt;
+
   readonly oldUserState: BigInt;
   readonly newUserState: BigInt;
   readonly isOldStateGenesis: number;
@@ -88,6 +90,13 @@ export interface StateTransitionWitness {
   readonly challengeSignatureR8x: BigInt;
   readonly challengeSignatureR8y: BigInt;
   readonly challengeSignatureS: BigInt;
+
+  readonly gistRoot: BigInt;
+  readonly gistMtp: Array<BigInt>;
+  readonly gistMtpAuxHi: BigInt;
+  readonly gistMtpAuxHv: BigInt;
+  readonly gistMtpNoAux: BigInt;
+
 }
 
 export interface KYCQueryMTPInput {

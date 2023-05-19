@@ -2,7 +2,6 @@
 import { wasm as wasm_tester } from 'circom_tester';
 // @ts-ignore
 import { groth16 } from 'snarkjs';
-
 import { newClaim, withIndexData, schemaHashFromBigInt } from './claim/entry.js';
 import { SMTLevelDb } from './db/level_db.js';
 import { setupParams } from './global.js';
@@ -53,13 +52,13 @@ describe('test authentication', async () => {
     await state.revokeClaim(claim3.getRevocationNonce());
     const auth1 = newAuthFromPrivateKey(Buffer.alloc(32, 2));
     await state.insertAuth(auth1);
-
+    
     await gist.insertGist(state.genesisID, state.getIdenState());
 
     idOwnershipWitness = await idOwnershipBySignatureWitnessWithPrivateKey(privateKey, auth, challenge, state, gist);
+    
     const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignatureV2.circom'));
     const w0 = await circuit.calculateWitness(idOwnershipWitness, true);
-   
     await circuit.checkConstraints(w0);
   }).timeout(20000);
 

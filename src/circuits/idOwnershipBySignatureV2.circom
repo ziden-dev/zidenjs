@@ -77,10 +77,9 @@ template idOwnershipBySignatureV2(nLevels, gistLevel) {
     genesisIDhash.inputs[0] <== genesisID;
     component gistCheck = SMTVerifier(gistLevel);
     gistCheck.enabled <== 1;
-   // gistCheck.fnc <== isStateGenesis.out; // non-inclusion in case if genesis state, otherwise inclusion
-    gistCheck.fnc <== 1; 
+
+    gistCheck.fnc <== isStateGenesis.out; // non-inclusion in case if genesis state, otherwise inclusion
 	gistCheck.root <== gistRoot;
-    
 	for (var i=0; i<gistLevel ; i++) { gistCheck.siblings[i] <== gistMtp[i]; }
 	gistCheck.oldKey <== gistMtpAuxHi;
 	gistCheck.oldValue <== gistMtpAuxHv;

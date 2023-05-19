@@ -16,15 +16,18 @@ template UpdateGist(gistLevel, numberOfLeaves){
     component processor[numberOfLeaves];
     for(var i = 0; i < numberOfLeaves; i++){
         processor[i] = SMTProcessor(gistLevel);
+
         if(i == 0){
             processor[i].oldRoot <== oldGistRoot;
         }
         else {
             processor[i].oldRoot <== processor[i - 1].newRoot;
         }
+        
         for(var j = 0; j < gistLevel; j++){
             processor[i].siblings[j] <== siblings[i * gistLevel + j];
         }
+
         processor[i].oldKey <== oldKey[i];
         processor[i].oldValue <== oldValue[i];
         processor[i].isOld0 <== isOld0[i];

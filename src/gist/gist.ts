@@ -30,10 +30,14 @@ export class Gist {
 
   async insertGist(Hi: Buffer, Hv: Buffer) {
     const F = getZidenParams().F;
-    //await setupParams();
     const HvNum = bitsToNum(Hv);
-    await this._gistTree.insert(F.toObject(getZidenParams().hasher([Hi])), HvNum);
-    // console.log(" Root = ", F.toObject(this._gistTree.root));
+     const resFind = await this._gistTree.find(getZidenParams().F.e(getZidenParams().hasher([bitsToNum(Hi)])));
+     if (!resFind.found) {
+        await this._gistTree.insert(F.e(getZidenParams().hasher([bitsToNum(Hi)])), HvNum);
+      } else {
+        await this._gistTree.update(F.e(getZidenParams().hasher([bitsToNum(Hi)])), HvNum);
+      }
+
   }
 
   /**
@@ -45,7 +49,16 @@ export class Gist {
     const F = getZidenParams().F;
     const res = await this._gistTree.find(F.e(gistHi));
     if (!res.found) {
-      throw new Error('Gist is not inserted to the gist tree');
+      let siblings = [];
+      for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
+      while (siblings.length < this._gistDepth ) siblings.push(BigInt(0));
+      return {
+        gistMtp: siblings,
+        gistRoot: F.toObject(this._gistTree.root),
+        gistMtpAuxHi: F.toObject(res.notFoundKey!),
+        gistMtpAuxHv: F.toObject(res.notFoundValue!),
+        gistMtpNoAux: res.isOld0 ? BigInt(1) : BigInt(0),
+      };
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));

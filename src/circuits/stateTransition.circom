@@ -5,22 +5,22 @@ include "../../node_modules/circomlib/circuits/babyjub.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
-include "idOwnershipBySignature.circom";
+include "idOwnershipBySignatureV2.circom";
 
-template StateTransition(IdOwnershipLevels) {
+template StateTransition(IdOwnershipLevels, gistLevel) {
     // we have no constraints for "id" in this circuit, however we introduce "id" input here
     // as it serves as public input which should be the same for prover and verifier
     signal input genesisID;
+    signal input profileNonce;
+
     signal input oldUserState;
     signal input newUserState;
     signal input isOldStateGenesis;
-
 	signal input userAuthsRoot;
 	signal input userAuthMtp[IdOwnershipLevels * 4];
 	signal input userAuthHi;
     signal input userAuthPubX;
     signal input userAuthPubY;
-
 
 	signal input userClaimsRoot;
     signal input userClaimRevRoot;
@@ -28,6 +28,12 @@ template StateTransition(IdOwnershipLevels) {
 	signal input challengeSignatureR8x;
 	signal input challengeSignatureR8y;
 	signal input challengeSignatureS;
+
+    signal input gistRoot;
+    signal input gistMtp[gistLevel];
+    signal input gistMtpAuxHi;
+    signal input gistMtpAuxHv;
+    signal input gistMtpNoAux;
 
 
     component cutId = cutId();
@@ -63,20 +69,13 @@ template StateTransition(IdOwnershipLevels) {
 
     /* Id ownership check*/
     
-    component userIdOwnership = IdOwnershipBySignature(IdOwnershipLevels);
+    component userIdOwnership = idOwnershipBySignatureV2(IdOwnershipLevels, gistLevel);
 
     userIdOwnership.userAuthsRoot <== userAuthsRoot;
     userIdOwnership.userAuthHi <== userAuthHi;
     userIdOwnership.userAuthPubX <== userAuthPubX;
     userIdOwnership.userAuthPubY <== userAuthPubY;
     for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthMtp[i] <== userAuthMtp[i]; }
-    
-
-    // userIdOwnership.userAuthRevRoot <== userAuthRevRoot; 
-    // for (var i=0; i<IdOwnershipLevels * 4; i++) { userIdOwnership.userAuthNonRevMtp[i] <== userAuthNonRevMtp[i]; }
-    // userIdOwnership.userAuthNonRevMtpNoAux <== userAuthNonRevMtpNoAux;
-    // userIdOwnership.userAuthNonRevMtpAuxHv <== userAuthNonRevMtpAuxHv;
-    // userIdOwnership.userAuthNonRevMtpAuxHi <== userAuthNonRevMtpAuxHi;
 
     userIdOwnership.userClaimsRoot <== userClaimsRoot;
     userIdOwnership.userClaimRevRoot <== userClaimRevRoot;
@@ -86,6 +85,16 @@ template StateTransition(IdOwnershipLevels) {
     userIdOwnership.challengeSignatureR8y <== challengeSignatureR8y;
     userIdOwnership.challengeSignatureS <== challengeSignatureS;
 
+    // genesis proof
     userIdOwnership.userState <== oldUserState;
+    userIdOwnership.genesisID <== genesisID;
+    userIdOwnership.profileNonce <== profileNonce;
 
+    // global identity state tree on chain
+    userIdOwnership.gistRoot <== gistRoot;
+    // Gist proof
+    for (var i = 0; i < gistLevel; i++) { userIdOwnership.gistMtp[i] <== gistMtp[i]; }
+    userIdOwnership.gistMtpAuxHi <== gistMtpAuxHi;
+    userIdOwnership.gistMtpAuxHv <== gistMtpAuxHv;
+    userIdOwnership.gistMtpNoAux <== gistMtpNoAux;
 }

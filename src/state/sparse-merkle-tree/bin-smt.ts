@@ -267,7 +267,6 @@ export class BinSMT implements SMT {
     res.oldValue = resFind.notFoundValue;
     res.newRoot = rt;
     res.isOld0 = resFind.isOld0;
-
     await this._db.multiIns(ins);
     await this._db.setRoot(rt);
     this._root = rt;

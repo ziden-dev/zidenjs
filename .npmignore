@@ -1,4 +1,4 @@
-# Rules from: /Users/admin/CODE/Blockchain/Zidenjs/zidenjs/.gitignore
+# Rules from: E:\CODE\Blockchain\Ziden\zidenjs\.gitignore
 # Logs
 logs
 *.log
@@ -115,6 +115,7 @@ dist
 *.ptau
 *.r1cs
 *.wasm
+docs
 
 build
 
