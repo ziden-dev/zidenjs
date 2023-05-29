@@ -1,11 +1,11 @@
-
-pragma circom 2.0.0;
-
+pragma circom 2.0.0; 
 include "../../node_modules/circomlib/circuits/babyjub.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../../node_modules/circomlib/circuits/poseidon.circom";
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "idOwnershipBySignatureV2.circom";
+
+include "updateGist2.circom";
 
 template StateTransition(IdOwnershipLevels, gistLevel) {
     // we have no constraints for "id" in this circuit, however we introduce "id" input here
@@ -14,6 +14,7 @@ template StateTransition(IdOwnershipLevels, gistLevel) {
     signal input profileNonce;
 
     signal input oldUserState;
+    
     signal input newUserState;
     signal input isOldStateGenesis;
 	signal input userAuthsRoot;
@@ -34,7 +35,6 @@ template StateTransition(IdOwnershipLevels, gistLevel) {
     signal input gistMtpAuxHi;
     signal input gistMtpAuxHv;
     signal input gistMtpNoAux;
-
 
     component cutId = cutId();
     cutId.in <== genesisID;
@@ -97,4 +97,36 @@ template StateTransition(IdOwnershipLevels, gistLevel) {
     userIdOwnership.gistMtpAuxHi <== gistMtpAuxHi;
     userIdOwnership.gistMtpAuxHv <== gistMtpAuxHv;
     userIdOwnership.gistMtpNoAux <== gistMtpNoAux;
+
+
+
+    // new Gist proof
+    signal output newGistRoot;
+
+    component genesisIDhash = Poseidon(1);
+    genesisIDhash.inputs[0] <== genesisID;
+
+    // isStateGenesis  = 1 => Insert [ 1 / 0 ] else Update [ 0 /  1 ]
+    // If sel == 0 then outL = L and outR=R
+    // If sel == 1 then outL = R and outR=L
+    component fncSignal = Switcher();
+    fncSignal.sel <== isCutIdEqualToCutState.out;
+    fncSignal.L <== 0;
+    fncSignal.R <== 1;
+
+    component processor = UpdateGistABC(gistLevel);
+
+    processor.fnc[0] <== fncSignal.outL;
+    processor.fnc[1] <== fncSignal.outR;
+    processor.oldGistRoot <== gistRoot;
+    processor.oldKey <== genesisIDhash.out;
+    processor.oldValue <== oldUserState;
+    processor.isOld0 <== gistMtpNoAux;
+    processor.newKey <== genesisIDhash.out;
+    processor.newValue <== newUserState;
+    
+    for (var i = 0;  i < gistLevel ; i++) {
+        processor.siblings[i] <== gistMtp[i];
+    }
+    newGistRoot <== processor.newGistRoot;
 }

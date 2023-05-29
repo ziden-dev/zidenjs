@@ -308,7 +308,7 @@ export class BinSMT implements SMT {
       };
       return res;
     }
-
+    
     const record = await this._db.get(root);
     if (!record) {
       throw new Error('Record not found in db');

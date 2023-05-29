@@ -96,7 +96,6 @@ export interface StateTransitionWitness {
   readonly gistMtpAuxHi: BigInt;
   readonly gistMtpAuxHv: BigInt;
   readonly gistMtpNoAux: BigInt;
-
 }
 
 export interface KYCQueryMTPInput {
@@ -214,6 +213,7 @@ export * as claim from './claim/entry.js';
 export * as id from './claim/id.js';
 export * as auth from './state/auth.js';
 export * as state from './state/state.js';
+export * as gist from './gist/gist.js';
 export * as db from './db/index.js';
 export * as idOwnership from './witnesses/authentication.js';
 export * as stateTransition from './witnesses/stateTransition.js';

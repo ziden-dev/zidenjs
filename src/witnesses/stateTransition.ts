@@ -4,7 +4,7 @@ import { Auth, SignedChallenge, StateTransitionWitness } from 'src/index.js';
 import { State } from '../state/state.js';
 import { signChallenge } from '../state/auth.js';
 import { bitsToNum } from '../utils.js';
-import { Gist } from 'src/gist/gist.js';
+import { Gist } from '../gist/gist.js';
 
 /**
  * Update user state with private key
@@ -19,6 +19,9 @@ export async function stateTransitionWitnessWithPrivateKey(
   revokingAuthHis: Array<BigInt>,
   revokingClaimRevNonces: Array<BigInt>
 ): Promise<StateTransitionWitness> {
+
+  console.log(" Gist Root now = ", gist.getRoot())
+
   const userID = state.userID;
   const oldUserState = state.getIdenState();
   const isOldStateGenesis = userID.subarray(2, 31).equals(oldUserState.subarray(-29)) ? 1 : 0;
@@ -37,7 +40,7 @@ export async function stateTransitionWitnessWithPrivateKey(
   for (let i = 0; i < revokingClaimRevNonces.length; i++) {
     await state.revokeClaim(revokingClaimRevNonces[i]);
   }
-  
+
   const newUserState = state.getIdenState();
   const challenge = getZidenParams().hasher([bitsToNum(oldUserState), bitsToNum(newUserState)]);
   const signature = await signChallenge(privateKey, challenge);
@@ -59,7 +62,7 @@ export async function stateTransitionWitnessWithPrivateKey(
     challengeSignatureR8x: signature.challengeSignatureR8x,
     challengeSignatureR8y: signature.challengeSignatureR8y,
     challengeSignatureS: signature.challengeSignatureS,
-    ...gistProof
+    ...gistProof,
   };
 }
 

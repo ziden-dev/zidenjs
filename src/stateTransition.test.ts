@@ -16,10 +16,9 @@ import { State } from './state/state.js';
 import { SMTLevelDb } from './db/level_db.js';
 import { setupParams } from './global.js';
 import { newAuthFromPrivateKey } from './state/auth.js';
-import {
-  stateTransitionWitnessWithPrivateKey
-} from './witnesses/stateTransition.js';
+import { stateTransitionWitnessWithPrivateKey } from './witnesses/stateTransition.js';
 import { Gist } from './gist/gist.js';
+import crypto from 'crypto';
 
 describe('test state transition', async () => {
   let priv1: Buffer;
@@ -46,10 +45,10 @@ describe('test state transition', async () => {
   let circuitCheck: (witness: StateTransitionWitness) => Promise<void>;
   it('set up trees and claims', async () => {
     await setupParams();
-    priv1 = Buffer.alloc(32, 1);
+    //priv1 = Buffer.alloc(32, 1);
     priv2 = Buffer.alloc(32, 2);
     priv3 = Buffer.alloc(32, 3);
-
+    priv1 = crypto.randomBytes(32);
     auth1 = newAuthFromPrivateKey(priv1);
     auth2 = newAuthFromPrivateKey(priv2);
     auth3 = newAuthFromPrivateKey(priv3);
@@ -57,7 +56,7 @@ describe('test state transition', async () => {
     authsDb = new SMTLevelDb('src/db_test/auths');
     claimsDb = new SMTLevelDb('src/db_test/claims');
     claimRevDb = new SMTLevelDb('src/db_test/claimRev');
-    gistDb = new SMTLevelDb("src/db_test/gist");
+    gistDb = new SMTLevelDb('src/db_test/gist');
     state = await State.generateState([auth1], authsDb, claimsDb, claimRevDb);
     gist = await Gist.generateGist(gistDb);
 
@@ -98,10 +97,9 @@ describe('test state transition', async () => {
     await circuitCheck(w1);
   }).timeout(20000);
 
-
-  
   it('2nd state transition', async () => {
-    await gist.insertGist( state.genesisID, state.getIdenState() );
+    await gist.insertGist(state.genesisID, state.getIdenState());
+    console.log(' Gist new = ', gist.getRoot());
     //claim3 = await state.prepareClaimForInsert(claim3);
     //claim4 = await state.prepareClaimForInsert(claim4);
     const w2 = await stateTransitionWitnessWithPrivateKey(
@@ -110,9 +108,7 @@ describe('test state transition', async () => {
       state,
       gist,
       [],
-        [claim3,
-        claim4
-      ],
+      [claim3, claim4],
       [],
       [claim1.getRevocationNonce(), claim2.getRevocationNonce()]
     );
@@ -120,7 +116,8 @@ describe('test state transition', async () => {
   }).timeout(30000);
   let witness: StateTransitionWitness;
   it('3rd state transition', async () => {
-    await gist.insertGist( state.genesisID, state.getIdenState() );
+    await gist.insertGist(state.genesisID, state.getIdenState());
+    console.log(' Gist new = ', gist.getRoot());
     witness = await stateTransitionWitnessWithPrivateKey(
       priv1,
       auth1,

@@ -28,16 +28,20 @@ export class Gist {
     return new Gist(gistTree, gistDepth);
   }
 
+  getRoot() {
+    const F = getZidenParams().F;
+    return F.toObject(this._gistTree.root);
+  }
+
   async insertGist(Hi: Buffer, Hv: Buffer) {
     const F = getZidenParams().F;
     const HvNum = bitsToNum(Hv);
-     const resFind = await this._gistTree.find(getZidenParams().F.e(getZidenParams().hasher([bitsToNum(Hi)])));
-     if (!resFind.found) {
-        await this._gistTree.insert(F.e(getZidenParams().hasher([bitsToNum(Hi)])), HvNum);
-      } else {
-        await this._gistTree.update(F.e(getZidenParams().hasher([bitsToNum(Hi)])), HvNum);
-      }
-
+    const resFind = await this._gistTree.find(getZidenParams().F.e(getZidenParams().hasher([bitsToNum(Hi)])));
+    if (!resFind.found) {
+      await this._gistTree.insert(F.e(getZidenParams().hasher([bitsToNum(Hi)])), HvNum);
+    } else {
+      await this._gistTree.update(F.e(getZidenParams().hasher([bitsToNum(Hi)])), HvNum);
+    }
   }
 
   /**
@@ -46,12 +50,13 @@ export class Gist {
    * @returns {Promise<GistProof>} claim exist proof
    */
   async generateGistProof(gistHi: BigInt): Promise<GistProof> {
+
     const F = getZidenParams().F;
     const res = await this._gistTree.find(F.e(gistHi));
     if (!res.found) {
       let siblings = [];
       for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
-      while (siblings.length < this._gistDepth ) siblings.push(BigInt(0));
+      while (siblings.length < this._gistDepth) siblings.push(BigInt(0));
       return {
         gistMtp: siblings,
         gistRoot: F.toObject(this._gistTree.root),
@@ -62,8 +67,7 @@ export class Gist {
     }
     let siblings = [];
     for (let i = 0; i < res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
-    this._gistDepth;
-    while (siblings.length < this._gistDepth ) siblings.push(BigInt(0));
+    while (siblings.length < this._gistDepth) siblings.push(BigInt(0));
     return {
       gistMtp: siblings,
       gistRoot: F.toObject(this._gistTree.root),
