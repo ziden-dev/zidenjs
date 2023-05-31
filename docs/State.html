@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> State</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Entry.html">Entry</a></li><li><a href="State.html">State</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IDFromBigInt">IDFromBigInt</a></li><li><a href="global.html#IDFromBytes">IDFromBytes</a></li><li><a href="global.html#IDGenesisFromIdenState">IDGenesisFromIdenState</a></li><li><a href="global.html#bitsToNum">bitsToNum</a></li><li><a href="global.html#bufferArrayToHex">bufferArrayToHex</a></li><li><a href="global.html#bufferToFloat">bufferToFloat</a></li><li><a href="global.html#bufferToHex">bufferToHex</a></li><li><a href="global.html#bulkInsert">bulkInsert</a></li><li><a href="global.html#calculateDeterministicValue">calculateDeterministicValue</a></li><li><a href="global.html#checkElemFitsClaim">checkElemFitsClaim</a></li><li><a href="global.html#checkSchemaHashLength">checkSchemaHashLength</a></li><li><a href="global.html#createMask">createMask</a></li><li><a href="global.html#createMerkleQueryInput">createMerkleQueryInput</a></li><li><a href="global.html#deserialize">deserialize</a></li><li><a href="global.html#floatToBuffer">floatToBuffer</a></li><li><a href="global.html#getPartialValue">getPartialValue</a></li><li><a href="global.html#getTreeSlices">getTreeSlices</a></li><li><a href="global.html#hexToBuffer">hexToBuffer</a></li><li><a href="global.html#hexToBufferArray">hexToBufferArray</a></li><li><a href="global.html#hexToString">hexToString</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithPrivateKey">holderGenerateQueryMTPWitnessWithPrivateKey</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithSignature">holderGenerateQueryMTPWitnessWithSignature</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithPrivateKey">idOwnershipBySignatureWitnessWithPrivateKey</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithSignature">idOwnershipBySignatureWitnessWithSignature</a></li><li><a href="global.html#idenState">idenState</a></li><li><a href="global.html#kycGenerateNonRevQueryMTPInput">kycGenerateNonRevQueryMTPInput</a></li><li><a href="global.html#kycGenerateQueryMTPInput">kycGenerateQueryMTPInput</a></li><li><a href="global.html#newAuthFromPrivateKey">newAuthFromPrivateKey</a></li><li><a href="global.html#newClaim">newClaim</a></li><li><a href="global.html#newEDDSAPublicKeyFromPrivateKey">newEDDSAPublicKeyFromPrivateKey</a></li><li><a href="global.html#newID">newID</a></li><li><a href="global.html#numToBits">numToBits</a></li><li><a href="global.html#privateKeyFromPassword">privateKeyFromPassword</a></li><li><a href="global.html#schemaHashFromBigInt">schemaHashFromBigInt</a></li><li><a href="global.html#schemaHashToBigInt">schemaHashToBigInt</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#setBits">setBits</a></li><li><a href="global.html#shiftValue">shiftValue</a></li><li><a href="global.html#signChallenge">signChallenge</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKey">stateTransitionWitnessWithPrivateKey</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKeyAndHiHvs">stateTransitionWitnessWithPrivateKeyAndHiHvs</a></li><li><a href="global.html#stateTransitionWitnessWithSignature">stateTransitionWitnessWithSignature</a></li><li><a href="global.html#stateTransitionWitnessWithSignatureAndHiHvs">stateTransitionWitnessWithSignatureAndHiHvs</a></li><li><a href="global.html#stringToHex">stringToHex</a></li><li><a href="global.html#swapEndianness">swapEndianness</a></li><li><a href="global.html#withExpirationDate">withExpirationDate</a></li><li><a href="global.html#withFlagExpirable">withFlagExpirable</a></li><li><a href="global.html#withFlagUpdatable">withFlagUpdatable</a></li><li><a href="global.html#withID">withID</a></li><li><a href="global.html#withIndexData">withIndexData</a></li><li><a href="global.html#withIndexID">withIndexID</a></li><li><a href="global.html#withRevocationNonce">withRevocationNonce</a></li><li><a href="global.html#withSlotData">withSlotData</a></li><li><a href="global.html#withValueData">withValueData</a></li><li><a href="global.html#withValueID">withValueID</a></li><li><a href="global.html#withVersion">withVersion</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Class</p>
+                    <h1>State</h1>
+                </header>
+                
+
+
+
+
+<section>
+
+<header>
+    
+        <h2><span class="attribs"><span class="type-signature"></span></span>State<span class="signature">()</span><span class="type-signature"></span></h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class='vertical-section'>
+                <div class="members">
+                    <div class="member">
+                        <div class=name>
+                            <span class="tag">Constructor</span>
+                        </div>
+                        
+
+
+    
+    <h4 class="name" id="State">
+        <a class="href-link" href="#State">#</a>
+        
+        <span class="code-name">
+            
+                new State<span class="signature">()</span><span class="type-signature"></span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Class State
+    </div>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+<div class="table-container">
+    <table class="props table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_userID</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">Buffer</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">userID</td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_authsTree</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type"><a href="QuinSMT.html">QuinSMT</a></code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">authTree - QuinSMT</td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_claimsTree</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type"><a href="QuinSMT.html">QuinSMT</a></code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">claimsTree - QuinSMT</td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_claimRevTree</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type"><a href="QuinSMT.html">QuinSMT</a></code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">claimRevTree -QuinSMT</td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_authRevNonce</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">number</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">authRevNonce</td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_claimRevNonce</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">number</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">claimRevNonce</td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_authDepth</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">number</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">authDepth</td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>_claimDepth</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">number</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last">claimDepth</td>
+</tr>
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line7">line 7</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        
+    
+    </div>
+    
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class='vertical-section'>
+            <h1>Methods</h1>
+            <div class="members">
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="batchInsertClaimByHiHv">
+        <a class="href-link" href="#batchInsertClaimByHiHv">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                batchInsertClaimByHiHv<span class="signature">(claimHiHvs)</span><span class="type-signature"></span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Insert a batch of claims by their his and hvs
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>claimHiHvs</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">Array.&lt;{ArrayLike.&lt;number>, ArrayLike.&lt;number>}></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">claim to insert</td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line326">line 326</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="batchRevokeClaim">
+        <a class="href-link" href="#batchRevokeClaim">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                batchRevokeClaim<span class="signature">(revNonces)</span><span class="type-signature"></span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        batch claims using a array of revoke nonce
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>revNonces</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">Array.&lt;BigInt></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line342">line 342</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="generateAuthExistsProof">
+        <a class="href-link" href="#generateAuthExistsProof">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                generateAuthExistsProof<span class="signature">(authHi)</span><span class="type-signature"> &rarr; {Promise.&lt;AuthExistsProof>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Generate Auth Exist Proof for an auth in auth tree
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>authHi</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">BigInt</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line358">line 358</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>Auth exist Proof</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;AuthExistsProof></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="generateClaimExistsProof">
+        <a class="href-link" href="#generateClaimExistsProof">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                generateClaimExistsProof<span class="signature">(claimHi)</span><span class="type-signature"> &rarr; {Promise.&lt;ClaimExistsProof>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Generate Claim Exist Proof for a claim in claim tree
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>claimHi</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">ArrayLike.&lt;number></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line367">line 367</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>claim exist proof</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;ClaimExistsProof></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="generateClaimNotRevokedProof">
+        <a class="href-link" href="#generateClaimNotRevokedProof">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                generateClaimNotRevokedProof<span class="signature">(revocationNonce)</span><span class="type-signature"> &rarr; {Promise.&lt;ClaimNotRevokedProof>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Generate Claim Not Revoked Proof for a claim in revocation tree
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>revocationNonce</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">BigInt</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line384">line 384</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>claim not revoked proof</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;ClaimNotRevokedProof></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="generateRootsMatchProof">
+        <a class="href-link" href="#generateRootsMatchProof">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                generateRootsMatchProof<span class="signature">()</span><span class="type-signature"> &rarr; {RootsMatchProof}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Generate Roots Match Proof for a claim in state, the proof includes the root of the 3 trees and the expected State
+    </div>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line375">line 375</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>Roots match proof</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">RootsMatchProof</code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="insertAuth">
+        <a class="href-link" href="#insertAuth">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                insertAuth<span class="signature">(auth)</span><span class="type-signature"> &rarr; {Promise.&lt;Auth>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Insert new auth(public key) to claim tree
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>auth</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">Auth</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">auth to insert</td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line309">line 309</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>inserted auth</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;Auth></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="insertClaim">
+        <a class="href-link" href="#insertClaim">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                insertClaim<span class="signature">(claim, maxAttempTimes)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="Entry.html">Entry</a>>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Insert new claim to claim tree
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>claim</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="Entry.html">Entry</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">claim to insert</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>maxAttempTimes</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">number</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">maximum number of inserting attempts (in case leaves have the same index)</td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line319">line 319</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Throws:</label></div>
+        <div class="column is-10">
+            
+                    
+<div class="columns">
+    
+    <div class='param-desc column is-7'>When Failed inserting caused by collision</div>
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+<code class="param-type">Error('Failed inserting caused by collision')</code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>inserted claim</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;<a href="Entry.html">Entry</a>></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="prepareClaimForInsert">
+        <a class="href-link" href="#prepareClaimForInsert">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                prepareClaimForInsert<span class="signature">(claim, maxAttempTimes)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="Entry.html">Entry</a>>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        prepare new claim for inserting
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>claim</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="Entry.html">Entry</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">claim to insert</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>maxAttempTimes</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">number</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">maximum number of inserting attempts (in case leaves have the same index)</td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line335">line 335</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>inserted claim</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;<a href="Entry.html">Entry</a>></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="revokeClaim">
+        <a class="href-link" href="#revokeClaim">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+        
+        <span class="code-name">
+            
+                revokeClaim<span class="signature">(revokeNonce)</span><span class="type-signature"></span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Revoke Claim using revokeNonce's Claim
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>revokeNonce</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">BigInt</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">revokeNonce's claim</td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line349">line 349</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id=".generateState">
+        <a class="href-link" href="#.generateState">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+                <span class='tag'>static</span>
+            
+        
+        <span class="code-name">
+            
+                generateState<span class="signature">(auths, authsDb, claimsDb, claimRevDb, authDepth, claimDepth)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="State.html">State</a>>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Generate iden state from auth claims
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>auths</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">Array.&lt;Auth></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">list of public keys to add to claim tree</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>authsDb</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SMTDb</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">database for auths tree</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>claimsDb</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SMTDb</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">database for claims tree</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>claimRevDb</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SMTDb</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">database for claim revocation tree</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>authDepth</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">number</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">the depth of auth and auth rev trees</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>claimDepth</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">number</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">the depth of claim and claim rev trees</td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="state_state.ts.html" class="button">View Source</a>
+            <span>
+                <a href="state_state.ts.html">state/state.ts</a>, <a href="state_state.ts.html#line301">line 301</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;<a href="State.html">State</a>></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+            </div>
+        </div>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

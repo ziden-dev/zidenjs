@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> utils.ts</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Entry.html">Entry</a></li><li><a href="State.html">State</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IDFromBigInt">IDFromBigInt</a></li><li><a href="global.html#IDFromBytes">IDFromBytes</a></li><li><a href="global.html#IDGenesisFromIdenState">IDGenesisFromIdenState</a></li><li><a href="global.html#bitsToNum">bitsToNum</a></li><li><a href="global.html#bufferArrayToHex">bufferArrayToHex</a></li><li><a href="global.html#bufferToFloat">bufferToFloat</a></li><li><a href="global.html#bufferToHex">bufferToHex</a></li><li><a href="global.html#bulkInsert">bulkInsert</a></li><li><a href="global.html#calculateDeterministicValue">calculateDeterministicValue</a></li><li><a href="global.html#checkElemFitsClaim">checkElemFitsClaim</a></li><li><a href="global.html#checkSchemaHashLength">checkSchemaHashLength</a></li><li><a href="global.html#createMask">createMask</a></li><li><a href="global.html#createMerkleQueryInput">createMerkleQueryInput</a></li><li><a href="global.html#deserialize">deserialize</a></li><li><a href="global.html#floatToBuffer">floatToBuffer</a></li><li><a href="global.html#getPartialValue">getPartialValue</a></li><li><a href="global.html#getTreeSlices">getTreeSlices</a></li><li><a href="global.html#hexToBuffer">hexToBuffer</a></li><li><a href="global.html#hexToBufferArray">hexToBufferArray</a></li><li><a href="global.html#hexToString">hexToString</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithPrivateKey">holderGenerateQueryMTPWitnessWithPrivateKey</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithSignature">holderGenerateQueryMTPWitnessWithSignature</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithPrivateKey">idOwnershipBySignatureWitnessWithPrivateKey</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithSignature">idOwnershipBySignatureWitnessWithSignature</a></li><li><a href="global.html#idenState">idenState</a></li><li><a href="global.html#kycGenerateNonRevQueryMTPInput">kycGenerateNonRevQueryMTPInput</a></li><li><a href="global.html#kycGenerateQueryMTPInput">kycGenerateQueryMTPInput</a></li><li><a href="global.html#newAuthFromPrivateKey">newAuthFromPrivateKey</a></li><li><a href="global.html#newClaim">newClaim</a></li><li><a href="global.html#newEDDSAPublicKeyFromPrivateKey">newEDDSAPublicKeyFromPrivateKey</a></li><li><a href="global.html#newID">newID</a></li><li><a href="global.html#numToBits">numToBits</a></li><li><a href="global.html#privateKeyFromPassword">privateKeyFromPassword</a></li><li><a href="global.html#schemaHashFromBigInt">schemaHashFromBigInt</a></li><li><a href="global.html#schemaHashToBigInt">schemaHashToBigInt</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#setBits">setBits</a></li><li><a href="global.html#shiftValue">shiftValue</a></li><li><a href="global.html#signChallenge">signChallenge</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKey">stateTransitionWitnessWithPrivateKey</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKeyAndHiHvs">stateTransitionWitnessWithPrivateKeyAndHiHvs</a></li><li><a href="global.html#stateTransitionWitnessWithSignature">stateTransitionWitnessWithSignature</a></li><li><a href="global.html#stateTransitionWitnessWithSignatureAndHiHvs">stateTransitionWitnessWithSignatureAndHiHvs</a></li><li><a href="global.html#stringToHex">stringToHex</a></li><li><a href="global.html#swapEndianness">swapEndianness</a></li><li><a href="global.html#withExpirationDate">withExpirationDate</a></li><li><a href="global.html#withFlagExpirable">withFlagExpirable</a></li><li><a href="global.html#withFlagUpdatable">withFlagUpdatable</a></li><li><a href="global.html#withID">withID</a></li><li><a href="global.html#withIndexData">withIndexData</a></li><li><a href="global.html#withIndexID">withIndexID</a></li><li><a href="global.html#withRevocationNonce">withRevocationNonce</a></li><li><a href="global.html#withSlotData">withSlotData</a></li><li><a href="global.html#withValueData">withValueData</a></li><li><a href="global.html#withValueID">withValueID</a></li><li><a href="global.html#withVersion">withVersion</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>utils.ts</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { toBigIntBE, toBufferBE } from 'bigint-buffer';
+/**
+ * Allocates a new Buffer from a bigInt number in little-endian format
+ * @param {bigInt} number - bigInt number
+ * @returns {Buffer} - Decoded Buffer
+ */
+export function numToBits(number: BigInt, width: number): Buffer {
+  const buff = toBufferBE(number.valueOf(), width);
+  return swapEndianness(buff);
+}
+
+/**
+ * Allocates a new bigInt from a buffer in big-endian format
+ * @param {Buffer} buff - Buffer to convert
+ * @returns {BigInt} - Decoded bigInt
+ */
+export function bitsToNum(buff: Buffer): BigInt {
+  const revBuff = swapEndianness(buff);
+  return toBigIntBE(revBuff);
+}
+/**
+ * Swap endianess buffer from big endian to little endian and vice versa
+ * @param {Buffer} buff - Buffer to swap
+ * @returns {Buffer} - Buffer swapped
+ */
+export function swapEndianness(buff: Buffer): Buffer {
+  const len = buff.length;
+  let buffSwap = Buffer.alloc(len);
+  for (let i = 0; i &lt; len; i++) {
+    buffSwap[i] = 0;
+    for (let j = 0; j &lt; 8; j++) {
+      const bit = (buff[len - 1 - i] &amp; (1 &lt;&lt; j)) > 0;
+      if (bit) {
+        buffSwap[i] |= 1 &lt;&lt; (7 - j);
+      }
+    }
+  }
+  return buffSwap;
+}
+
+/**
+ * Convert buffer to hex string
+ * @param {Buffer} buff
+ * @returns {string}
+ */
+export function bufferToHex(buff: Buffer): string {
+  return bitsToNum(buff).toString(16);
+}
+
+/**
+ * Convert buffer array to hex string
+ * @param {Array&lt;Buffer>} buffs
+ * @returns {string}
+ */
+export function bufferArrayToHex(buffs: Array&lt;Buffer>): string {
+  let result = buffs.reduce((result, buff) => {
+    return result + bitsToNum(buff).toString(16) + '-';
+  }, '');
+  return result.slice(0, result.length - 1);
+}
+
+/**
+ * Convert hex string to buffer
+ * @param {string} hex
+ * @param {number} width length of buffer
+ * @returns {Buffer}
+ */
+export function hexToBuffer(hex: string, width: number): Buffer {
+  if (!hex.startsWith('0x')) {
+    hex = '0x' + hex;
+  }
+  return numToBits(BigInt(hex), width);
+}
+
+/**
+ * Convert hex string to buffer array
+ * @param {string} hex
+ * @param {number} width length of buffer
+ * @returns {Array&lt;Buffer>}
+ */
+export function hexToBufferArray(hex: string, width: number): Array&lt;Buffer> {
+  const hexs = hex.split('-');
+  return hexs.map((h) => hexToBuffer(h, width));
+}
+
+/**
+ * Convert unicode string to hex representation
+ * @param {string} str
+ * @returns {string} hex
+ */
+export function stringToHex(str: string): string {
+  var hex = '';
+  for (var i = 0; i &lt; str.length; i++) {
+    hex += '' + str.charCodeAt(i).toString(16);
+  }
+  hex = '0x' + hex;
+  return hex;
+}
+
+/**
+ * Convert hex representation to unicode string
+ * @param {string} hex
+ * @returns {string} str
+ */
+export function hexToString(hex: string): string {
+  if (hex.startsWith('0x')) {
+    hex = hex.slice(2);
+  }
+  var str = '';
+  for (var i = 0; i &lt; hex.length; i += 2) {
+    str += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16));
+  }
+  return str;
+}
+
+/**
+ * Convert password to private key in bits representation
+ * @param {string} password
+ * @returns {Buffer} private key
+ */
+export function privateKeyFromPassword(password: string): Buffer {
+  const privateKeyHex = stringToHex(password);
+  return hexToBuffer(privateKeyHex, 32);
+}
+
+/**
+ * Compress timestamp (64 bits), claimSchema (128 bits), slotIndex (3 bits), operator (3 bits) into 1 input
+ * @param {BigInt} value value to mask
+ * @param {number} bitsToShift
+ * @returns {BigInt} masked attessting value
+ */
+export function shiftValue(value: BigInt, bitsToShift: number): BigInt {
+  return value.valueOf() &lt;&lt; BigInt(bitsToShift);
+}
+
+/**
+ * Create bit mask for fragment query
+ * @param {number} from
+ * @param {number} to
+ * @returns {BigInt} masked attessting value
+ */
+export function createMask(from: number, to: number): BigInt {
+  let mask = ''.padStart(256, '0').split('');
+  for (let i = from; i &lt; to; i++) {
+    mask[i] = '1';
+  }
+  mask.reverse();
+  return BigInt('0b' + mask.join(''));
+}
+
+  /**
+   * set bits of target bigint in range start from offset
+   * @param {BigInt} target target bigint we want to set bits
+   * @param {number} offset offset to set bits
+   * @param {BigInt} value value we want to set
+   * @returns {BigInt} target value after setting bits
+   */
+  export function setBits(target: BigInt, offset: number, value: BigInt): BigInt {
+    const valueBits = value.toString(2).split('').reverse();
+    if (valueBits.length + offset > 256) {
+      throw new Error('Invalid value bits');
+    }
+    const targetBits = target.toString(2).padStart(256, '0').split('').reverse();
+    for (let i = offset; i &lt; valueBits.length + offset; i++) {
+      targetBits[i] = valueBits[i - offset];
+    }
+    return BigInt('0b' + targetBits.reverse().join(''));
+  }
+
+  /**
+   * get partial value of source bigint in range start from offset
+   * @param {BigInt} source position of slot we want to get bits
+   * @param {number} from start offset to get bits
+   * @param {number} to end offset to get bits
+   * @returns {BigInt} value lie in range
+   */
+  export function getPartialValue(source: BigInt, from: number, to: number): BigInt {
+    const mask = createMask(from, to);
+    return source.valueOf() &amp; mask.valueOf();
+  }
+
+  /**
+   * Convert float64 to buffer
+   * @param {number} f float we want to convert to buffer
+   * @returns {Buffer} value f in buffer
+   */
+  export function floatToBuffer(f:  number): Buffer {
+    let buf = new ArrayBuffer(8);
+    (new Float64Array(buf))[0] = f;
+
+    var buffer = Buffer.alloc(8);
+    var view = new Uint8Array(buf);
+    for (var i = 0; i &lt; buffer.length; ++i) {
+        buffer[i] = view[i];
+    }
+
+    return buffer;
+  }
+
+  /**
+   * Convert Buffer to float64
+   * @param {Buffer} buffer buffer we want to convert to float
+   * @returns {number} value of float
+   */
+  export function bufferToFloat(buffer: Buffer): number {
+    const buf = new ArrayBuffer(buffer.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i &lt; buffer.length; ++i) {
+        view[i] = buffer[i];
+    }
+    var float = new Float64Array(buf);
+    return float[0];
+  }</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

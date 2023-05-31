@@ -321,3 +321,8 @@ const witness = await holderGenerateQuerySigWitness(
 
 // use witness to generate zk proof here
 ```
+
+## Generate Documents
+```
+npm run gen-doc
+```

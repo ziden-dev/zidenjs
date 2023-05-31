@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> witnesses/query.ts</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Entry.html">Entry</a></li><li><a href="State.html">State</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IDFromBigInt">IDFromBigInt</a></li><li><a href="global.html#IDFromBytes">IDFromBytes</a></li><li><a href="global.html#IDGenesisFromIdenState">IDGenesisFromIdenState</a></li><li><a href="global.html#bitsToNum">bitsToNum</a></li><li><a href="global.html#bufferArrayToHex">bufferArrayToHex</a></li><li><a href="global.html#bufferToFloat">bufferToFloat</a></li><li><a href="global.html#bufferToHex">bufferToHex</a></li><li><a href="global.html#bulkInsert">bulkInsert</a></li><li><a href="global.html#calculateDeterministicValue">calculateDeterministicValue</a></li><li><a href="global.html#checkElemFitsClaim">checkElemFitsClaim</a></li><li><a href="global.html#checkSchemaHashLength">checkSchemaHashLength</a></li><li><a href="global.html#createMask">createMask</a></li><li><a href="global.html#createMerkleQueryInput">createMerkleQueryInput</a></li><li><a href="global.html#deserialize">deserialize</a></li><li><a href="global.html#floatToBuffer">floatToBuffer</a></li><li><a href="global.html#getPartialValue">getPartialValue</a></li><li><a href="global.html#getTreeSlices">getTreeSlices</a></li><li><a href="global.html#hexToBuffer">hexToBuffer</a></li><li><a href="global.html#hexToBufferArray">hexToBufferArray</a></li><li><a href="global.html#hexToString">hexToString</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithPrivateKey">holderGenerateQueryMTPWitnessWithPrivateKey</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithSignature">holderGenerateQueryMTPWitnessWithSignature</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithPrivateKey">idOwnershipBySignatureWitnessWithPrivateKey</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithSignature">idOwnershipBySignatureWitnessWithSignature</a></li><li><a href="global.html#idenState">idenState</a></li><li><a href="global.html#kycGenerateNonRevQueryMTPInput">kycGenerateNonRevQueryMTPInput</a></li><li><a href="global.html#kycGenerateQueryMTPInput">kycGenerateQueryMTPInput</a></li><li><a href="global.html#newAuthFromPrivateKey">newAuthFromPrivateKey</a></li><li><a href="global.html#newClaim">newClaim</a></li><li><a href="global.html#newEDDSAPublicKeyFromPrivateKey">newEDDSAPublicKeyFromPrivateKey</a></li><li><a href="global.html#newID">newID</a></li><li><a href="global.html#numToBits">numToBits</a></li><li><a href="global.html#privateKeyFromPassword">privateKeyFromPassword</a></li><li><a href="global.html#schemaHashFromBigInt">schemaHashFromBigInt</a></li><li><a href="global.html#schemaHashToBigInt">schemaHashToBigInt</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#setBits">setBits</a></li><li><a href="global.html#shiftValue">shiftValue</a></li><li><a href="global.html#signChallenge">signChallenge</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKey">stateTransitionWitnessWithPrivateKey</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKeyAndHiHvs">stateTransitionWitnessWithPrivateKeyAndHiHvs</a></li><li><a href="global.html#stateTransitionWitnessWithSignature">stateTransitionWitnessWithSignature</a></li><li><a href="global.html#stateTransitionWitnessWithSignatureAndHiHvs">stateTransitionWitnessWithSignatureAndHiHvs</a></li><li><a href="global.html#stringToHex">stringToHex</a></li><li><a href="global.html#swapEndianness">swapEndianness</a></li><li><a href="global.html#withExpirationDate">withExpirationDate</a></li><li><a href="global.html#withFlagExpirable">withFlagExpirable</a></li><li><a href="global.html#withFlagUpdatable">withFlagUpdatable</a></li><li><a href="global.html#withID">withID</a></li><li><a href="global.html#withIndexData">withIndexData</a></li><li><a href="global.html#withIndexID">withIndexID</a></li><li><a href="global.html#withRevocationNonce">withRevocationNonce</a></li><li><a href="global.html#withSlotData">withSlotData</a></li><li><a href="global.html#withValueData">withValueData</a></li><li><a href="global.html#withValueID">withValueID</a></li><li><a href="global.html#withVersion">withVersion</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>witnesses/query.ts</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { getZidenParams } from '../global.js';
+import MerkleTree from './fixed-merkle-tree/index.js';
+import { OPERATOR } from '../index.js';
+
+export interface MerkleQueryInput {
+  readonly determinisiticValue: BigInt;
+  readonly leaf0: BigInt;
+  readonly leaf1: BigInt;
+  readonly elemsPath0: Array&lt;BigInt>;
+  readonly pos0: BigInt;
+  readonly elemsPath1: Array&lt;BigInt>;
+  readonly pos1: BigInt;
+}
+
+const ErrInvalidValues = new Error('Invalid values');
+/**
+ * Create merkle query input for query circuits from values
+ * @param {Array&lt;BigInt>} values
+ * @param {number} valueTreeDepth
+ * @param {BigInt} attestingValue
+ * @param {OPERATOR} operator
+ * @returns {MerkleQueryInput} input for circuits
+ */
+export function createMerkleQueryInput(
+  values: Array&lt;BigInt>,
+  valueTreeDepth: number,
+  attestingValue: BigInt,
+  operator: OPERATOR
+): MerkleQueryInput {
+  let determinisiticValue: BigInt = BigInt(0);
+  let leaf0: BigInt = BigInt(0);
+  let leaf1: BigInt = BigInt(0);
+  let pos0: BigInt = BigInt(0);
+  let pos1: BigInt = BigInt(0);
+  let elemsPath0: Array&lt;BigInt> = Array(valueTreeDepth).fill(BigInt(0));
+  let elemsPath1: Array&lt;BigInt> = Array(valueTreeDepth).fill(BigInt(0));
+  if (operator === OPERATOR.NOOP) {
+    // NO-OP OPERATOR, don't need to specify merkle query input (do nothing)
+  } else if (operator >= OPERATOR.EQUAL &amp;&amp; operator &lt;= OPERATOR.GREATER_THAN) {
+    // Single OPERATOR require the array of values must has only 1 element.
+    if (values.length !== 1) {
+      throw ErrInvalidValues;
+    }
+    switch (operator) {
+      // EQUAL OPERATOR
+      case OPERATOR.EQUAL: {
+        if (values[0] !== attestingValue) {
+          throw ErrInvalidValues;
+        }
+        break;
+      }
+      // LESS THAN OPERATOR
+      case OPERATOR.LESS_THAN: {
+        if (values[0] &lt;= attestingValue) {
+          throw ErrInvalidValues;
+        }
+        break;
+      }
+      // GREATOR THAN OPERATOR
+      case OPERATOR.GREATER_THAN: {
+        if (values[0] >= attestingValue) {
+          throw ErrInvalidValues;
+        }
+        break;
+      }
+    }
+    determinisiticValue = values[0];
+  } else {
+    // OPERATOR 4 (IN), 5 (NOT IN), 6 (IN RANGE) need to build fixed merkle tree from sorted array of values
+    const valueArraySize = 1 &lt;&lt; valueTreeDepth;
+    const sortedValues = values.slice();
+    sortedValues.sort();
+    const biggestValue = sortedValues[values.length - 1];
+
+    // pad the sortedValues to fill valueArraySize
+    for (let i = values.length; i &lt; valueArraySize; i++) {
+      sortedValues.push(biggestValue);
+    }
+    const fmt = new MerkleTree(
+      valueTreeDepth,
+      sortedValues,
+      getZidenParams().fmtHash,
+      getZidenParams().F.toObject(getZidenParams().F.zero)
+    );
+    // find the smallest value in array which greater than the attesting value
+    const greaterIndex = sortedValues.findIndex((value) => value > attestingValue);
+
+    if (operator === OPERATOR.IN_RANGE) {
+      // IN RANGE Operator, we must prove values[0] &lt; attestingValue &lt; values[1]
+      if (values.length !== 2 || values[0] >= attestingValue || values[1] &lt;= attestingValue) {
+        throw ErrInvalidValues;
+      }
+      leaf0 = values[0];
+      leaf1 = values[1];
+    } else {
+      // check that attesting value is exist in the array of values ( for IN OPERATOR )
+      const equalResult = sortedValues.find((value) => value === attestingValue);
+
+      if (operator === OPERATOR.IN) {
+        if (!equalResult) {
+          throw ErrInvalidValues;
+        }
+        // IN OPERATOR, we don't need construct merkle tree proof for leaf 1
+        leaf0 = equalResult;
+      } else {
+        // NOT IN
+        // assert that the attesting value is not exist in the array of values
+        if (equalResult) {
+          throw ErrInvalidValues;
+        }
+
+        // Case 1: the attesting value is less than the leaf most leaf, construct merkle tree proof for leaf0 (the left most leaf)
+        if (greaterIndex === 0) {
+          leaf0 = sortedValues[0];
+        } else if (greaterIndex === -1) {
+          // Case 2: the attesting value is greater than the right most leaf, construct merkle tree proof for leaf1 (the right most leaf)
+          leaf1 = sortedValues[sortedValues.length - 1];
+        } else {
+          // Case 3: the atessting value is between 2 consecutive leaves in merkle tree
+          leaf0 = sortedValues[greaterIndex - 1];
+          leaf1 = sortedValues[greaterIndex];
+        }
+      }
+    }
+
+    if (greaterIndex !== -1 || operator === OPERATOR.IN) {
+      // Construct Merkle Tree Proof for leaf0
+      const leaf0Proof = fmt.proof(leaf0);
+      elemsPath0 = leaf0Proof.pathElements;
+
+      leaf0Proof.pathIndices;
+      let temp0 = BigInt(0);
+      for (let i = 0; i &lt; valueTreeDepth; i++) {
+        if (leaf0Proof.pathIndices[i] === 1) temp0 += BigInt(1) &lt;&lt; BigInt(i);
+      }
+      pos0 = temp0;
+      determinisiticValue = leaf0Proof.pathRoot;
+    }
+    if (operator !== OPERATOR.IN &amp;&amp; greaterIndex !== 0) {
+      // Construct Merkle Tree Proof for leaf1
+      const leaf1Proof = fmt.proof(leaf1, greaterIndex === -1 ? sortedValues.length - 1 : undefined);
+      elemsPath1 = leaf1Proof.pathElements;
+      leaf1Proof.pathIndices;
+      let temp1 = BigInt(0);
+      for (let i = 0; i &lt; valueTreeDepth; i++) {
+        if (leaf1Proof.pathIndices[i] === 1) temp1 += BigInt(1) &lt;&lt; BigInt(i);
+      }
+      pos1 = temp1;
+      determinisiticValue = leaf1Proof.pathRoot;
+    }
+  }
+
+  return {
+    determinisiticValue,
+    leaf0,
+    leaf1,
+    pos0,
+    pos1,
+    elemsPath0,
+    elemsPath1,
+  };
+}
+
+/**
+ * Calculate deterministicValue from values and operator
+ * @param {Array&lt;BigInt>} values
+ * @param {number} valueTreeDepth
+ * @param {OPERATOR} operator
+ * @returns {BigInt}
+ */
+export function calculateDeterministicValue(values: Array&lt;BigInt>, valueTreeDepth: number, operator: OPERATOR): BigInt {
+  if (operator === OPERATOR.NOOP) return BigInt(0);
+  if (operator &lt; OPERATOR.IN) {
+    return values[0];
+  }
+  // OPERATOR 4 (IN), 5 (NOT IN), 6 (IN RANGE) need to build fixed merkle tree from sorted array of values
+  const valueArraySize = 1 &lt;&lt; valueTreeDepth;
+  const sortedValues = values.slice();
+  sortedValues.sort();
+  const biggestValue = sortedValues[values.length - 1];
+
+  // pad the sortedValues to fill valueArraySize
+  for (let i = values.length; i &lt; valueArraySize; i++) {
+    sortedValues.push(biggestValue);
+  }
+  const fmt = new MerkleTree(
+    valueTreeDepth,
+    sortedValues,
+    getZidenParams().fmtHash,
+    getZidenParams().F.toObject(getZidenParams().F.zero)
+  );
+
+  return fmt.root;
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

@@ -31,6 +31,20 @@ interface ClaimNotRevokedProof {
   readonly noAux: BigInt;
 }
 
+
+/**
+ * Class State
+ * @class State
+ * @type {Object}
+ * @property {Buffer} _userID userID
+ * @property {QuinSMT} _authsTree authTree - QuinSMT
+ * @property {QuinSMT} _claimsTree claimsTree - QuinSMT
+ * @property {QuinSMT} _claimRevTree claimRevTree -QuinSMT
+ * @property {number}_authRevNonce authRevNonce
+ * @property {number}_claimRevNonce claimRevNonce
+ * @property {number}_authDepth authDepth
+ * @property {number}_claimDepth claimDepth
+ */
 export class State {
   private _userID: Buffer;
   private _authsTree: QuinSMT;
@@ -40,7 +54,6 @@ export class State {
   private _claimRevNonce: number;
   private _authDepth: number;
   private _claimDepth: number;
-
   constructor(
     authsTree: QuinSMT,
     claimsTree: QuinSMT,
@@ -159,6 +172,7 @@ export class State {
    * @param {Entry} claim claim to insert
    * @param {number} maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
    * @returns {Promise<Entry>} inserted claim
+   * @throws {Error('Failed inserting caused by collision')} When Failed inserting caused by collision
    */
   async insertClaim(claim: Entry, maxAttempTimes: number = 100): Promise<Entry> {
     claim.setRevocationNonce(BigInt(this._claimRevNonce));
@@ -185,7 +199,7 @@ export class State {
 
   /**
    * Insert a batch of claims by their his and hvs
-   * @param {Array<[ArrayLike<number>, ArrayLike<number>]>} claimHiHvs claim to insert
+   * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} claimHiHvs claim to insert
    */
   async batchInsertClaimByHiHv(claimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>) {
     for (let i = 0; i < claimHiHvs.length; i++) {
@@ -196,7 +210,7 @@ export class State {
   /**
    * prepare new claim for inserting
    * @param {Entry} claim claim to insert
-   * @param {number} maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
+   * @param {number } maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
    * @returns {Promise<Entry>} inserted claim
    */
   async prepareClaimForInsert(claim: Entry, maxAttempTimes: number = 100): Promise<Entry> {
@@ -224,17 +238,22 @@ export class State {
     return claim;
   }
 
+  /**
+   * batch claims using a array of revoke nonce
+   * @param {BigInt[]} revNonces 
+   */
   async batchRevokeClaim(revNonces: BigInt[]) {
     for (let i = 0; i < revNonces.length; i++) {
       await this._claimRevTree.insert(getZidenParams().F.e(revNonces[i]), getZidenParams().F.zero);
     }
   }
 
+  /**
+   * Revoke Claim using revokeNonce's Claim
+   * @param {BigInt} revokeNonce revokeNonce's claim
+   */
   async revokeClaim(revNonce: BigInt) {
     await this._claimRevTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.zero);
-    //
-
-    //
   }
 
   async revokeAuth(authHi: BigInt) {
@@ -243,6 +262,8 @@ export class State {
 
   /**
    * Generate Auth Exist Proof for an auth in auth tree
+   * @async
+   * @returns {Promise<AuthExistsProof>} Auth exist Proof
    */
   async generateAuthExistsProof(authHi: BigInt): Promise<AuthExistsProof> {
     const F = getZidenParams().F;
@@ -261,6 +282,7 @@ export class State {
 
   /**
    * Generate Claim Exist Proof for a claim in claim tree
+   * @async
    * @param {ArrayLike<number>} claimHi
    * @returns {Promise<ClaimExistsProof>} claim exist proof
    */
@@ -277,7 +299,11 @@ export class State {
       treeRoot: getZidenParams().F.toObject(this._claimsTree.root),
     };
   }
-
+  /**
+   * Generate Roots Match Proof for a claim in state, the proof includes the root of the 3 trees and the expected State
+   * @async
+   * @returns {RootsMatchProof} Roots match proof
+   */
   async generateRootsMatchProof(): Promise<RootsMatchProof> {
     const F = getZidenParams().F;
     return {
@@ -290,6 +316,7 @@ export class State {
 
   /**
    * Generate Claim Not Revoked Proof for a claim in revocation tree
+   * @async
    * @param {BigInt} revocationNonce
    * @returns {Promise<ClaimNotRevokedProof>} claim not revoked proof
    */

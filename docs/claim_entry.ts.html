@@ -1,4 +1,91 @@
-import bigInt from 'big-integer';
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> claim/entry.ts</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Entry.html">Entry</a></li><li><a href="State.html">State</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IDFromBigInt">IDFromBigInt</a></li><li><a href="global.html#IDFromBytes">IDFromBytes</a></li><li><a href="global.html#IDGenesisFromIdenState">IDGenesisFromIdenState</a></li><li><a href="global.html#bitsToNum">bitsToNum</a></li><li><a href="global.html#bufferArrayToHex">bufferArrayToHex</a></li><li><a href="global.html#bufferToFloat">bufferToFloat</a></li><li><a href="global.html#bufferToHex">bufferToHex</a></li><li><a href="global.html#bulkInsert">bulkInsert</a></li><li><a href="global.html#calculateDeterministicValue">calculateDeterministicValue</a></li><li><a href="global.html#checkElemFitsClaim">checkElemFitsClaim</a></li><li><a href="global.html#checkSchemaHashLength">checkSchemaHashLength</a></li><li><a href="global.html#createMask">createMask</a></li><li><a href="global.html#createMerkleQueryInput">createMerkleQueryInput</a></li><li><a href="global.html#deserialize">deserialize</a></li><li><a href="global.html#floatToBuffer">floatToBuffer</a></li><li><a href="global.html#getPartialValue">getPartialValue</a></li><li><a href="global.html#getTreeSlices">getTreeSlices</a></li><li><a href="global.html#hexToBuffer">hexToBuffer</a></li><li><a href="global.html#hexToBufferArray">hexToBufferArray</a></li><li><a href="global.html#hexToString">hexToString</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithPrivateKey">holderGenerateQueryMTPWitnessWithPrivateKey</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithSignature">holderGenerateQueryMTPWitnessWithSignature</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithPrivateKey">idOwnershipBySignatureWitnessWithPrivateKey</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithSignature">idOwnershipBySignatureWitnessWithSignature</a></li><li><a href="global.html#idenState">idenState</a></li><li><a href="global.html#kycGenerateNonRevQueryMTPInput">kycGenerateNonRevQueryMTPInput</a></li><li><a href="global.html#kycGenerateQueryMTPInput">kycGenerateQueryMTPInput</a></li><li><a href="global.html#newAuthFromPrivateKey">newAuthFromPrivateKey</a></li><li><a href="global.html#newClaim">newClaim</a></li><li><a href="global.html#newEDDSAPublicKeyFromPrivateKey">newEDDSAPublicKeyFromPrivateKey</a></li><li><a href="global.html#newID">newID</a></li><li><a href="global.html#numToBits">numToBits</a></li><li><a href="global.html#privateKeyFromPassword">privateKeyFromPassword</a></li><li><a href="global.html#schemaHashFromBigInt">schemaHashFromBigInt</a></li><li><a href="global.html#schemaHashToBigInt">schemaHashToBigInt</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#setBits">setBits</a></li><li><a href="global.html#shiftValue">shiftValue</a></li><li><a href="global.html#signChallenge">signChallenge</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKey">stateTransitionWitnessWithPrivateKey</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKeyAndHiHvs">stateTransitionWitnessWithPrivateKeyAndHiHvs</a></li><li><a href="global.html#stateTransitionWitnessWithSignature">stateTransitionWitnessWithSignature</a></li><li><a href="global.html#stateTransitionWitnessWithSignatureAndHiHvs">stateTransitionWitnessWithSignatureAndHiHvs</a></li><li><a href="global.html#stringToHex">stringToHex</a></li><li><a href="global.html#swapEndianness">swapEndianness</a></li><li><a href="global.html#withExpirationDate">withExpirationDate</a></li><li><a href="global.html#withFlagExpirable">withFlagExpirable</a></li><li><a href="global.html#withFlagUpdatable">withFlagUpdatable</a></li><li><a href="global.html#withID">withID</a></li><li><a href="global.html#withIndexData">withIndexData</a></li><li><a href="global.html#withIndexID">withIndexID</a></li><li><a href="global.html#withRevocationNonce">withRevocationNonce</a></li><li><a href="global.html#withSlotData">withSlotData</a></li><li><a href="global.html#withValueData">withValueData</a></li><li><a href="global.html#withValueID">withValueID</a></li><li><a href="global.html#withVersion">withVersion</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>claim/entry.ts</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import bigInt from 'big-integer';
 import { getZidenParams } from '../global.js';
 import { SNARK_SIZE } from '../index.js';
 import { bitsToNum, bufferArrayToHex, hexToBufferArray, numToBits } from '../utils.js';
@@ -248,17 +335,17 @@ export function checkElemFitsClaim(elem: Buffer) {
  * Entry element structure is as follows: |element 0|element 1|element 2|element 3|
  * Each element contains 253 useful bits enclosed on a 256 bits Buffer
  * @class Entry
- * @param {Array<Buffer>} elements
+ * @param {Array&lt;Buffer>} elements
  * 
  */
 export class Entry {
-  private _elements: Array<Buffer>;
+  private _elements: Array&lt;Buffer>;
 
-  constructor(elements: Array<Buffer>) {
+  constructor(elements: Array&lt;Buffer>) {
     if (elements.length != 8) {
       throw new Error('Elements length must be 8');
     }
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i &lt; 8; i++) {
       checkElemFitsClaim(elements[i]);
     }
     this._elements = elements;
@@ -266,16 +353,16 @@ export class Entry {
 
   /**
    * Bytes representation of claim
-   * @returns {Array<Buffer>} elements
+   * @returns {Array&lt;Buffer>} elements
    */
-  get elements(): Array<Buffer> {
+  get elements(): Array&lt;Buffer> {
     return this._elements;
   }
   /**
    * Initialize claim elements with BigInt elements
-   * @param {Array<BigInt>} elements
+   * @param {Array&lt;BigInt>} elements
    */
-  static newEntryFromBigints(elements: Array<BigInt>) {
+  static newEntryFromBigints(elements: Array&lt;BigInt>) {
     return new Entry(
       elements.map((e) => {
         const elemBits = numToBits(e, 32);
@@ -305,9 +392,9 @@ export class Entry {
   /**
    * Hash index calculation
    * Hash index is calculated from: elements 0,1,2,3
-   * @returns {ArrayLike<number>} Hash index of the claim element structure
+   * @returns {ArrayLike&lt;number>} Hash index of the claim element structure
    */
-  hiRaw(): ArrayLike<number> {
+  hiRaw(): ArrayLike&lt;number> {
     const hashArray = this._elements.slice(0, 4).map((e) => bitsToNum(e));
     return getZidenParams().hasher(hashArray);
   }
@@ -324,10 +411,10 @@ export class Entry {
   /**
    * Hash value calculation
    * Hash value is calculated from: elements 4,5,6,7
-   * @returns {ArrayLike<number>} Hash value of the claim element structure
+   * @returns {ArrayLike&lt;number>} Hash value of the claim element structure
    */
 
-  hvRaw(): ArrayLike<number> {
+  hvRaw(): ArrayLike&lt;number> {
     const hashArray = this._elements.slice(4).map((e) => bitsToNum(e));
     return getZidenParams().hasher(hashArray);
   }
@@ -357,9 +444,9 @@ export class Entry {
    */
   setFlagUpdatable(val: boolean) {
     if (val) {
-      this._elements[0][FlagByteIndex] |= 1 << (7 - FlagUpdatableBitIndex);
+      this._elements[0][FlagByteIndex] |= 1 &lt;&lt; (7 - FlagUpdatableBitIndex);
     } else {
-      this._elements[0][FlagByteIndex] &= ~(1 << (7 - FlagUpdatableBitIndex));
+      this._elements[0][FlagByteIndex] &amp;= ~(1 &lt;&lt; (7 - FlagUpdatableBitIndex));
     }
   }
 
@@ -368,8 +455,8 @@ export class Entry {
    * @returns {boolean} updatable flag
    */
   getFlagUpdatable(): boolean {
-    let mask = 1 << (7 - FlagUpdatableBitIndex);
-    return (this._elements[0][FlagByteIndex] & mask) > 0;
+    let mask = 1 &lt;&lt; (7 - FlagUpdatableBitIndex);
+    return (this._elements[0][FlagByteIndex] &amp; mask) > 0;
   }
 
   /**
@@ -378,9 +465,9 @@ export class Entry {
    */
   setFlagExpirable(val: boolean) {
     if (val) {
-      this._elements[0][FlagByteIndex] |= 1 << (7 - FlagExpirableBitIndex);
+      this._elements[0][FlagByteIndex] |= 1 &lt;&lt; (7 - FlagExpirableBitIndex);
     } else {
-      this._elements[0][FlagByteIndex] &= ~(1 << (7 - FlagExpirableBitIndex));
+      this._elements[0][FlagByteIndex] &amp;= ~(1 &lt;&lt; (7 - FlagExpirableBitIndex));
     }
   }
 
@@ -389,8 +476,8 @@ export class Entry {
    * @returns {boolean} expiable flag
    */
   getFlagExpirable(): boolean {
-    let mask = 1 << (7 - FlagExpirableBitIndex);
-    return (this._elements[0][FlagByteIndex] & mask) > 0;
+    let mask = 1 &lt;&lt; (7 - FlagExpirableBitIndex);
+    return (this._elements[0][FlagByteIndex] &amp; mask) > 0;
   }
 
   /**
@@ -417,7 +504,7 @@ export class Entry {
    * @param {Buffer} subjectFlag subject flag
    */
   setSubjectFlag(subjectFlag: Buffer) {
-    this._elements[0][FlagByteIndex] &= 0b00011111;
+    this._elements[0][FlagByteIndex] &amp;= 0b00011111;
     this._elements[0][FlagByteIndex] |= subjectFlag[0];
   }
 
@@ -428,22 +515,22 @@ export class Entry {
   getSubjectFlag(): Buffer {
     let flag = Buffer.alloc(1);
     this._elements[0].copy(flag, 0, FlagByteIndex);
-    flag[0] &= 0b11100000;
+    flag[0] &amp;= 0b11100000;
     return flag;
   }
 
   /**
    * GetClaimFlags return claim's 32 bits of flag.
-   * @returns {Array<number>} claimFlags
+   * @returns {Array&lt;number>} claimFlags
    */
-  getClaimFlags(): Array<number> {
+  getClaimFlags(): Array&lt;number> {
     let flags = Buffer.alloc(4);
     this._elements[0].copy(flags, 0, FlagByteIndex);
     let flagBits = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i &lt; 4; i++) {
       let flagByte = flags[i];
-      for (let j = 0; j < 8; j++) {
-        if ((flagByte & (1 << (7 - j))) > 0) {
+      for (let j = 0; j &lt; 8; j++) {
+        if ((flagByte &amp; (1 &lt;&lt; (7 - j))) > 0) {
           flagBits.push(1);
         } else {
           flagBits.push(0);
@@ -681,7 +768,7 @@ export class Entry {
    * @returns {Buffer} data data stored in slot at index
    */
   getSlotData(index: number): Buffer {
-    if (index < 0 || index >= EntryElemsLen) {
+    if (index &lt; 0 || index >= EntryElemsLen) {
       throw ErrInvalidSlotIndex;
     }
     const result = Buffer.alloc(32);
@@ -691,9 +778,9 @@ export class Entry {
 
   /**
    * GetDataForCircuit return all claim's slot data in String representation
-   * @returns {Array<String>} data data stored in slot at index
+   * @returns {Array&lt;String>} data data stored in slot at index
    */
-  getDataForCircuit(): Array<BigInt> {
+  getDataForCircuit(): Array&lt;BigInt> {
     return this._elements.map((e) => bitsToNum(e));
   }
 
@@ -703,7 +790,7 @@ export class Entry {
    * @returns {boolean} is 2 claims equal
    */
   equals(other: Entry): boolean {
-    for (let i = 0; i < EntryElemsLen; i++) {
+    for (let i = 0; i &lt; EntryElemsLen; i++) {
       if (!this._elements[i].equals(other.elements[i])) {
         return false;
       }
@@ -740,3 +827,33 @@ export function newClaim(schemaHash: Buffer, ...options: Option[]): Entry {
   entry.setSchemaHash(schemaHash);
   return entry;
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

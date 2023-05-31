@@ -7,6 +7,15 @@ import { bitsToNum } from '../utils.js';
 
 /**
  * Update user state with private key
+ * @async
+ * @param {Buffer} privateKey privateKey
+ * @param {Auth} auth authClaim 
+ * @param {State} state userState 
+ * @param {Array<Auth>} insertingAuths AuthClaim array will be added
+ * @param {Array<Entry>} insertingClaims Claims array will be added 
+ * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithPrivateKey(
   privateKey: Buffer,
@@ -58,7 +67,16 @@ export async function stateTransitionWitnessWithPrivateKey(
 }
 
 /**
- * Update user state with signature
+ * Update user state with Signature
+ * @async
+ * @param {SignedChallenge} signature signature
+ * @param {Auth} auth authClaim 
+ * @param {State} state userState 
+ * @param {Array<Auth>} insertingAuths AuthClaim array will be added
+ * @param {Array<Entry>} insertingClaims Claims array will be added 
+ * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithSignature(
   signature: SignedChallenge,
@@ -107,7 +125,16 @@ export async function stateTransitionWitnessWithSignature(
 }
 
 /**
- * Update user state with private key and claim hi, hvs
+ * update user state with privatekey and HiHv-Claim
+ * @async
+ * @param {Buffer} privateKey privateKey
+ * @param {Auth} auth authClaim 
+ * @param {State} state userState 
+ * @param {Array<Auth>} insertingAuths AuthClaim array will be added
+ * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} insertingClaimHiHvs Claims array will be added 
+ * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
   privateKey: Buffer,
@@ -156,7 +183,16 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
 }
 
 /**
- * Update user state with signature
+ * update user state with Signature and HiHv-Claim
+ * @async
+ * @param {SignedChallenge} signature signature
+ * @param {Auth} auth authClaim 
+ * @param {State} state userState 
+ * @param {Array<Auth>} insertingAuths AuthClaim array will be added
+ * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} insertingClaimHiHvs Claims array will be added 
+ * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithSignatureAndHiHvs(
   signature: SignedChallenge,

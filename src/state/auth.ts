@@ -16,6 +16,11 @@ export function newEDDSAPublicKeyFromPrivateKey(privateKey: Buffer): EDDSAPublic
   };
 }
 
+/**
+ * Create authClaim from private key
+ * @param {Buffer} privateKey private key
+ * @returns Object include authHi and pubKey
+ */
 export function newAuthFromPrivateKey(privateKey: Buffer): Auth {
   const pubKey = newEDDSAPublicKeyFromPrivateKey(privateKey);
   return {

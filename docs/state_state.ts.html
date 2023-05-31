@@ -1,0 +1,457 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> state/state.ts</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Entry.html">Entry</a></li><li><a href="State.html">State</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IDFromBigInt">IDFromBigInt</a></li><li><a href="global.html#IDFromBytes">IDFromBytes</a></li><li><a href="global.html#IDGenesisFromIdenState">IDGenesisFromIdenState</a></li><li><a href="global.html#bitsToNum">bitsToNum</a></li><li><a href="global.html#bufferArrayToHex">bufferArrayToHex</a></li><li><a href="global.html#bufferToFloat">bufferToFloat</a></li><li><a href="global.html#bufferToHex">bufferToHex</a></li><li><a href="global.html#bulkInsert">bulkInsert</a></li><li><a href="global.html#calculateDeterministicValue">calculateDeterministicValue</a></li><li><a href="global.html#checkElemFitsClaim">checkElemFitsClaim</a></li><li><a href="global.html#checkSchemaHashLength">checkSchemaHashLength</a></li><li><a href="global.html#createMask">createMask</a></li><li><a href="global.html#createMerkleQueryInput">createMerkleQueryInput</a></li><li><a href="global.html#deserialize">deserialize</a></li><li><a href="global.html#floatToBuffer">floatToBuffer</a></li><li><a href="global.html#getPartialValue">getPartialValue</a></li><li><a href="global.html#getTreeSlices">getTreeSlices</a></li><li><a href="global.html#hexToBuffer">hexToBuffer</a></li><li><a href="global.html#hexToBufferArray">hexToBufferArray</a></li><li><a href="global.html#hexToString">hexToString</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithPrivateKey">holderGenerateQueryMTPWitnessWithPrivateKey</a></li><li><a href="global.html#holderGenerateQueryMTPWitnessWithSignature">holderGenerateQueryMTPWitnessWithSignature</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithPrivateKey">idOwnershipBySignatureWitnessWithPrivateKey</a></li><li><a href="global.html#idOwnershipBySignatureWitnessWithSignature">idOwnershipBySignatureWitnessWithSignature</a></li><li><a href="global.html#idenState">idenState</a></li><li><a href="global.html#kycGenerateNonRevQueryMTPInput">kycGenerateNonRevQueryMTPInput</a></li><li><a href="global.html#kycGenerateQueryMTPInput">kycGenerateQueryMTPInput</a></li><li><a href="global.html#newAuthFromPrivateKey">newAuthFromPrivateKey</a></li><li><a href="global.html#newClaim">newClaim</a></li><li><a href="global.html#newEDDSAPublicKeyFromPrivateKey">newEDDSAPublicKeyFromPrivateKey</a></li><li><a href="global.html#newID">newID</a></li><li><a href="global.html#numToBits">numToBits</a></li><li><a href="global.html#privateKeyFromPassword">privateKeyFromPassword</a></li><li><a href="global.html#schemaHashFromBigInt">schemaHashFromBigInt</a></li><li><a href="global.html#schemaHashToBigInt">schemaHashToBigInt</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#setBits">setBits</a></li><li><a href="global.html#shiftValue">shiftValue</a></li><li><a href="global.html#signChallenge">signChallenge</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKey">stateTransitionWitnessWithPrivateKey</a></li><li><a href="global.html#stateTransitionWitnessWithPrivateKeyAndHiHvs">stateTransitionWitnessWithPrivateKeyAndHiHvs</a></li><li><a href="global.html#stateTransitionWitnessWithSignature">stateTransitionWitnessWithSignature</a></li><li><a href="global.html#stateTransitionWitnessWithSignatureAndHiHvs">stateTransitionWitnessWithSignatureAndHiHvs</a></li><li><a href="global.html#stringToHex">stringToHex</a></li><li><a href="global.html#swapEndianness">swapEndianness</a></li><li><a href="global.html#withExpirationDate">withExpirationDate</a></li><li><a href="global.html#withFlagExpirable">withFlagExpirable</a></li><li><a href="global.html#withFlagUpdatable">withFlagUpdatable</a></li><li><a href="global.html#withID">withID</a></li><li><a href="global.html#withIndexData">withIndexData</a></li><li><a href="global.html#withIndexID">withIndexID</a></li><li><a href="global.html#withRevocationNonce">withRevocationNonce</a></li><li><a href="global.html#withSlotData">withSlotData</a></li><li><a href="global.html#withValueData">withValueData</a></li><li><a href="global.html#withValueID">withValueID</a></li><li><a href="global.html#withVersion">withVersion</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>state/state.ts</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { SMTDb } from '../db/index.js';
+import { getZidenParams } from '../global.js';
+import { Entry } from '../claim/entry.js';
+import { idenState, IDGenesisFromIdenState, IDType } from '../claim/id.js';
+import { bitsToNum, numToBits } from '../utils.js';
+import { QuinSMT } from './sparse-merkle-tree/index.js';
+import { Auth } from '../index.js';
+import { hashPublicKey } from './auth.js';
+
+interface AuthExistsProof {
+  readonly authMTP: Array&lt;BigInt>;
+  readonly authsRoot: BigInt;
+}
+interface ClaimExistsProof {
+  readonly claimMTP: Array&lt;BigInt>;
+  readonly treeRoot: BigInt;
+}
+
+interface RootsMatchProof {
+  readonly authsRoot: BigInt;
+  readonly claimsRoot: BigInt;
+  readonly claimRevRoot: BigInt;
+  readonly expectedState: BigInt;
+}
+
+interface ClaimNotRevokedProof {
+  readonly claimNonRevMTP: Array&lt;BigInt>;
+  readonly treeRoot: BigInt;
+  readonly auxHi: BigInt;
+  readonly auxHv: BigInt;
+  readonly noAux: BigInt;
+}
+
+
+/**
+ * Class State
+ * @class State
+ * @type {Object}
+ * @property {Buffer} _userID userID
+ * @property {QuinSMT} _authsTree authTree - QuinSMT
+ * @property {QuinSMT} _claimsTree claimsTree - QuinSMT
+ * @property {QuinSMT} _claimRevTree claimRevTree -QuinSMT
+ * @property {number}_authRevNonce authRevNonce
+ * @property {number}_claimRevNonce claimRevNonce
+ * @property {number}_authDepth authDepth
+ * @property {number}_claimDepth claimDepth
+ */
+export class State {
+  private _userID: Buffer;
+  private _authsTree: QuinSMT;
+  private _claimsTree: QuinSMT;
+  private _claimRevTree: QuinSMT;
+  private _authRevNonce: number;
+  private _claimRevNonce: number;
+  private _authDepth: number;
+  private _claimDepth: number;
+  constructor(
+    authsTree: QuinSMT,
+    claimsTree: QuinSMT,
+    claimRevTree: QuinSMT,
+    authRevNonce: number,
+    claimRevNonce: number,
+    authDepth: number,
+    claimDepth: number
+  ) {
+    this._authsTree = authsTree;
+    this._claimsTree = claimsTree;
+    this._claimRevTree = claimRevTree;
+    this._authRevNonce = authRevNonce;
+    this._claimRevNonce = claimRevNonce;
+    this._authDepth = authDepth;
+    this._claimDepth = claimDepth;
+    const userState = this.getIdenState();
+    this._userID = IDGenesisFromIdenState(userState, IDType.Default);
+  }
+
+  get userID() {
+    return this._userID;
+  }
+
+  get authsTree() {
+    return this._authsTree;
+  }
+
+  get claimsTree() {
+    return this._claimsTree;
+  }
+
+  get claimRevTree() {
+    return this._claimRevTree;
+  }
+
+  get authRevNonce() {
+    return this._authRevNonce;
+  }
+
+  get claimRevNonce() {
+    return this._claimRevNonce;
+  }
+
+  get authDepth() {
+    return this._authDepth;
+  }
+
+  get claimDepth() {
+    return this._claimDepth;
+  }
+
+  getIdenState(): Buffer {
+    const F = getZidenParams().F;
+    return numToBits(
+      F.toObject(
+        idenState(
+          F.toObject(this._authsTree.root),
+          F.toObject(this._claimsTree.root),
+          F.toObject(this._claimRevTree.root)
+        )
+      ),
+      32
+    );
+  }
+  /**
+   * Generate iden state from auth claims
+   * @param {Array&lt;Auth>} auths list of public keys to add to claim tree
+   * @param {SMTDb} authsDb database for auths tree
+   * @param {SMTDb} claimsDb database for claims tree
+   * @param {SMTDb} claimRevDb database for claim revocation tree
+   * @param {number} authDepth the depth of auth and auth rev trees
+   * @param {number} claimDepth the depth of claim and claim rev trees
+   * @returns {Promise&lt;State>}
+   */
+  static async generateState(
+    auths: Array&lt;Auth>,
+    authsDb: SMTDb,
+    claimsDb: SMTDb,
+    claimRevDb: SMTDb,
+    authDepth: number = 8,
+    claimDepth: number = 14
+  ): Promise&lt;State> {
+    const F = getZidenParams().F;
+    let authsTree: QuinSMT, claimsTree: QuinSMT, claimRevTree: QuinSMT;
+
+    authsTree = new QuinSMT(authsDb, F.zero, authDepth);
+    claimsTree = new QuinSMT(claimsDb, F.zero, claimDepth);
+    claimRevTree = new QuinSMT(claimRevDb, F.zero, claimDepth);
+
+    for (let i = 0; i &lt; auths.length; i++) {
+      const auth = auths[i];
+      auth.authHi = BigInt(i);
+      const authHash = hashPublicKey(auth.pubKey);
+      await authsTree.insert(i, authHash);
+    }
+
+    return new State(authsTree, claimsTree, claimRevTree, auths.length, 0, authDepth, claimDepth);
+  }
+
+  /**
+   * Insert new auth(public key) to claim tree
+   * @param {Auth} auth auth to insert
+   * @returns {Promise&lt;Auth>} inserted auth
+   */
+  async insertAuth(auth: Auth): Promise&lt;Auth> {
+    auth.authHi = BigInt(this._authRevNonce);
+    const authHash = hashPublicKey(auth.pubKey);
+    await this._authsTree.insert(auth.authHi, authHash);
+    this._authRevNonce++;
+    return auth;
+  }
+
+  /**
+   * Insert new claim to claim tree
+   * @param {Entry} claim claim to insert
+   * @param {number} maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
+   * @returns {Promise&lt;Entry>} inserted claim
+   * @throws {Error('Failed inserting caused by collision')} When Failed inserting caused by collision
+   */
+  async insertClaim(claim: Entry, maxAttempTimes: number = 100): Promise&lt;Entry> {
+    claim.setRevocationNonce(BigInt(this._claimRevNonce));
+    let triedCount = 0;
+    let seed = BigInt(0);
+    while (true) {
+      try {
+        claim.setClaimSeed(seed);
+        const hi = claim.hiRaw();
+        const hv = claim.hvRaw();
+        await this._claimsTree.insert(hi, hv);
+        break;
+      } catch (err) {
+        if (triedCount >= maxAttempTimes - 1) {
+          throw new Error('Failed inserting caused by collision');
+        }
+        seed += BigInt(1);
+        triedCount++;
+      }
+    }
+    this._claimRevNonce++;
+    return claim;
+  }
+
+  /**
+   * Insert a batch of claims by their his and hvs
+   * @param {Array.&lt;{ArrayLike&lt;number>, ArrayLike&lt;number>}>} claimHiHvs claim to insert
+   */
+  async batchInsertClaimByHiHv(claimHiHvs: Array&lt;[ArrayLike&lt;number>, ArrayLike&lt;number>]>) {
+    for (let i = 0; i &lt; claimHiHvs.length; i++) {
+      await this._claimsTree.insert(claimHiHvs[i][0], claimHiHvs[i][1]);
+    }
+  }
+
+  /**
+   * prepare new claim for inserting
+   * @param {Entry} claim claim to insert
+   * @param {number } maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
+   * @returns {Promise&lt;Entry>} inserted claim
+   */
+  async prepareClaimForInsert(claim: Entry, maxAttempTimes: number = 100): Promise&lt;Entry> {
+    claim.setRevocationNonce(BigInt(this._claimRevNonce));
+    let triedCount = 0;
+    let seed = BigInt(0);
+    while (true) {
+      try {
+        claim.setClaimSeed(seed);
+        const hi = claim.hiRaw();
+        const findingResult = await this._claimsTree.find(hi);
+        if (findingResult.found) {
+          throw new Error('Claim Hi already existed in claims tree');
+        }
+        break;
+      } catch (err) {
+        if (triedCount >= maxAttempTimes - 1) {
+          throw new Error('Failed inserting caused by collision, please try increasing max attemp times');
+        }
+        seed += BigInt(1);
+        triedCount++;
+      }
+    }
+    this._claimRevNonce += 1;
+    return claim;
+  }
+
+  /**
+   * batch claims using a array of revoke nonce
+   * @param {BigInt[]} revNonces 
+   */
+  async batchRevokeClaim(revNonces: BigInt[]) {
+    for (let i = 0; i &lt; revNonces.length; i++) {
+      await this._claimRevTree.insert(getZidenParams().F.e(revNonces[i]), getZidenParams().F.zero);
+    }
+  }
+
+  /**
+   * Revoke Claim using revokeNonce's Claim
+   * @param {BigInt} revokeNonce revokeNonce's claim
+   */
+  async revokeClaim(revNonce: BigInt) {
+    await this._claimRevTree.insert(getZidenParams().F.e(revNonce), getZidenParams().F.zero);
+  }
+
+  async revokeAuth(authHi: BigInt) {
+    await this._authsTree.delete(authHi);
+  }
+
+  /**
+   * Generate Auth Exist Proof for an auth in auth tree
+   * @async
+   * @returns {Promise&lt;AuthExistsProof>} Auth exist Proof
+   */
+  async generateAuthExistsProof(authHi: BigInt): Promise&lt;AuthExistsProof> {
+    const F = getZidenParams().F;
+    const res = await this._authsTree.find(F.e(authHi));
+    if (!res.found) {
+      throw new Error('auth is not inserted to the auth tree');
+    }
+    let siblings = [];
+    for (let i = 0; i &lt; res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
+    while (siblings.length &lt; this._authDepth * 4) siblings.push(BigInt(0));
+    return {
+      authMTP: siblings,
+      authsRoot: F.toObject(this._authsTree.root),
+    };
+  }
+
+  /**
+   * Generate Claim Exist Proof for a claim in claim tree
+   * @async
+   * @param {ArrayLike&lt;number>} claimHi
+   * @returns {Promise&lt;ClaimExistsProof>} claim exist proof
+   */
+  async generateClaimExistsProof(claimHi: ArrayLike&lt;number>): Promise&lt;ClaimExistsProof> {
+    const res = await this._claimsTree.find(claimHi);
+    if (!res.found) {
+      throw new Error('claim is not inserted to the claim tree');
+    }
+    let siblings = [];
+    for (let i = 0; i &lt; res.siblings.length; i++) siblings.push(getZidenParams().F.toObject(res.siblings[i]));
+    while (siblings.length &lt; this._claimDepth * 4) siblings.push(BigInt(0));
+    return {
+      claimMTP: siblings,
+      treeRoot: getZidenParams().F.toObject(this._claimsTree.root),
+    };
+  }
+  /**
+   * Generate Roots Match Proof for a claim in state, the proof includes the root of the 3 trees and the expected State
+   * @async
+   * @returns {RootsMatchProof} Roots match proof
+   */
+  async generateRootsMatchProof(): Promise&lt;RootsMatchProof> {
+    const F = getZidenParams().F;
+    return {
+      authsRoot: F.toObject(this._authsTree.root),
+      claimsRoot: F.toObject(this._claimsTree.root),
+      claimRevRoot: F.toObject(this._claimRevTree.root),
+      expectedState: bitsToNum(this.getIdenState()),
+    };
+  }
+
+  /**
+   * Generate Claim Not Revoked Proof for a claim in revocation tree
+   * @async
+   * @param {BigInt} revocationNonce
+   * @returns {Promise&lt;ClaimNotRevokedProof>} claim not revoked proof
+   */
+  async generateClaimNotRevokedProof(revocationNonce: BigInt): Promise&lt;ClaimNotRevokedProof> {
+    const F = getZidenParams().F;
+    const res = await this._claimRevTree.find(F.e(revocationNonce));
+    if (res.found) {
+      throw new Error('claim is revoked');
+    }
+    let siblings = [];
+    for (let i = 0; i &lt; res.siblings.length; i++) siblings.push(F.toObject(res.siblings[i]));
+    while (siblings.length &lt; this._claimDepth * 4) siblings.push(BigInt(0));
+    return {
+      claimNonRevMTP: siblings,
+      treeRoot: F.toObject(this._claimRevTree.root),
+      auxHi: F.toObject(res.notFoundKey!),
+      auxHv: F.toObject(res.notFoundValue!),
+      noAux: res.isOld0 ? BigInt(1) : BigInt(0),
+    };
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

@@ -10,6 +10,10 @@ import { createMerkleQueryInput } from './query.js';
 
 /**
  * KYC service Generate credential atomic query MTP witness for Holder
+ * @async
+ * @param {ArrayLike<number>}issuerClaimHi issuer Claim Hi
+ * @param {State} issuerState issuer State
+ * @returns {KYCQueryMTPInput} KYCQueryMTPInput
  */
 export async function kycGenerateQueryMTPInput(
   issuerClaimHi: ArrayLike<number>,
@@ -31,6 +35,10 @@ export async function kycGenerateQueryMTPInput(
 
 /**
  * KYC service Generate credential atomic query Non Rev MTP witness for Holder
+ * @async
+ * @param {BigInt}issuerClaimRevNonce issuer Claim revoke nonce
+ * @param {State} issuerState issuer State
+ * @returns {KYCNonRevQueryMTPInput} KYCQueryMTPInput
  */
 export async function kycGenerateNonRevQueryMTPInput(
   issuerClaimRevNonce: BigInt,
@@ -53,6 +61,16 @@ export async function kycGenerateNonRevQueryMTPInput(
 
 /**
  * Holder Generate credential atomic query MTP witness from issuer input with private key
+ * @async
+ * @param {Entry} issuerClaim issuerClaim
+ * @param {Buffer} privateKey privatekey
+ * @param {Auth} auth authClaim
+ * @param {BigInt} challenge challenge
+ * @param {State} state Holder state
+ * @param {KYCQueryMTPInput} kycQueryMTPInput  kycQueryMTPInput
+ * @param {KYCNonRevQueryMTPInput} kycQueryNonRevMTPInput kycQueryNonRevMTPInput
+ * @param {Query} query query
+ * @returns {QueryMTPWitness} QueryMTPWitness 
  */
 export async function holderGenerateQueryMTPWitnessWithPrivateKey(
   issuerClaim: Entry,
@@ -91,6 +109,15 @@ export async function holderGenerateQueryMTPWitnessWithPrivateKey(
 
 /**
  * Holder Generate credential atomic query MTP witness from issuer input with private key
+ * @async
+ * @param {Entry} issuerClaim issuerClaim
+ * @param {SignedChallenge} signature signature
+ * @param {Auth} auth authClaim
+ * @param {State} state Holder state
+ * @param {KYCQueryMTPInput} kycQueryMTPInput  kycQueryMTPInput
+ * @param {KYCNonRevQueryMTPInput} kycQueryNonRevMTPInput kycQueryNonRevMTPInput
+ * @param {Query} query query
+ * @returns {QueryMTPWitness} QueryMTPWitness 
  */
 export async function holderGenerateQueryMTPWitnessWithSignature(
   issuerClaim: Entry,
