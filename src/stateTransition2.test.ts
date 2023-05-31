@@ -141,10 +141,41 @@ describe('test state transition', async () => {
         [],
         []
       );
-      await circuitCheck(inputs);
     await gist.insertGist(
       state2.genesisID,
       state2.getIdenState()
     );
+    await circuitCheck(inputs);
+    console.log(" Gist Root now = ", gist.getRoot())
+  }).timeout(30000);;
+
+  it("user 1 add a new auth and new claim seconcd", async () => {
+
+    const newPrivateKey = crypto.randomBytes(32);
+    const newAuth = newAuthFromPrivateKey(newPrivateKey);
+    const schemaHash = schemaHashFromBigInt(BigInt("42136162"));
+    const claim = newClaim(
+      schemaHash,
+      withIndexID(state2.userID),
+      withIndexData(Buffer.alloc(30, 1234), Buffer.alloc(30, 7347)),
+      withValueData(Buffer.alloc(30, 432987492), Buffer.alloc(30, 4342))
+    );
+    await setupParams();
+    const inputs = await stateTransitionWitnessWithPrivateKey(
+        priv2,
+        auth2,
+        state2,
+        gist,
+        [newAuth],
+        [claim],
+        [],
+        []
+      );
+    await gist.insertGist(
+      state2.genesisID,
+      state2.getIdenState()
+    );
+    await circuitCheck(inputs);
+    console.log(" Gist Root now = ", gist.getRoot())
   }).timeout(30000);;
 });

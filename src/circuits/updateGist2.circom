@@ -19,6 +19,8 @@ template UpdateGistABC(gistLevel){
     log(" isOld = ", isOld0);
     log(" newKey = ", newKey);
     log(" newValue = ", newValue);
+
+
     signal output newGistRoot;
 
     component processor = SMTProcessor(gistLevel);
@@ -35,6 +37,5 @@ template UpdateGistABC(gistLevel){
     processor.newValue <== newValue;
     processor.fnc[0] <== fnc[0];
     processor.fnc[1] <== fnc[1];
-    log(" New Gist Root = ", processor.newRoot);
     newGistRoot <== processor.newRoot;
 }

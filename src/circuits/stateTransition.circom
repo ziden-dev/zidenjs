@@ -118,6 +118,9 @@ template StateTransition(IdOwnershipLevels, gistLevel) {
 
     processor.fnc[0] <== fncSignal.outL;
     processor.fnc[1] <== fncSignal.outR;
+    //processor.fnc[0] <==0;
+   //processor.fnc[1] <== 1;
+
     processor.oldGistRoot <== gistRoot;
     processor.oldKey <== genesisIDhash.out;
     processor.oldValue <== oldUserState;
