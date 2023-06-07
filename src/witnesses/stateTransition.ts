@@ -5,14 +5,10 @@ import { State } from '../state/state.js';
 import { signChallenge } from '../state/auth.js';
 import { bitsToNum } from '../utils.js';
 
-/**
- * A namespace
- * @namespace stateTransition
- */
 
 /**
  * Update user state with private key
- * @memberof stateTransition
+ * @category stateTransition
  * @async
  * @param {Buffer} privateKey privateKey
  * @param {Auth} auth authClaim
@@ -74,8 +70,9 @@ export async function stateTransitionWitnessWithPrivateKey(
 
 /**
  * Update user state with Signature
+ * @category stateTransition
+ * @function
  * @async
- * @memberof stateTransition
  * @param {SignedChallenge} signature signature
  * @param {Auth} auth authClaim
  * @param {State} state userState
@@ -133,8 +130,8 @@ export async function stateTransitionWitnessWithSignature(
 
 /**
  * update user state with privatekey and HiHv-Claim
+ * @category stateTransition
  * @async
- * @memberof stateTransition
  * @param {Buffer} privateKey privateKey
  * @param {Auth} auth authClaim
  * @param {State} state userState
@@ -192,8 +189,8 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
 
 /**
  * update user state with Signature and HiHv-Claim
+ * @category stateTransition
  * @async
- * @memberof stateTransition
  * @param {SignedChallenge} signature signature
  * @param {Auth} auth authClaim
  * @param {State} state userState

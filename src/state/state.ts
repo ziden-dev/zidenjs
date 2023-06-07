@@ -34,6 +34,7 @@ interface ClaimNotRevokedProof {
 
 /**
  * Class State
+ * @category State
  * @class State
  * @type {Object}
  * @property {Buffer} _userID userID
@@ -121,6 +122,7 @@ export class State {
   }
   /**
    * Generate iden state from auth claims
+   * @category state
    * @param {Array<Auth>} auths list of public keys to add to claim tree
    * @param {SMTDb} authsDb database for auths tree
    * @param {SMTDb} claimsDb database for claims tree
@@ -156,6 +158,7 @@ export class State {
 
   /**
    * Insert new auth(public key) to claim tree
+   * @category state
    * @param {Auth} auth auth to insert
    * @returns {Promise<Auth>} inserted auth
    */
@@ -169,6 +172,7 @@ export class State {
 
   /**
    * Insert new claim to claim tree
+   * @category state
    * @param {Entry} claim claim to insert
    * @param {number} maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
    * @returns {Promise<Entry>} inserted claim
@@ -199,6 +203,7 @@ export class State {
 
   /**
    * Insert a batch of claims by their his and hvs
+   * @category state
    * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} claimHiHvs claim to insert
    */
   async batchInsertClaimByHiHv(claimHiHvs: Array<[ArrayLike<number>, ArrayLike<number>]>) {
@@ -209,6 +214,7 @@ export class State {
 
   /**
    * prepare new claim for inserting
+   * @category state
    * @param {Entry} claim claim to insert
    * @param {number } maxAttempTimes maximum number of inserting attempts (in case leaves have the same index)
    * @returns {Promise<Entry>} inserted claim
@@ -240,6 +246,7 @@ export class State {
 
   /**
    * batch claims using a array of revoke nonce
+   * @category state
    * @param {BigInt[]} revNonces 
    */
   async batchRevokeClaim(revNonces: BigInt[]) {
@@ -262,6 +269,7 @@ export class State {
 
   /**
    * Generate Auth Exist Proof for an auth in auth tree
+   * @category state
    * @async
    * @returns {Promise<AuthExistsProof>} Auth exist Proof
    */
@@ -282,6 +290,7 @@ export class State {
 
   /**
    * Generate Claim Exist Proof for a claim in claim tree
+   * @category state
    * @async
    * @param {ArrayLike<number>} claimHi
    * @returns {Promise<ClaimExistsProof>} claim exist proof
@@ -301,6 +310,7 @@ export class State {
   }
   /**
    * Generate Roots Match Proof for a claim in state, the proof includes the root of the 3 trees and the expected State
+   * @category state
    * @async
    * @returns {RootsMatchProof} Roots match proof
    */
@@ -316,6 +326,7 @@ export class State {
 
   /**
    * Generate Claim Not Revoked Proof for a claim in revocation tree
+   * @category state
    * @async
    * @param {BigInt} revocationNonce
    * @returns {Promise<ClaimNotRevokedProof>} claim not revoked proof

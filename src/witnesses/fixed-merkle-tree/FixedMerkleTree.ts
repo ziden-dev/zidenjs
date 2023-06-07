@@ -26,6 +26,7 @@ export default class MerkleTree extends BaseTree {
 
   /**
    * Insert multiple Elements into the tree.
+   * @category Fixed Merkle Tree
    * @param {Array} elements Elements to insert
    */
   bulkInsert(elements: BigInt[]): void {
@@ -75,6 +76,7 @@ export default class MerkleTree extends BaseTree {
 
   /**
    * 🪓
+   * @category Fixed Merkle Tree
    * @param count
    */
   getTreeSlices(count = 4): TreeSlice[] {
@@ -94,6 +96,7 @@ export default class MerkleTree extends BaseTree {
    * Serialize entire tree state including intermediate layers into a plain object
    * Deserializing it back will not require to recompute any hashes
    * Elements are not converted to a plain type, this is responsibility of the caller
+   * @category Fixed Merkle Tree
    */
   serialize(): SerializedTreeState {
     return {
@@ -107,6 +110,7 @@ export default class MerkleTree extends BaseTree {
    * Deserialize data into a MerkleTree instance
    * Make sure to provide the same hashFunction as was used in the source tree,
    * otherwise the tree state will be invalid
+   * @category Fixed Merkle Tree
    */
   static deserialize(data: SerializedTreeState, hashFunction: HashFunction): MerkleTree {
     const instance: MerkleTree = Object.assign(Object.create(this.prototype), data);

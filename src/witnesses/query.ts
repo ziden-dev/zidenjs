@@ -15,6 +15,7 @@ export interface MerkleQueryInput {
 const ErrInvalidValues = new Error('Invalid values');
 /**
  * Create merkle query input for query circuits from values
+ * @category query
  * @param {Array<BigInt>} values
  * @param {number} valueTreeDepth
  * @param {BigInt} attestingValue
@@ -163,6 +164,7 @@ export function createMerkleQueryInput(
 
 /**
  * Calculate deterministicValue from values and operator
+ * @category query
  * @param {Array<BigInt>} values
  * @param {number} valueTreeDepth
  * @param {OPERATOR} operator

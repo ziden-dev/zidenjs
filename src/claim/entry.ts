@@ -45,6 +45,7 @@ const SchemaHashLength = 16;
 /**
  * Check schema hash has correct length of 16 bytes
  * throw an error if schema hash has not length of 16
+ * @category Entry
  * @param {Buffer} schemaHash schema hash in bytes representation
  */
 export function checkSchemaHashLength(schemaHash: Buffer) {
@@ -55,6 +56,7 @@ export function checkSchemaHashLength(schemaHash: Buffer) {
 
 /**
  * creates new SchemaHash from BigInt
+ * @category Entry
  * @param {BigInt} num schema hash in BigInt representation
  * @returns {Buffer} schema hash in bytes representation
  */
@@ -64,6 +66,7 @@ export function schemaHashFromBigInt(num: BigInt): Buffer {
 
 /**
  * Represent schemahash in BigInt
+ * @category Entry
  * @param {Buffer} schemaHash schema hash in bytes representation
  * @returns {BigInt} schema hash in BigInt representation
  */
@@ -75,6 +78,7 @@ export function schemaHashToBigInt(schemaHash: Buffer): BigInt {
 export type Option = (entry: Entry) => void;
 /**
  * Create entry with flag updatable
+ * @category Entry
  * @param {boolean} val flag updatable
  * @return {Option}
  */
@@ -86,6 +90,7 @@ export function withFlagUpdatable(val: boolean): Option {
 
 /**
  * Create entry with flag expirable
+ * @category Entry
  * @param {boolean} val flag expirable
  * @return {Option}
  */
@@ -97,6 +102,7 @@ export function withFlagExpirable(val: boolean): Option {
 
 /**
  * Create entry with version
+ * @category Entry
  * @param {BigInt} version
  * @return {Option}
  */
@@ -108,6 +114,7 @@ export function withVersion(version: BigInt): Option {
 
 /**
  * Create entry with other ID stored in index
+ * @category Entry
  * @param {Buffer} id other ID
  * @return {Option}
  */
@@ -119,6 +126,7 @@ export function withIndexID(id: Buffer): Option {
 
 /**
  * Create entry with other ID stored in value
+ * @category Entry
  * @param {Buffer} id other ID
  * @return {Option}
  */
@@ -130,6 +138,7 @@ export function withValueID(id: Buffer): Option {
 
 /**
  * Create entry with other ID stored in IDPosition
+ * @category Entry
  * @param {Buffer} id other ID
  * @param {number} pos IDPosition
  * @return {Option}
@@ -154,6 +163,7 @@ export function withID(id: Buffer, pos: number): Option {
 
 /**
  * Create entry with revocation nonce
+ * @category Entry
  * @param {BigInt} nonce revocation nonce
  * @return {Option}
  */
@@ -165,6 +175,7 @@ export function withRevocationNonce(nonce: BigInt): Option {
 
 /**
  * Create entry with expiration date
+ * @category Entry
  * @param {BigInt} date expiration date
  * @return {Option}
  */
@@ -177,6 +188,7 @@ export function withExpirationDate(date: BigInt): Option {
 
 /**
  * Create entry with index data
+ * @category Entry
  * @param {Buffer} slotA data for slot index A
  * @param {Buffer} slotB data for slot index B
  * @return {Option}
@@ -189,6 +201,7 @@ export function withIndexData(slotA: Buffer, slotB: Buffer): Option {
 
 /**
  * Create entry with value data
+ * @category Entry
  * @param {Buffer} slotA data for slot value A
  * @param {Buffer} slotB data for slot value B
  * @return {Option}
@@ -201,6 +214,7 @@ export function withValueData(slotA: Buffer, slotB: Buffer): Option {
 
 /**
  * Create entry with slot data
+ * @category Entry
  * @param {number} index index of slot
  * @param {Buffer} data data for slot
  * @return {Option}
@@ -233,6 +247,7 @@ const FlagUpdatableBitIndex = 4;
 
 /**
  * Check element in big endian must be less than claim element field
+ * @category Entry
  * @param {Buffer} elem - elem in big endian
  * @throws {Error} throws an error when the check fails
  */
@@ -247,6 +262,7 @@ export function checkElemFitsClaim(elem: Buffer) {
  * Generic representation of claim elements
  * Entry element structure is as follows: |element 0|element 1|element 2|element 3|
  * Each element contains 253 useful bits enclosed on a 256 bits Buffer
+ * @category Entry
  * @class Entry
  * @param {Array<Buffer>} elements
  * 
@@ -266,6 +282,7 @@ export class Entry {
 
   /**
    * Bytes representation of claim
+   * @category Entry
    * @returns {Array<Buffer>} elements
    */
   get elements(): Array<Buffer> {
@@ -730,6 +747,7 @@ export class Entry {
 
 /**
  * build new Claim with custom informations
+ * @category Entry
  * @param {Buffer} schemaHash
  * @param {Option[]} options custom information to build entry
  * @returns {Entry} new entry

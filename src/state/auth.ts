@@ -3,6 +3,7 @@ import { Auth, EDDSAPublicKey, SignedChallenge } from '../index.js';
 
 /**
  * Generate new eddsa public key from private key
+ * @category State
  * @param {Buffer} privateKey private key
  * @returns {Promise<EDDSAPublicKey>} eddsa public key
  */
@@ -18,6 +19,7 @@ export function newEDDSAPublicKeyFromPrivateKey(privateKey: Buffer): EDDSAPublic
 
 /**
  * Create authClaim from private key
+ * @category State
  * @param {Buffer} privateKey private key
  * @returns Object include authHi and pubKey
  */
@@ -35,6 +37,7 @@ export function hashPublicKey(pubkey: EDDSAPublicKey): ArrayLike<number> {
 
 /**
  * Sign challenge with private key
+ * @category State
  * @param {Buffer} privateKey
  * @param {BigInt} challenge
  * @returns {Promise<SignedChallenge>} signature

@@ -4,6 +4,8 @@ import { State } from '../state/state.js';
 
 /**
  * Generate authentication witness from private key
+ * @category Auth
+ * @async
  */
 export async function idOwnershipBySignatureWitnessWithPrivateKey(
   privateKey: Buffer,
@@ -29,6 +31,8 @@ export async function idOwnershipBySignatureWitnessWithPrivateKey(
 
 /**
  * Generate authentication witness with signature
+ * @category Auth
+ * @async
  */
 export async function idOwnershipBySignatureWitnessWithSignature(
   signature: SignedChallenge,

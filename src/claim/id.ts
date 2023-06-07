@@ -14,6 +14,7 @@ const IDLength = 31;
 
 /**
  * Generate ID from type, genesis
+ * @category Claim ID
  * @param {Buffer} type
  * @param {Buffer} genesis
  * @returns {Buffer} id
@@ -27,6 +28,7 @@ export function newID(type: Buffer, genesis: Buffer): Buffer {
 
 /**
  * Generate ID from BigInt
+ * @category Claim ID
  * @param {BigInt} bigint
  * @returns {Buffer} id
  */
@@ -38,6 +40,7 @@ export function IDFromBigInt(bigint: BigInt): Buffer {
 
 /**
  * Generate ID from bytes
+ * @category Claim ID
  * @param {Buffer} bytes
  * @returns {Buffer} id
  */
@@ -55,6 +58,7 @@ export function IDFromBytes(bytes: Buffer): Buffer {
 
 /**
  * IdGenesisFromIdenState calculates the genesis ID from an Identity State.
+ * @category Claim ID
  * @param {Buffer} idenState IdenState
  * @param {Buffer} type 2 bytes of id type
  * @returns {Buffer} id genesis
@@ -68,6 +72,7 @@ export function IDGenesisFromIdenState(idenState: Buffer, type: Buffer): Buffer 
 
 /**
  * Generate Iden State from claim tree root, revocation root, root of roots
+ * @category Claim ID
  * @param {BigInt} authsRoot auths tree root
  * @param {BigInt} claimsRoot claims tree root
  * @param {BigInt} authRevRoot auth rev root

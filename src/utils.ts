@@ -1,6 +1,7 @@
 import { toBigIntBE, toBufferBE } from 'bigint-buffer';
 /**
  * Allocates a new Buffer from a bigInt number in little-endian format
+ * @category utils
  * @param {bigInt} number - bigInt number
  * @returns {Buffer} - Decoded Buffer
  */
@@ -11,6 +12,7 @@ export function numToBits(number: BigInt, width: number): Buffer {
 
 /**
  * Allocates a new bigInt from a buffer in big-endian format
+ * @category utils
  * @param {Buffer} buff - Buffer to convert
  * @returns {BigInt} - Decoded bigInt
  */
@@ -20,6 +22,7 @@ export function bitsToNum(buff: Buffer): BigInt {
 }
 /**
  * Swap endianess buffer from big endian to little endian and vice versa
+ * @category utils
  * @param {Buffer} buff - Buffer to swap
  * @returns {Buffer} - Buffer swapped
  */
@@ -40,6 +43,7 @@ export function swapEndianness(buff: Buffer): Buffer {
 
 /**
  * Convert buffer to hex string
+ * @category utils
  * @param {Buffer} buff
  * @returns {string}
  */
@@ -49,6 +53,7 @@ export function bufferToHex(buff: Buffer): string {
 
 /**
  * Convert buffer array to hex string
+ * @category utils
  * @param {Array<Buffer>} buffs
  * @returns {string}
  */
@@ -61,6 +66,7 @@ export function bufferArrayToHex(buffs: Array<Buffer>): string {
 
 /**
  * Convert hex string to buffer
+ * @category utils
  * @param {string} hex
  * @param {number} width length of buffer
  * @returns {Buffer}
@@ -74,6 +80,7 @@ export function hexToBuffer(hex: string, width: number): Buffer {
 
 /**
  * Convert hex string to buffer array
+ * @category utils
  * @param {string} hex
  * @param {number} width length of buffer
  * @returns {Array<Buffer>}
@@ -85,6 +92,7 @@ export function hexToBufferArray(hex: string, width: number): Array<Buffer> {
 
 /**
  * Convert unicode string to hex representation
+ * @category utils
  * @param {string} str
  * @returns {string} hex
  */
@@ -99,6 +107,7 @@ export function stringToHex(str: string): string {
 
 /**
  * Convert hex representation to unicode string
+ * @category utils
  * @param {string} hex
  * @returns {string} str
  */
@@ -115,6 +124,7 @@ export function hexToString(hex: string): string {
 
 /**
  * Convert password to private key in bits representation
+ * @category utils
  * @param {string} password
  * @returns {Buffer} private key
  */
@@ -125,6 +135,7 @@ export function privateKeyFromPassword(password: string): Buffer {
 
 /**
  * Compress timestamp (64 bits), claimSchema (128 bits), slotIndex (3 bits), operator (3 bits) into 1 input
+ * @category utils
  * @param {BigInt} value value to mask
  * @param {number} bitsToShift
  * @returns {BigInt} masked attessting value
@@ -135,6 +146,7 @@ export function shiftValue(value: BigInt, bitsToShift: number): BigInt {
 
 /**
  * Create bit mask for fragment query
+ * @category utils
  * @param {number} from
  * @param {number} to
  * @returns {BigInt} masked attessting value
@@ -150,6 +162,7 @@ export function createMask(from: number, to: number): BigInt {
 
   /**
    * set bits of target bigint in range start from offset
+   * @category utils
    * @param {BigInt} target target bigint we want to set bits
    * @param {number} offset offset to set bits
    * @param {BigInt} value value we want to set
@@ -169,6 +182,7 @@ export function createMask(from: number, to: number): BigInt {
 
   /**
    * get partial value of source bigint in range start from offset
+   * @category utils
    * @param {BigInt} source position of slot we want to get bits
    * @param {number} from start offset to get bits
    * @param {number} to end offset to get bits
@@ -181,6 +195,7 @@ export function createMask(from: number, to: number): BigInt {
 
   /**
    * Convert float64 to buffer
+   * @category utils
    * @param {number} f float we want to convert to buffer
    * @returns {Buffer} value f in buffer
    */
@@ -199,6 +214,7 @@ export function createMask(from: number, to: number): BigInt {
 
   /**
    * Convert Buffer to float64
+   * @category utils
    * @param {Buffer} buffer buffer we want to convert to float
    * @returns {number} value of float
    */

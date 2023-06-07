@@ -8,14 +8,11 @@ import {
 } from './authentication.js';
 import { createMerkleQueryInput } from './query.js';
 
-/**
- * A namespace
- * @namespace queryMTP
- */
 
 /**
  * KYC service Generate credential atomic query MTP witness for Holder
- * @memberof queryMTP
+ * 
+ * @category queryMTP
  * @async
  * @param {ArrayLike<number>}issuerClaimHi issuer Claim Hi
  * @param {State} issuerState issuer State
@@ -41,7 +38,7 @@ export async function kycGenerateQueryMTPInput(
 
 /**
  * KYC service Generate credential atomic query Non Rev MTP witness for Holder
- * @memberof queryMTP
+ * @category queryMTP
  * @async
  * @param {BigInt}issuerClaimRevNonce issuer Claim revoke nonce
  * @param {State} issuerState issuer State
@@ -68,7 +65,7 @@ export async function kycGenerateNonRevQueryMTPInput(
 
 /**
  * Holder Generate credential atomic query MTP witness from issuer input with private key
- * @memberof queryMTP
+ * @category queryMTP
  * @async
  * @param {Entry} issuerClaim issuerClaim
  * @param {Buffer} privateKey privatekey
@@ -117,7 +114,7 @@ export async function holderGenerateQueryMTPWitnessWithPrivateKey(
 
 /**
  * Holder Generate credential atomic query MTP witness from issuer input with private key
- * @memberof queryMTP
+ * @category queryMTP
  * @async
  * @param {Entry} issuerClaim issuerClaim
  * @param {SignedChallenge} signature signature
