@@ -6,15 +6,21 @@ import { signChallenge } from '../state/auth.js';
 import { bitsToNum } from '../utils.js';
 
 /**
+ * A namespace
+ * @namespace stateTransition
+ */
+
+/**
  * Update user state with private key
+ * @memberof stateTransition
  * @async
  * @param {Buffer} privateKey privateKey
- * @param {Auth} auth authClaim 
- * @param {State} state userState 
+ * @param {Auth} auth authClaim
+ * @param {State} state userState
  * @param {Array<Auth>} insertingAuths AuthClaim array will be added
- * @param {Array<Entry>} insertingClaims Claims array will be added 
+ * @param {Array<Entry>} insertingClaims Claims array will be added
  * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
- * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces)
  * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithPrivateKey(
@@ -69,13 +75,14 @@ export async function stateTransitionWitnessWithPrivateKey(
 /**
  * Update user state with Signature
  * @async
+ * @memberof stateTransition
  * @param {SignedChallenge} signature signature
- * @param {Auth} auth authClaim 
- * @param {State} state userState 
+ * @param {Auth} auth authClaim
+ * @param {State} state userState
  * @param {Array<Auth>} insertingAuths AuthClaim array will be added
- * @param {Array<Entry>} insertingClaims Claims array will be added 
+ * @param {Array<Entry>} insertingClaims Claims array will be added
  * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
- * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces)
  * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithSignature(
@@ -127,13 +134,14 @@ export async function stateTransitionWitnessWithSignature(
 /**
  * update user state with privatekey and HiHv-Claim
  * @async
+ * @memberof stateTransition
  * @param {Buffer} privateKey privateKey
- * @param {Auth} auth authClaim 
- * @param {State} state userState 
+ * @param {Auth} auth authClaim
+ * @param {State} state userState
  * @param {Array<Auth>} insertingAuths AuthClaim array will be added
- * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} insertingClaimHiHvs Claims array will be added 
+ * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} insertingClaimHiHvs Claims array will be added
  * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
- * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces)
  * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
@@ -185,13 +193,14 @@ export async function stateTransitionWitnessWithPrivateKeyAndHiHvs(
 /**
  * update user state with Signature and HiHv-Claim
  * @async
+ * @memberof stateTransition
  * @param {SignedChallenge} signature signature
- * @param {Auth} auth authClaim 
- * @param {State} state userState 
+ * @param {Auth} auth authClaim
+ * @param {State} state userState
  * @param {Array<Auth>} insertingAuths AuthClaim array will be added
- * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} insertingClaimHiHvs Claims array will be added 
+ * @param {Array.<{ArrayLike<number>, ArrayLike<number>}>} insertingClaimHiHvs Claims array will be added
  * @param {Array<BigInt>} revokingAuthHis AuthClaim array will be revoke (using Hi)
- * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces) 
+ * @param {Array<BigInt>} revokingClaimRevNonces Claim array will be revoke (using revoke nonces)
  * @returns {Promise<StateTransitionWitness>} State Transition Witness proof
  */
 export async function stateTransitionWitnessWithSignatureAndHiHvs(
