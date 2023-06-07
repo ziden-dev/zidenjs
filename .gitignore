@@ -115,6 +115,10 @@ dist
 *.r1cs
 *.wasm
 
+docs
+
 build
 
 buildCircom/
+
+stateTransition_cpp/
