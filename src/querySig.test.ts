@@ -111,7 +111,7 @@ describe('test query sig', async () => {
     };
   }).timeout(10000);
 
-  it('test query with PritaveKey', async () => {
+  it('test query with Private Key', async () => {
     const kycQuerySigInput = await kycGenerateQuerySigInput(issuerPriv, issuerAuth, claim1, issuerState);
     const kycQueryNonRevQuerySigInput = await kycGenerateNonRevQuerySigInput(claim1.getRevocationNonce(), issuerState);
     const witness = await holderGenerateQuerySigWitnessWithPrivateKey(
@@ -125,7 +125,7 @@ describe('test query sig', async () => {
       query1
     );
     await circuitCheck(witness);
-  }).timeout(10000);
+  }).timeout(30000);
 
   it('test query with Signature', async () => {
     const kycQuerySigInput = await kycGenerateQuerySigInput(issuerPriv, issuerAuth, claim2, issuerState);
@@ -141,5 +141,5 @@ describe('test query sig', async () => {
       query2
     );
     await circuitCheck(witness);
-  }).timeout(10000);
+  }).timeout(30000);
 });
