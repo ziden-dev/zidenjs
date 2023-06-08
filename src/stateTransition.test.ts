@@ -88,13 +88,13 @@ describe('test state transition', async () => {
       const w = await circuit.calculateWitness(witness, true);
       await circuit.checkConstraints(w);
     };
-  }).timeout(100000);
+  })
 
   it('1st state transition', async () => {
     const w1 = await stateTransitionWitnessWithPrivateKey(priv1, auth1, state, [auth2], [claim1, claim2], [], []);
     //console.log(inputs);
     await circuitCheck(w1);
-  }).timeout(20000);
+  })
 
   it('2nd state transition', async () => {
     claim3 = await state.prepareClaimForInsert(claim3);
@@ -112,7 +112,7 @@ describe('test state transition', async () => {
       [claim1.getRevocationNonce(), claim2.getRevocationNonce()]
     );
     await circuitCheck(w2);
-  }).timeout(30000);
+  })
   let witness: StateTransitionWitness;
   it('3rd state transition', async () => {
     witness = await stateTransitionWitnessWithPrivateKey(

@@ -160,70 +160,70 @@ export function createMask(from: number, to: number): BigInt {
   return BigInt('0b' + mask.join(''));
 }
 
-  /**
-   * set bits of target bigint in range start from offset
-   * @category utils
-   * @param {BigInt} target target bigint we want to set bits
-   * @param {number} offset offset to set bits
-   * @param {BigInt} value value we want to set
-   * @returns {BigInt} target value after setting bits
-   */
-  export function setBits(target: BigInt, offset: number, value: BigInt): BigInt {
-    const valueBits = value.toString(2).split('').reverse();
-    if (valueBits.length + offset > 256) {
-      throw new Error('Invalid value bits');
-    }
-    const targetBits = target.toString(2).padStart(256, '0').split('').reverse();
-    for (let i = offset; i < valueBits.length + offset; i++) {
-      targetBits[i] = valueBits[i - offset];
-    }
-    return BigInt('0b' + targetBits.reverse().join(''));
+/**
+ * set bits of target bigint in range start from offset
+ * @category utils
+ * @param {BigInt} target target bigint we want to set bits
+ * @param {number} offset offset to set bits
+ * @param {BigInt} value value we want to set
+ * @returns {BigInt} target value after setting bits
+ */
+export function setBits(target: BigInt, offset: number, value: BigInt): BigInt {
+  const valueBits = value.toString(2).split('').reverse();
+  if (valueBits.length + offset > 256) {
+    throw new Error('Invalid value bits');
+  }
+  const targetBits = target.toString(2).padStart(256, '0').split('').reverse();
+  for (let i = offset; i < valueBits.length + offset; i++) {
+    targetBits[i] = valueBits[i - offset];
+  }
+  return BigInt('0b' + targetBits.reverse().join(''));
+}
+
+/**
+ * get partial value of source bigint in range start from offset
+ * @category utils
+ * @param {BigInt} source position of slot we want to get bits
+ * @param {number} from start offset to get bits
+ * @param {number} to end offset to get bits
+ * @returns {BigInt} value lie in range
+ */
+export function getPartialValue(source: BigInt, from: number, to: number): BigInt {
+  const mask = createMask(from, to);
+  return BigInt('0b' + (source.valueOf() & mask.valueOf()).toString(2).slice(0, to - from));
+}
+
+/**
+ * Convert float64 to buffer
+ * @category utils
+ * @param {number} f float we want to convert to buffer
+ * @returns {Buffer} value f in buffer
+ */
+export function floatToBuffer(f: number): Buffer {
+  let buf = new ArrayBuffer(8);
+  new Float64Array(buf)[0] = f;
+
+  var buffer = Buffer.alloc(8);
+  var view = new Uint8Array(buf);
+  for (var i = 0; i < buffer.length; ++i) {
+    buffer[i] = view[i];
   }
 
-  /**
-   * get partial value of source bigint in range start from offset
-   * @category utils
-   * @param {BigInt} source position of slot we want to get bits
-   * @param {number} from start offset to get bits
-   * @param {number} to end offset to get bits
-   * @returns {BigInt} value lie in range
-   */
-  export function getPartialValue(source: BigInt, from: number, to: number): BigInt {
-    const mask = createMask(from, to);
-    return source.valueOf() & mask.valueOf();
+  return buffer;
+}
+
+/**
+ * Convert Buffer to float64
+ * @category utils
+ * @param {Buffer} buffer buffer we want to convert to float
+ * @returns {number} value of float
+ */
+export function bufferToFloat(buffer: Buffer): number {
+  const buf = new ArrayBuffer(buffer.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < buffer.length; ++i) {
+    view[i] = buffer[i];
   }
-
-  /**
-   * Convert float64 to buffer
-   * @category utils
-   * @param {number} f float we want to convert to buffer
-   * @returns {Buffer} value f in buffer
-   */
-  export function floatToBuffer(f:  number): Buffer {
-    let buf = new ArrayBuffer(8);
-    (new Float64Array(buf))[0] = f;
-
-    var buffer = Buffer.alloc(8);
-    var view = new Uint8Array(buf);
-    for (var i = 0; i < buffer.length; ++i) {
-        buffer[i] = view[i];
-    }
-
-    return buffer;
-  }
-
-  /**
-   * Convert Buffer to float64
-   * @category utils
-   * @param {Buffer} buffer buffer we want to convert to float
-   * @returns {number} value of float
-   */
-  export function bufferToFloat(buffer: Buffer): number {
-    const buf = new ArrayBuffer(buffer.length);
-    const view = new Uint8Array(buf);
-    for (let i = 0; i < buffer.length; ++i) {
-        view[i] = buffer[i];
-    }
-    var float = new Float64Array(buf);
-    return float[0];
-  }
+  var float = new Float64Array(buf);
+  return float[0];
+}

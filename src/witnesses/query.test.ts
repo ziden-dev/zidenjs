@@ -38,7 +38,7 @@ describe('Test and benchmark query circuit', () => {
     value1 = shiftValue(valuePart1, 10);
     value2 = shiftValue(valuePart2, 40);
     //console.log('mask0 = ', mask0);
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'masking.circom'));
+    const circuit = await wasm_tester(path.join('src', 'circom_test', 'masking.circom'));
 
     const w0 = await circuit.calculateWitness(
       {
@@ -86,18 +86,18 @@ describe('Test and benchmark query circuit', () => {
       in: value1,
       operator: 4,
     };
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(inWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
 
   it('should not pass IN operation query circuit with invalid value', async () => {
     const fraudWitness = {
       ...inWitness,
       in: BigInt(101),
     };
-    const circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    const circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
     const circuitWrongErr = new Error('Something is wrong in query circuit');
     try {
       const w = await circuit.calculateWitness(fraudWitness, true);
@@ -106,7 +106,7 @@ describe('Test and benchmark query circuit', () => {
     } catch (err) {
       expect(err !== undefined && err !== circuitWrongErr).to.be.true;
     }
-  }).timeout(10000);
+  })
 
   let notInWitness: QueryWitness;
   it('should pass NOT IN operation query circuit in case attesting value is greater than the right most leaf', async () => {
@@ -121,11 +121,11 @@ describe('Test and benchmark query circuit', () => {
       operator: 5,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
 
   it('should pass NOT IN operation query circuit in case attesting value is less than the left most leaf', async () => {
     let values: Array<BigInt> = [];
@@ -139,11 +139,11 @@ describe('Test and benchmark query circuit', () => {
       operator: 5,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
 
   it('should pass NOT IN operation query circuit in case attesting value is between 2 consecutive leaves', async () => {
     let values: Array<BigInt> = [];
@@ -157,11 +157,11 @@ describe('Test and benchmark query circuit', () => {
       operator: 5,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
   it('should pass NOOP operation query circuit', async () => {
     let values: Array<BigInt> = [];
     let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.NOOP);
@@ -171,11 +171,11 @@ describe('Test and benchmark query circuit', () => {
       operator: 0,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
   it('should pass EQUAL operation query circuit', async () => {
     let values: Array<BigInt> = [value1];
     let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.EQUAL);
@@ -185,11 +185,11 @@ describe('Test and benchmark query circuit', () => {
       operator: 1,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
   it('should pass LESS THAN operation query circuit', async () => {
     let values: Array<BigInt> = [value1.valueOf() + BigInt(1)];
     let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.LESS_THAN);
@@ -199,11 +199,11 @@ describe('Test and benchmark query circuit', () => {
       operator: 2,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
   it('should pass GREATER THAN operation query circuit', async () => {
     let values: Array<BigInt> = [value1.valueOf() - BigInt(1)];
     let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.GREATER_THAN);
@@ -213,11 +213,11 @@ describe('Test and benchmark query circuit', () => {
       operator: 3,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
   it('should pass IN RANGE operation query circuit', async () => {
     let values: Array<BigInt> = [value1.valueOf() - BigInt(1), value1.valueOf() + BigInt(1)];
     let merkleQueryInput = createMerkleQueryInput(values, 10, value1, OPERATOR.IN_RANGE);
@@ -227,9 +227,9 @@ describe('Test and benchmark query circuit', () => {
       operator: 6,
     };
 
-    circuit = await wasm_tester(path.join('src', 'witnesses', 'circom_test', 'query.circom'));
+    circuit = await wasm_tester(path.join('src', 'circom_test', 'query.circom'));
 
     const w = await circuit.calculateWitness(notInWitness, true);
     await circuit.assertOut(w, { out: 1 });
-  }).timeout(10000);
+  })
 });

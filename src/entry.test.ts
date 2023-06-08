@@ -24,7 +24,7 @@ describe('test entries', async () => {
 
   it('setup params', async () => {
     await setupParams();
-  }).timeout(10000);
+  })
 
   it('test create entry with custom information', async () => {
     schemaHash = schemaHashFromBigInt(BigInt('1234'));
@@ -99,7 +99,7 @@ describe('test entries', async () => {
       hi: claim.hi(),
       hv: claim.hv(),
     });
-  }).timeout(10000);
+  })
 
   it('test getClaimRevNonce circuit', async () => {
     const claimCircuit = claim.getDataForCircuit();
@@ -193,7 +193,7 @@ describe('test entries', async () => {
         value: claimCircuit[i],
       });
     }
-  }).timeout(10000);
+  })
 
   it('test getClaimSubjectOtherIden circuit', async () => {
     const claimCircuit = claim.getDataForCircuit();

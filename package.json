@@ -1,14 +1,13 @@
 {
   "name": "@zidendev/zidenjs",
   "type": "module",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Core library for interacting with Ziden protocol, supports all functions for holders, issuers and verifiers",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
     "prepack": "npmignore --auto .npmignore",
-    "test-all": "ts-mocha -p tsconfig.json src/**/*.test.ts",
-    "test": "ts-mocha -p tsconfig.json",
+    "test": "ts-mocha -p tsconfig.json --timeout 100000",
     "prepare": "husky install && npm run build",
     "format": "prettier '*/**/*.{ts,js,json,yml,md}' --write",
     "build": "tsc --project tsconfig.build.json",
@@ -18,6 +17,7 @@
     "access": "public",
     "ignore": [
       "src",
+      "docs",
       ".eslintrc.cjs",
       ".husky",
       ".mocharc.cjs",

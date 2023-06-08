@@ -25,7 +25,7 @@ describe('test state', async () => {
   let auth3: Auth;
   it('set up params', async () => {
     await setupParams();
-  }).timeout(10000);
+  })
 
   it('setup auths, dbs', async () => {
     authsDb = new SMTLevelDb('src/db_test/auths');
@@ -39,7 +39,7 @@ describe('test state', async () => {
     auth1 = newAuthFromPrivateKey(priv1);
     auth2 = newAuthFromPrivateKey(priv2);
     auth3 = newAuthFromPrivateKey(priv3);
-  }).timeout(10000);
+  })
   it('generate state', async () => {
     state = await State.generateState([auth1, auth2], authsDb, claimsDb, claimRevDb);
   });
@@ -48,7 +48,7 @@ describe('test state', async () => {
     const rootsMatchProof = await state.generateRootsMatchProof();
     const w = await circuit.calculateWitness(rootsMatchProof, true);
     await circuit.checkConstraints(w);
-  }).timeout(20000);
+  })
 
   it('test insert claim', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861771'));
@@ -63,7 +63,7 @@ describe('test state', async () => {
     const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkClaimExists.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
-  }).timeout(20000);
+  })
 
   it('test claim not revoked', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861771'));
@@ -97,7 +97,7 @@ describe('test state', async () => {
     const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkClaimNotRevoked.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
-  }).timeout(20000);
+  })
 
   it('test inserting a claim multiple times', async () => {
     const schemaHash = schemaHashFromBigInt(BigInt('304427537360709784173770334266246861772'));
@@ -114,7 +114,7 @@ describe('test state', async () => {
     }
 
     await state.insertClaim(claim, 101);
-  }).timeout(20000);
+  })
 
   it('test insert auth', async () => {
     await state.insertAuth(auth3);
@@ -129,7 +129,7 @@ describe('test state', async () => {
     const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkAuthExists.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
-  }).timeout(20000);
+  })
 
   it('test auth not revoked', async () => {
     const authNotRevokedProof = await state.generateAuthExistsProof(auth1.authHi);
@@ -142,7 +142,7 @@ describe('test state', async () => {
     const circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'checkAuthExists.circom'));
     const w = await circuit.calculateWitness(witness, true);
     await circuit.checkConstraints(w);
-  }).timeout(20000);
+  })
 
   it('test delete auth', async () => {
     await state.revokeAuth(auth1.authHi);
@@ -150,5 +150,5 @@ describe('test state', async () => {
     await assert.rejects(state.generateAuthExistsProof(auth1.authHi), {
       message: 'auth is not inserted to the auth tree',
     });
-  }).timeout(20000);
+  })
 });

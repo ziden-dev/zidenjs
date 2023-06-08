@@ -65,12 +65,11 @@ async function testExclusion(tree: BinSMT, _key: Primitive, circuit: any) {
 describe('SMT Verifier test', function () {
   let circuit: any;
   let tree: BinSMT;
-  this.timeout(100000);
 
   before(async () => {
     await setupParams();
-    circuit = await wasm_tester(path.join('src', 'trees', 'circom_test', 'smt.circom'));
-    const db = new SMTLevelDb('src/trees/db_test/smt_test');
+    circuit = await wasm_tester(path.join('src', 'state', 'circom_test', 'smt.circom'));
+    const db = new SMTLevelDb('src/db_test/smt_test');
     tree = new BinSMT(db, getZidenParams().F.zero,10);
   });
   it('Benchmark insert into smt', async () => {
@@ -126,7 +125,7 @@ describe('SMT Verifier test', function () {
   });
 
   it('check collision resistant', async () => {
-    const db = new SMTLevelDb('src/trees/db_test/smt_test_1');
+    const db = new SMTLevelDb('src/db_test/smt_test_1');
     const tree = new BinSMT(db, getZidenParams().F.zero, 10);
     await tree.insert(1, 1);
     await tree.insert(2, 1);

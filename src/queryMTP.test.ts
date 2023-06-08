@@ -104,7 +104,7 @@ describe('test credential query MTP', async () => {
       const w = await circuit.calculateWitness(witness, true);
       await circuit.checkConstraints(w);
     };
-  }).timeout(100000);
+  })
   let witness: QueryMTPWitness;
   it('test query 1', async () => {
     const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim1.hiRaw(), issuerState);
@@ -120,7 +120,7 @@ describe('test credential query MTP', async () => {
       query1
     );
     await circuitCheck(witness);
-  }).timeout(100000);
+  })
   it('test query 2', async () => {
     const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
     const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
@@ -136,12 +136,12 @@ describe('test credential query MTP', async () => {
     );
 
     await circuitCheck(witness);
-  }).timeout(100000);
+  })
   // it('benchmark proving time', async () => {
   //   await groth16.fullProve(
   //     witness,
   //     'src/circom_test/credentialAtomicQueryMTP.wasm',
   //     'src/circom_test/credentialAtomicQueryMTP.zkey'
   //   );
-  // }).timeout(100000);
+  // })
 });

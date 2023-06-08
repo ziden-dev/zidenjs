@@ -32,7 +32,7 @@ describe('test authentication', async () => {
     claimsDb = new SMTLevelDb('src/db_test/claims');
     claimRevDb = new SMTLevelDb('src/trees/claimRev');
     state = await State.generateState([auth], authsDb, claimsDb, claimRevDb);
-  }).timeout(10000);
+  })
 
   let idOwnershipWitness: IdOwnershipBySignatureWitness;
   it('idOwnership with custom challenge', async () => {
@@ -56,7 +56,7 @@ describe('test authentication', async () => {
     const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignature.circom'));
     const w0 = await circuit.calculateWitness(idOwnershipWitness, true);
     await circuit.checkConstraints(w0);
-  }).timeout(20000);
+  })
 
   it('idOwnership with custom challenge and signature', async () => {
     const challenge = BigInt('1234565');
@@ -65,5 +65,5 @@ describe('test authentication', async () => {
     const circuit = await wasm_tester(path.join('src', 'circom_test', 'idOwnershipBySignature.circom'));
     const w1 = await circuit.calculateWitness(idOwnershipWitness, true);
     await circuit.checkConstraints(w1);
-  }).timeout(20000);
-}).timeout(10000);
+  })
+})
