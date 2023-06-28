@@ -124,7 +124,8 @@ describe('test state transition', async () => {
       [auth1.authHi, auth2.authHi],
       [claim3.getRevocationNonce()]
     );
-    console.log(witness.isOldStateGenesis);
+    console.log(witness)
+    await circuitCheck(witness);
   });
 
   // it('benchmark proving time', async () => {

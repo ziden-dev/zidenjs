@@ -31,7 +31,6 @@ interface ClaimNotRevokedProof {
   readonly noAux: BigInt;
 }
 
-
 /**
  * Class State
  * @category State
@@ -62,7 +61,8 @@ export class State {
     authRevNonce: number,
     claimRevNonce: number,
     authDepth: number,
-    claimDepth: number
+    claimDepth: number,
+    userId?: Buffer
   ) {
     this._authsTree = authsTree;
     this._claimsTree = claimsTree;
@@ -72,7 +72,7 @@ export class State {
     this._authDepth = authDepth;
     this._claimDepth = claimDepth;
     const userState = this.getIdenState();
-    this._userID = IDGenesisFromIdenState(userState, IDType.Default);
+    this._userID = userId ?? IDGenesisFromIdenState(userState, IDType.Default);
   }
 
   get userID() {
@@ -170,6 +170,21 @@ export class State {
     return auth;
   }
 
+    /**
+   * Override a new auth(public key) to claim tree using an old index
+   * @category state
+   * @param {Auth} auth auth to override
+   * @returns {Promise<Auth>} overrided auth
+   */
+    async overrideAuth(auth: Auth): Promise<Auth> {
+      if(auth.authHi.valueOf() >= BigInt(this._authRevNonce)){
+        throw new Error("Must use an old index")
+      }
+      const authHash = hashPublicKey(auth.pubKey);
+      await this._authsTree.insert(auth.authHi, authHash);
+      return auth;
+    }
+
   /**
    * Insert new claim to claim tree
    * @category state
@@ -247,7 +262,7 @@ export class State {
   /**
    * batch claims using a array of revoke nonce
    * @category state
-   * @param {BigInt[]} revNonces 
+   * @param {BigInt[]} revNonces
    */
   async batchRevokeClaim(revNonces: BigInt[]) {
     for (let i = 0; i < revNonces.length; i++) {
