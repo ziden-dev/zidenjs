@@ -5,6 +5,7 @@ import {
   bufferArrayToHex,
   bufferToFloat,
   bufferToHex,
+  createMask,
   floatToBuffer,
   getPartialValue,
   hexToBuffer,
@@ -60,18 +61,32 @@ describe('[util] convert', () => {
     const privateKey = privateKeyFromPassword(password);
     console.log(privateKey);
   });
-  it('test get-set bits', () => {
-    const bi = BigInt('1234341344174910744743147290');
-    const value = BigInt('12348');
-    console.log(value.toString(2));
-    const bi1 = setBits(bi, 5, value);
-    const value1 = getPartialValue(bi1, 5, 5 + value.toString(2).length);
-    console.log(value1.toString(2));
-  });
   it('test buffer - float64', () => {
     const f = 10.05;
     const floatToBuff = floatToBuffer(f);
     const buffToFloat = bufferToFloat(floatToBuff);
     expect(Math.abs(buffToFloat - f) < 1e-6).to.be.true;
+  });
+  it('test partial value', () => {
+    const source = BigInt('749315912978347');
+    const from = 10;
+    const to = 20;
+    const mask = createMask(from, to);
+    console.log(mask.toString(2));
+    console.log(source.toString(2));
+    const merge = (source.valueOf() & mask.valueOf()).toString(2);
+    let result = BigInt('0b' + merge.slice(0, merge.length - from));
+    console.log(result);
+  });
+
+  it('test get-set bits', () => {
+    const bi = BigInt('1234341344174910744743147290');
+    const value = BigInt('12348');
+    console.log(bi.toString(2));
+    console.log(value.toString(2));
+    const bi1 = setBits(bi, 5, value);
+    console.log(bi1.toString(2));
+    const value1 = getPartialValue(bi1, 5, 5 + value.toString(2).length);
+    console.log(value1.toString(2));
   });
 });

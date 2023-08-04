@@ -169,15 +169,14 @@ export function createMask(from: number, to: number): BigInt {
  * @returns {BigInt} target value after setting bits
  */
 export function setBits(target: BigInt, offset: number, value: BigInt): BigInt {
-  const valueBits = value.toString(2).split('').reverse();
-  if (valueBits.length + offset > 256) {
-    throw new Error('Invalid value bits');
+  let valueBits = value.toString(2).split('');
+
+  let targetBits = target.toString(2).padStart(256, '0').split('');
+
+  for (let i = 0; i < valueBits.length; i++) {
+    targetBits[255 - offset - i] = valueBits[valueBits.length - i - 1];
   }
-  const targetBits = target.toString(2).padStart(256, '0').split('').reverse();
-  for (let i = offset; i < valueBits.length + offset; i++) {
-    targetBits[i] = valueBits[i - offset];
-  }
-  return BigInt('0b' + targetBits.reverse().join(''));
+  return BigInt('0b' + targetBits.join(''));
 }
 
 /**
@@ -190,7 +189,8 @@ export function setBits(target: BigInt, offset: number, value: BigInt): BigInt {
  */
 export function getPartialValue(source: BigInt, from: number, to: number): BigInt {
   const mask = createMask(from, to);
-  return BigInt('0b' + (source.valueOf() & mask.valueOf()).toString(2).slice(0, to - from));
+  let result = BigInt('0b' + (source.valueOf() & mask.valueOf()).toString(2));
+  return result;
 }
 
 /**

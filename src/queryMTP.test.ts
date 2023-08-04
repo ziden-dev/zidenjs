@@ -9,7 +9,7 @@ import { State } from './state/state.js';
 import { SMTLevelDb } from './db/index.js';
 import { setupParams } from './global.js';
 import { newAuthFromPrivateKey, signChallenge } from './state/auth.js';
-import { numToBits, setBits } from './utils.js';
+import { bitsToNum, numToBits, setBits } from './utils.js';
 import {
   holderGenerateQueryMTPWitnessWithPrivateKey,
   holderGenerateQueryMTPWitnessWithSignature,
@@ -39,6 +39,7 @@ describe('test credential query MTP', async () => {
 
   let query1: Query;
   let query2: Query;
+  let query3: Query;
 
   let circuitCheck: (witness: QueryMTPWitness) => Promise<void>;
   it('set up trees and claims', async () => {
@@ -82,8 +83,22 @@ describe('test credential query MTP', async () => {
       claimSchema: BigInt(1239466),
     };
 
+    query3 = {
+      slotIndex: 3,
+      operator: OPERATOR.NOT_IN,
+      values: [BigInt(100), BigInt(101), BigInt(102), BigInt(103), BigInt(104)],
+      valueTreeDepth: 6,
+      from: 160,
+      to: 170,
+      timestamp: Date.now(),
+      claimSchema: BigInt(1239466),
+    };
+
     const slot1 = setBits(BigInt(0), query1.from, BigInt(20010101));
-    const slot2 = setBits(BigInt(0), query2.from, BigInt(102));
+    const slot2 = setBits(BigInt(0), query2.from, BigInt(100));
+    const slot3 = setBits(BigInt(0), query3.from, BigInt(105));
+    console.log(slot2);
+    console.log(slot3);
 
     claim1 = newClaim(
       schemaHashFromBigInt(query1.claimSchema),
@@ -94,6 +109,7 @@ describe('test credential query MTP', async () => {
     claim2 = newClaim(
       schemaHashFromBigInt(query2.claimSchema),
       withSlotData(query2.slotIndex, numToBits(slot2, 32)),
+      withSlotData(query3.slotIndex, numToBits(slot3, 32)),
       withIndexID(holderState.userID)
     );
 
@@ -104,7 +120,7 @@ describe('test credential query MTP', async () => {
       const w = await circuit.calculateWitness(witness, true);
       await circuit.checkConstraints(w);
     };
-  })
+  });
   let witness: QueryMTPWitness;
   it('test query 1', async () => {
     const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim1.hiRaw(), issuerState);
@@ -120,7 +136,7 @@ describe('test credential query MTP', async () => {
       query1
     );
     await circuitCheck(witness);
-  })
+  });
   it('test query 2', async () => {
     const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
     const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
@@ -136,7 +152,24 @@ describe('test credential query MTP', async () => {
     );
 
     await circuitCheck(witness);
-  })
+  });
+  it('test query 3', async () => {
+    console.log(claim2.elements.map((e) => bitsToNum(e)));
+    const kycQueryMTPInput = await kycGenerateQueryMTPInput(claim2.hiRaw(), issuerState);
+    const kycNonRevQueryMTPInput = await kycGenerateNonRevQueryMTPInput(claim2.getRevocationNonce(), issuerState);
+    const signature = await signChallenge(holderPriv, BigInt(1));
+    witness = await holderGenerateQueryMTPWitnessWithSignature(
+      claim2,
+      signature,
+      holderAuth,
+      holderState,
+      kycQueryMTPInput,
+      kycNonRevQueryMTPInput,
+      query3
+    );
+
+    await circuitCheck(witness);
+  });
   // it('benchmark proving time', async () => {
   //   await groth16.fullProve(
   //     witness,

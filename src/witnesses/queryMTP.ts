@@ -8,10 +8,9 @@ import {
 } from './authentication.js';
 import { createMerkleQueryInput } from './query.js';
 
-
 /**
  * KYC service Generate credential atomic query MTP witness for Holder
- * 
+ *
  * @category queryMTP
  * @async
  * @param {ArrayLike<number>}issuerClaimHi issuer Claim Hi

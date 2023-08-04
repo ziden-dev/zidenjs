@@ -92,7 +92,7 @@ describe('test state transition', async () => {
 
   it('1st state transition', async () => {
     const w1 = await stateTransitionWitnessWithPrivateKey(priv1, auth1, state, [auth2], [claim1, claim2], [], []);
-    //console.log(inputs);
+    console.log(w1);
     await circuitCheck(w1);
   })
 

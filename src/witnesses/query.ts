@@ -12,7 +12,6 @@ export interface MerkleQueryInput {
   readonly pos1: BigInt;
 }
 
-const ErrInvalidValues = new Error('Invalid values');
 /**
  * Create merkle query input for query circuits from values
  * @category query
@@ -40,27 +39,27 @@ export function createMerkleQueryInput(
   } else if (operator >= OPERATOR.EQUAL && operator <= OPERATOR.GREATER_THAN) {
     // Single OPERATOR require the array of values must has only 1 element.
     if (values.length !== 1) {
-      throw ErrInvalidValues;
+      throw new Error('Only accept 1 value');
     }
     switch (operator) {
       // EQUAL OPERATOR
       case OPERATOR.EQUAL: {
         if (values[0] !== attestingValue) {
-          throw ErrInvalidValues;
+          throw new Error('the attested value must be equal to the given value');
         }
         break;
       }
       // LESS THAN OPERATOR
       case OPERATOR.LESS_THAN: {
         if (values[0] <= attestingValue) {
-          throw ErrInvalidValues;
+          throw new Error('the attested value must be less than the given value');
         }
         break;
       }
       // GREATOR THAN OPERATOR
       case OPERATOR.GREATER_THAN: {
         if (values[0] >= attestingValue) {
-          throw ErrInvalidValues;
+          throw new Error('the attested value must be greater than the given value');
         }
         break;
       }
@@ -89,17 +88,18 @@ export function createMerkleQueryInput(
     if (operator === OPERATOR.IN_RANGE) {
       // IN RANGE Operator, we must prove values[0] < attestingValue < values[1]
       if (values.length !== 2 || values[0] >= attestingValue || values[1] <= attestingValue) {
-        throw ErrInvalidValues;
+        throw new Error('the given value must be in range of the attested values');
       }
       leaf0 = values[0];
       leaf1 = values[1];
     } else {
       // check that attesting value is exist in the array of values ( for IN OPERATOR )
+
       const equalResult = sortedValues.find((value) => value === attestingValue);
 
       if (operator === OPERATOR.IN) {
         if (!equalResult) {
-          throw ErrInvalidValues;
+          throw new Error('the given value must appear at least once in the set');
         }
         // IN OPERATOR, we don't need construct merkle tree proof for leaf 1
         leaf0 = equalResult;
@@ -107,7 +107,7 @@ export function createMerkleQueryInput(
         // NOT IN
         // assert that the attesting value is not exist in the array of values
         if (equalResult) {
-          throw ErrInvalidValues;
+          throw new Error('the given value must be excluded from the set');
         }
 
         // Case 1: the attesting value is less than the leaf most leaf, construct merkle tree proof for leaf0 (the left most leaf)
