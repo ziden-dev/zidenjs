@@ -1,6 +1,7 @@
 import { getZidenParams } from '../global.js';
 import MerkleTree from './fixed-merkle-tree/index.js';
 import { OPERATOR } from '../index.js';
+import { shiftValue } from 'src/utils.js';
 
 export interface MerkleQueryInput {
   readonly determinisiticValue: BigInt;
@@ -170,14 +171,19 @@ export function createMerkleQueryInput(
  * @param {OPERATOR} operator
  * @returns {BigInt}
  */
-export function calculateDeterministicValue(values: Array<BigInt>, valueTreeDepth: number, operator: OPERATOR): BigInt {
+export function calculateDeterministicValue(
+  values: Array<BigInt>,
+  valueTreeDepth: number,
+  operator: OPERATOR,
+  from: number
+): BigInt {
   if (operator === OPERATOR.NOOP) return BigInt(0);
   if (operator < OPERATOR.IN) {
     return values[0];
   }
   // OPERATOR 4 (IN), 5 (NOT IN), 6 (IN RANGE) need to build fixed merkle tree from sorted array of values
   const valueArraySize = 1 << valueTreeDepth;
-  const sortedValues = values.slice();
+  const sortedValues = values.map((v) => shiftValue(v, from)).slice();
   sortedValues.sort();
   const biggestValue = sortedValues[values.length - 1];
 
